@@ -1,0 +1,11 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "@jiangweiye/tsconfig/tsconfig.node.json",
+    "compilerOptions": {
+        "target": "ESNext",
+        "baseUrl": "./",
+        "module": "ESNext",
+        "moduleResolution": "Bundler"
+    },
+    "include": ["packages/**/*.ts"]
+}

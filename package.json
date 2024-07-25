@@ -1,0 +1,33 @@
+{
+    "name": "cloudflare-workers",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "",
+    "author": "",
+    "license": "ISC",
+    "keywords": [
+        "cloudflare",
+        "workers"
+    ],
+    "main": "index.js",
+    "scripts": {
+        "dev:convert": "pnpm --dir packages/subs-convert run dev"
+    },
+    "dependencies": {
+        "@jiangweiye/cloudflare-wasm-yaml": "^0.0.2"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^4.20240722.0",
+        "@jiangweiye/eslint-config": "0.1.6-beta.3",
+        "@jiangweiye/prettier-config": "^0.0.14",
+        "@jiangweiye/tsconfig": "^0.0.11",
+        "@types/node": "^20.14.12",
+        "eslint": "^9.7.0",
+        "esno": "^4.7.0",
+        "prettier": "^3.3.3",
+        "typescript": "^5.5.4",
+        "vite": "^5.3.4",
+        "vite-plugin-dts": "4.0.0-beta.0",
+        "vitest": "^2.0.4"
+    }
+}
