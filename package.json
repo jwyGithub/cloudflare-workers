@@ -11,7 +11,9 @@
     ],
     "main": "index.js",
     "scripts": {
-        "dev:convert": "pnpm --dir packages/subs-convert run dev"
+        "dev:convert": "pnpm --dir packages/subs-convert run dev",
+        "dev:proxy": "pnpm --dir packages/github-proxy run dev",
+        "deploy:proxy": "pnpm --dir packages/github-proxy run deploy"
     },
     "dependencies": {
         "@jiangweiye/cloudflare-wasm-yaml": "^0.0.2"
