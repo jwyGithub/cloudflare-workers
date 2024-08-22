@@ -13,23 +13,24 @@
     "scripts": {
         "dev:convert": "pnpm --dir packages/subs-convert run dev",
         "dev:proxy": "pnpm --dir packages/github-proxy run dev",
-        "deploy:proxy": "pnpm --dir packages/github-proxy run deploy"
+        "dev:image": "pnpm --dir packages/image-convert run dev",
+        "deploy:proxy": "pnpm --dir packages/github-proxy run deploy",
+        "deploy:convert": "pnpm --dir packages/subs-convert run deploy"
     },
     "dependencies": {
-        "@jiangweiye/cloudflare-wasm-yaml": "^0.0.2"
+        "@jiangweiye/cloudflare-wasm-yaml": "^0.0.7"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20240722.0",
-        "@jiangweiye/eslint-config": "0.1.6-beta.3",
-        "@jiangweiye/prettier-config": "^0.0.14",
+        "@jiangweiye/eslint-config": "0.1.8-beta.1",
+        "@jiangweiye/prettier-config": "^0.0.15",
         "@jiangweiye/tsconfig": "^0.0.11",
-        "@types/node": "^20.14.12",
-        "eslint": "^9.7.0",
+        "@types/node": "^22.5.0",
+        "eslint": "^8.56.0",
         "esno": "^4.7.0",
         "prettier": "^3.3.3",
         "typescript": "^5.5.4",
-        "vite": "^5.3.4",
-        "vite-plugin-dts": "4.0.0-beta.0",
-        "vitest": "^2.0.4"
+        "vite": "^5.4.2",
+        "vite-plugin-dts": "4.0.3",
+        "vitest": "^2.0.5"
     }
 }
