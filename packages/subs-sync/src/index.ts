@@ -5,8 +5,33 @@ async function streamToText(s: ReadableStream) {
     return await res.text();
 }
 
-function base64(s: string) {
+function base64Encode(s: string) {
     return btoa(unescape(encodeURIComponent(s)));
+}
+
+function base64Decode(s: string) {
+    return decodeURIComponent(escape(atob(s)));
+}
+
+async function getRemoteSubs(subUrl: string) {
+    const res = await fetch(subUrl)
+        .then(res => res.body!)
+        .then(streamToText)
+        .then(base64Decode);
+    return res.split('\n').filter(Boolean);
+}
+
+async function getSubs(subs: string[]) {
+    const result = [];
+    for await (const sub of subs) {
+        if (sub.startsWith('https')) {
+            const r = await getRemoteSubs(sub);
+            result.push(...r);
+        } else {
+            result.push(sub);
+        }
+    }
+    return result;
 }
 
 async function convert(source_config: string) {
@@ -19,7 +44,7 @@ async function convert(source_config: string) {
 
     const backend = config.get('backend');
 
-    const subs = config.get('subs');
+    const subs = await getSubs(config.get('subs'));
 
     const rules = config.get('rules');
     return {
@@ -44,7 +69,7 @@ function makeClashSub(subs: string[], backend?: string, remote_config?: string) 
 async function sync(content: string, syncUrl: string) {
     await fetch(syncUrl, {
         method: 'POST',
-        body: base64(content),
+        body: base64Encode(content),
         headers: {
             'Content-Type': 'application/x-yaml; charset=utf-8'
         }
