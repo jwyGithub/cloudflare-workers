@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@jiangweiye/cloudflare-shared':
-        specifier: ^0.0.2
-        version: 0.0.2
+        specifier: ^0.0.4
+        version: 0.0.4
       '@jiangweiye/cloudflare-wasm-yaml':
         specifier: ^0.0.7
         version: 0.0.7
@@ -801,8 +801,8 @@ packages:
       '@sinclair/typebox': 0.27.8
     dev: true
 
-  /@jiangweiye/cloudflare-shared@0.0.2:
-    resolution: {integrity: sha512-pfjhdqtiXx1gFqskj5LENe7HSFaGkEnhqSLwYjArT1+CvtyQuMypJI/qw7m+x04XTLs3y+i9t4B4iwepK+zUlQ==}
+  /@jiangweiye/cloudflare-shared@0.0.4:
+    resolution: {integrity: sha512-+DYDdMYYzwRTKASFWJD1do60GjCl91lErlalmOMCoYjhe58gEAm7wGA0jiYrUXM9RFLnXbsyTt6+vBPmMFIKvg==}
     dev: false
 
   /@jiangweiye/cloudflare-wasm-yaml@0.0.7:

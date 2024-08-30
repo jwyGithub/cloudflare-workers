@@ -15,7 +15,7 @@
         "deploy:sync": "pnpm --dir packages/subs-sync run deploy"
     },
     "dependencies": {
-        "@jiangweiye/cloudflare-shared": "^0.0.2",
+        "@jiangweiye/cloudflare-shared": "^0.0.4",
         "@jiangweiye/cloudflare-wasm-yaml": "^0.0.7"
     },
     "devDependencies": {
