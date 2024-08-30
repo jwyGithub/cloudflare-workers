@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@jiangweiye/cloudflare-shared':
+        specifier: ^0.0.2
+        version: 0.0.2
       '@jiangweiye/cloudflare-wasm-yaml':
         specifier: ^0.0.7
         version: 0.0.7
@@ -50,7 +53,7 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.4.5
-        version: 0.4.16(@cloudflare/workers-types@4.20240821.1)(@vitest/runner@1.5.3)(@vitest/snapshot@1.5.3)(vitest@1.5.0)
+        version: 0.4.16(@vitest/runner@1.5.3)(@vitest/snapshot@1.5.3)(vitest@1.5.0)
       typescript:
         specifier: ^5.5.2
         version: 5.5.4
@@ -59,25 +62,7 @@ importers:
         version: 1.5.0(@types/node@22.5.0)
       wrangler:
         specifier: ^3.60.3
-        version: 3.67.1(@cloudflare/workers-types@4.20240821.1)
-
-  packages/sub-convert:
-    devDependencies:
-      '@cloudflare/vitest-pool-workers':
-        specifier: ^0.4.5
-        version: 0.4.16(@cloudflare/workers-types@4.20240821.1)(@vitest/runner@1.5.3)(@vitest/snapshot@1.5.3)(vitest@1.5.0)
-      '@cloudflare/workers-types':
-        specifier: ^4.20240821.1
-        version: 4.20240821.1
-      typescript:
-        specifier: ^5.5.2
-        version: 5.5.4
-      vitest:
-        specifier: 1.5.0
-        version: 1.5.0(@types/node@22.5.0)
-      wrangler:
-        specifier: ^3.60.3
-        version: 3.72.1(@cloudflare/workers-types@4.20240821.1)
+        version: 3.67.1
 
   packages/subs-sync:
     devDependencies:
@@ -170,7 +155,7 @@ packages:
       mime: 3.0.0
     dev: true
 
-  /@cloudflare/vitest-pool-workers@0.4.16(@cloudflare/workers-types@4.20240821.1)(@vitest/runner@1.5.3)(@vitest/snapshot@1.5.3)(vitest@1.5.0):
+  /@cloudflare/vitest-pool-workers@0.4.16(@vitest/runner@1.5.3)(@vitest/snapshot@1.5.3)(vitest@1.5.0):
     resolution: {integrity: sha512-Bl2cErOBdVHLcwBUSUfEd404zGOoDLtgyT9SRZYd1ZJiEgyWNAgLWnfxApCqmMpaBofYANnQwZ7KOweoYSV00g==}
     peerDependencies:
       '@vitest/runner': 1.3.x - 1.5.x
@@ -186,7 +171,7 @@ packages:
       miniflare: 3.20240718.1
       semver: 7.6.3
       vitest: 1.5.0(@types/node@22.5.0)
-      wrangler: 3.67.1(@cloudflare/workers-types@4.20240821.1)
+      wrangler: 3.67.1
       zod: 3.23.8
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
@@ -815,6 +800,10 @@ packages:
     dependencies:
       '@sinclair/typebox': 0.27.8
     dev: true
+
+  /@jiangweiye/cloudflare-shared@0.0.2:
+    resolution: {integrity: sha512-pfjhdqtiXx1gFqskj5LENe7HSFaGkEnhqSLwYjArT1+CvtyQuMypJI/qw7m+x04XTLs3y+i9t4B4iwepK+zUlQ==}
+    dev: false
 
   /@jiangweiye/cloudflare-wasm-yaml@0.0.7:
     resolution: {integrity: sha512-4nMNDAzto3UMC+gf7M1s34ljoGuz2VJcRS0LZEq986CaK6A/YRWjKm9tddYRMiSpxQpYLQtkP3P8SJg00h8feQ==}
@@ -4674,7 +4663,7 @@ packages:
       '@cloudflare/workerd-windows-64': 1.20240806.0
     dev: true
 
-  /wrangler@3.67.1(@cloudflare/workers-types@4.20240821.1):
+  /wrangler@3.67.1:
     resolution: {integrity: sha512-lLVJxq/OZMfntvZ79WQJNC1OKfxOCs6PLfogqDBuPFEQ3L/Mwqvd9IZ0bB8ahrwUN/K3lSdDPXynk9HfcGZxVw==}
     engines: {node: '>=16.17.0'}
     hasBin: true
@@ -4685,7 +4674,6 @@ packages:
         optional: true
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
-      '@cloudflare/workers-types': 4.20240821.1
       '@esbuild-plugins/node-globals-polyfill': 0.2.3(esbuild@0.17.19)
       '@esbuild-plugins/node-modules-polyfill': 0.2.2(esbuild@0.17.19)
       blake3-wasm: 2.1.5

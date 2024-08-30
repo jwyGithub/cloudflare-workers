@@ -11,13 +11,11 @@
     ],
     "main": "index.js",
     "scripts": {
-        "dev:convert": "pnpm --dir packages/subs-convert run dev",
-        "dev:proxy": "pnpm --dir packages/github-proxy run dev",
-        "dev:image": "pnpm --dir packages/image-convert run dev",
-        "deploy:proxy": "pnpm --dir packages/github-proxy run deploy",
-        "deploy:convert": "pnpm --dir packages/subs-convert run deploy"
+        "dev:sync": "pnpm --dir packages/subs-sync run dev",
+        "deploy:sync": "pnpm --dir packages/subs-sync run deploy"
     },
     "dependencies": {
+        "@jiangweiye/cloudflare-shared": "^0.0.2",
         "@jiangweiye/cloudflare-wasm-yaml": "^0.0.7"
     },
     "devDependencies": {

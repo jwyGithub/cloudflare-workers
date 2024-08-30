@@ -1,23 +1,11 @@
 import init, { dump, load } from '@jiangweiye/cloudflare-wasm-yaml';
-
-async function streamToText(s: ReadableStream) {
-    const res = new Response(s);
-    return await res.text();
-}
-
-function base64Encode(s: string) {
-    return btoa(unescape(encodeURIComponent(s)));
-}
-
-function base64Decode(s: string) {
-    return decodeURIComponent(escape(atob(s)));
-}
+import { TextCode } from '@jiangweiye/cloudflare-shared';
 
 async function getRemoteSubs(subUrl: string) {
     const res = await fetch(subUrl)
         .then(res => res.body!)
-        .then(streamToText)
-        .then(base64Decode);
+        .then(TextCode.streamToText)
+        .then(TextCode.base64Decode);
     return res.split('\n').filter(Boolean);
 }
 
@@ -37,7 +25,7 @@ async function getSubs(subs: string[]) {
 async function convert(source_config: string) {
     const config = await fetch(source_config)
         .then(res => res.body!)
-        .then(streamToText)
+        .then(TextCode.streamToText)
         .then(load);
 
     const remote_config = config.get('remote_config');
@@ -69,26 +57,41 @@ function makeClashSub(subs: string[], backend?: string, remote_config?: string) 
 async function sync(content: string, syncUrl: string) {
     await fetch(syncUrl, {
         method: 'POST',
-        body: base64Encode(content),
+        body: TextCode.base64Encode(content),
         headers: {
             'Content-Type': 'application/x-yaml; charset=utf-8'
         }
     });
 }
 
+async function parse(env: Env) {
+    const { url, rules } = await convert(env.CONFIG_URL);
+    const getClashConfig = await fetch(url)
+        .then(res => res.body!)
+        .then(TextCode.streamToText);
+    const localConfig = load(getClashConfig);
+    const source_rules = localConfig.get('rules');
+    const all_rules = [...rules, ...source_rules];
+    localConfig.set('rules', all_rules);
+    return localConfig;
+}
+
 export default {
     async scheduled(event, env, ctx): Promise<void> {
         await init();
-
-        const { url, rules } = await convert(env.CONFIG_URL);
-        const getClashConfig = await fetch(url)
-            .then(res => res.body!)
-            .then(streamToText);
-        const localConfig = load(getClashConfig);
-        const source_rules = localConfig.get('rules');
-        const all_rules = [...rules, ...source_rules];
-        localConfig.set('rules', all_rules);
-
+        const localConfig = await parse(env);
         ctx.waitUntil(sync(dump(localConfig), env.SYNC_URL));
+    },
+    async fetch(event, env): Promise<Response> {
+        try {
+            await init();
+            const localConfig = await parse(env);
+            await sync(dump(localConfig), env.SYNC_URL);
+            return new Response(`sync success`);
+        } catch (error: any) {
+            return new Response(error.message, {
+                status: 500
+            });
+        }
     }
 } satisfies ExportedHandler<Env>;
