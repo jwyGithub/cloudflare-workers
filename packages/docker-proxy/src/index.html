@@ -103,21 +103,25 @@
 
             function k8sGcrRegistry() {
                 const domain = getPageDomain();
-                return ['# docker pull k8s.gcr.io/pause:latest', `docker pull k8s-gcr.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  k8s.gcr.io 镜像`].join('\n');
+                return [
+                    '# docker pull k8s.gcr.io/pause:latest',
+                    `docker pull k8s-gcr.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  k8s.gcr.io 镜像`
+                ].join('\n');
             }
 
             function k8sRegistry() {
                 const domain = getPageDomain();
-                return ['# docker pull registry.k8s.io/pause:latest', `docker pull k8s.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0:latest  registry.k8s.io 镜像`].join(
-                    '\n'
-                );
+                return [
+                    '# docker pull registry.k8s.io/pause:latest',
+                    `docker pull k8s.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  registry.k8s.io 镜像`
+                ].join('\n');
             }
 
             function ghcrRegistry() {
                 const domain = getPageDomain();
                 return [
-                    '# docker pull ghcr.io/github/super-linter:latest',
-                    `docker pull ghcr.${domain}/github/super-linter:latest  GitHub 容器镜像`
+                    '# docker pull ghcr.io/jinnrry/pmail:latest',
+                    `docker pull ghcr.${domain}/jinnrry/pmail:latest  GitHub 容器镜像`
                 ].join('\n');
             }
 
