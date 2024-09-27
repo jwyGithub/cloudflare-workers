@@ -66,6 +66,7 @@
             function getChangeRegistryCode() {
                 return [
                     'sudo tee /etc/docker/daemon.json <<EOF',
+                    '\n',
                     '{',
                     '  "registry-mirrors": ["https://docker.vev.us.kg"]',
                     '}',

@@ -23,8 +23,15 @@ function routeByHosts(hostname: string): string {
 export default {
     async fetch(request: Request): Promise<Response> {
         const { pathname } = new URL(request.url);
+
+        if (pathname === '/favicon.ico') {
+            return new Response('', {
+                status: 200
+            });
+        }
+
         if (pathname === '/') {
-            const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/package.json`;
+            const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html`;
             const docs = await fetch(doc).then(res => res.text());
             return new Response(docs, {
                 status: 200,
