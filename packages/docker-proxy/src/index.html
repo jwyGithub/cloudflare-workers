@@ -90,7 +90,7 @@
 
             function quayRegistry() {
                 const domain = getPageDomain();
-                return ['# docker pull quay.io/coreos/etcd:latest', `docker pull quay.${domain}/coreos/etcd:latest  Quay 镜像`].join('\n');
+                return ['# docker pull quay.io/cephcsi/cephcsi:v3.9.0', `docker pull quay.${domain}/cephcsi/cephcsi:v3.9.0  Quay 镜像`].join('\n');
             }
 
             function gcrRegistry() {
@@ -104,7 +104,7 @@
             function k8sGcrRegistry() {
                 const domain = getPageDomain();
                 return [
-                    '# docker pull k8s.gcr.io/pause:latest',
+                    '# docker pull k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0',
                     `docker pull k8s-gcr.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  k8s.gcr.io 镜像`
                 ].join('\n');
             }
@@ -112,7 +112,7 @@
             function k8sRegistry() {
                 const domain = getPageDomain();
                 return [
-                    '# docker pull registry.k8s.io/pause:latest',
+                    '# docker pull registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.3.0',
                     `docker pull k8s.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  registry.k8s.io 镜像`
                 ].join('\n');
             }
