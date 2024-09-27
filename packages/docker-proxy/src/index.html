@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>docker代理</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css" />
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            .registry {
+                padding: 1vw;
+            }
+            .registry h4 {
+                margin-bottom: 1vw;
+                line-height: 1.5;
+            }
+            .registry .hljs {
+                padding: 1vw;
+                border-radius: 1em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="registry change">
+            <h4>更换docker镜像</h4>
+        </div>
+
+        <div class="registry docker">
+            <h4>拉取 Docker 官方镜像</h4>
+        </div>
+
+        <div class="registry quay">
+            <h4># 拉取 Quay 镜像</h4>
+        </div>
+
+        <div class="registry gcr">
+            <h4># 拉取 GCR 镜像</h4>
+        </div>
+
+        <div class="registry k8s-gcr">
+            <h4># 拉取 k8s.gcr.io 镜像</h4>
+        </div>
+
+        <div class="registry k8s">
+            <h4># 拉取 registry.k8s.io 镜像</h4>
+        </div>
+
+        <div class="registry ghcr">
+            <h4># 拉取 GitHub 容器镜像</h4>
+        </div>
+
+        <div class="registry cloudsmith">
+            <h4># 拉取 Cloudsmith 镜像</h4>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+
+        <script>
+            function getChangeRegistryCode() {
+                return [
+                    'sudo tee /etc/docker/daemon.json <<EOF',
+                    '{',
+                    '  "registry-mirrors": ["https://docker.vev.us.kg"]',
+                    '}',
+                    'EOF',
+                    '\n',
+                    '# 配置完后需要重启 Docker 服务',
+                    'sudo systemctl restart docker'
+                ].join('\n');
+            }
+
+            function dockerRegistry() {
+                return ['# docker pull nginx:latest', 'docker pull docker.vev.us.kg/library/nginx:latest  # 拉取 Docker 官方镜像'].join(
+                    '\n'
+                );
+            }
+
+            function quayRegistry() {
+                return ['# docker pull quay.io/coreos/etcd:latest', 'docker pull quay.vev.us.kg/coreos/etcd:latest  # 拉取 Quay 镜像'].join(
+                    '\n'
+                );
+            }
+
+            function gcrRegistry() {
+                return [
+                    '# docker pull gcr.io/google-containers/busybox:latest',
+                    'docker pull gcr.vev.us.kg/google-containers/busybox:latest  # 拉取 GCR 镜像'
+                ].join('\n');
+            }
+
+            function k8sGcrRegistry() {
+                return ['# docker pull k8s.gcr.io/pause:latest', 'docker pull k8s-gcr.vev.us.kg/pause:latest  # 拉取 k8s.gcr.io 镜像'].join(
+                    '\n'
+                );
+            }
+
+            function k8sRegistry() {
+                return [
+                    '# docker pull registry.k8s.io/pause:latest',
+                    'docker pull k8s.vev.us.kg/pause:latest  # 拉取 registry.k8s.io 镜像'
+                ].join('\n');
+            }
+
+            function ghcrRegistry() {
+                return [
+                    '# docker pull ghcr.io/github/super-linter:latest',
+                    'docker pull ghcr.vev.us.kg/github/super-linter:latest  # 拉取 GitHub 容器镜像'
+                ].join('\n');
+            }
+
+            function cloudsmithRegistry() {
+                return [
+                    '# docker pull docker.cloudsmith.io/public/repo/image:latest',
+                    'docker pull cloudsmith.vev.us.kg/public/repo/image:latest  # 拉取 Cloudsmith 镜像'
+                ].join('\n');
+            }
+
+            function appendCode(el, code) {
+                const pre = document.createElement('pre');
+                pre.classList.add('hljs');
+                pre.innerHTML = `<code class="bash">${code}</code>`;
+                document.querySelector(`.${el}`).appendChild(pre);
+            }
+
+            appendCode('change', window.hljs.highlight(getChangeRegistryCode(), { language: 'bash' }).value);
+            appendCode('docker', window.hljs.highlight(dockerRegistry(), { language: 'bash' }).value);
+            appendCode('quay', window.hljs.highlight(quayRegistry(), { language: 'bash' }).value);
+            appendCode('gcr', window.hljs.highlight(gcrRegistry(), { language: 'bash' }).value);
+            appendCode('k8s-gcr', window.hljs.highlight(k8sGcrRegistry(), { language: 'bash' }).value);
+            appendCode('k8s', window.hljs.highlight(k8sRegistry(), { language: 'bash' }).value);
+            appendCode('ghcr', window.hljs.highlight(ghcrRegistry(), { language: 'bash' }).value);
+            appendCode('cloudsmith', window.hljs.highlight(cloudsmithRegistry(), { language: 'bash' }).value);
+        </script>
+    </body>
+</html>

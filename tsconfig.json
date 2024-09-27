@@ -2,10 +2,23 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": "@jiangweiye/tsconfig/tsconfig.node.json",
     "compilerOptions": {
-        "target": "ESNext",
+        "target": "es2021",
+        "jsx": "react-jsx",
+        "lib": ["es2021"],
         "baseUrl": "./",
-        "module": "ESNext",
-        "moduleResolution": "Bundler"
+
+        "module": "es2022",
+        "moduleResolution": "Bundler",
+        "resolveJsonModule": true,
+        "types": ["@cloudflare/workers-types/2023-07-01"],
+        "allowJs": true,
+        "checkJs": false,
+        "strict": true,
+        "noEmit": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "skipLibCheck": true
     },
     "include": ["packages/**/*.ts"]
 }
