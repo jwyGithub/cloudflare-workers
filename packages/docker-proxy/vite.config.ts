@@ -7,6 +7,7 @@ export default defineConfig({
             formats: ['es'],
             fileName: `_worker`
         },
+        minify: true,
         outDir: 'pages'
     }
 });

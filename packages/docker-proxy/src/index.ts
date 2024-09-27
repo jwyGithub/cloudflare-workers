@@ -66,7 +66,6 @@ async function handleRequest(request: Request): Promise<Response> {
         if (authorization) {
             headers.set('Authorization', authorization);
         }
-        // check if need to authenticate
         const resp = await fetch(newUrl.toString(), {
             method: 'GET',
             headers,
@@ -82,7 +81,6 @@ async function handleRequest(request: Request): Promise<Response> {
             return resp;
         }
     }
-    // get token
     if (url.pathname === '/v2/auth') {
         const newUrl = new URL(`${upstream}/v2/`);
         const resp = await fetch(newUrl.toString(), {
@@ -98,8 +96,6 @@ async function handleRequest(request: Request): Promise<Response> {
         }
         const wwwAuthenticate = parseAuthenticate(authenticateStr);
         let scope = url.searchParams.get('scope');
-        // autocomplete repo part into scope for DockerHub library images
-        // Example: repository:busybox:pull => repository:library/busybox:pull
         if (scope && isDockerHub) {
             const scopeParts = scope.split(':');
             if (scopeParts.length === 3 && !scopeParts[1].includes('/')) {
@@ -109,8 +105,6 @@ async function handleRequest(request: Request): Promise<Response> {
         }
         return await fetchToken(wwwAuthenticate, scope, authorization);
     }
-    // redirect for DockerHub library images
-    // Example: /v2/busybox/manifests/latest => /v2/library/busybox/manifests/latest
     if (isDockerHub) {
         const pathParts = url.pathname.split('/');
         if (pathParts.length === 5) {
@@ -120,19 +114,17 @@ async function handleRequest(request: Request): Promise<Response> {
             return Response.redirect(redirectUrl.href, 301);
         }
     }
-    // foward requests
     const newUrl = new URL(upstream + url.pathname);
     const newReq = new Request(newUrl, {
         method: request.method,
         headers: request.headers,
         redirect: 'follow'
     });
+
     return await fetch(newReq);
 }
 
 function parseAuthenticate(authenticateStr: string): { realm: string; service: string } {
-    // sample: Bearer realm="https://auth.ipv6.docker.com/token",service="registry.docker.io"
-    // match strings after =" and before "
     const re = /(?<==")(?:\\.|[^"\\])*(?=")/g;
     const matches = authenticateStr.match(re);
     if (matches == null || matches.length < 2) {
