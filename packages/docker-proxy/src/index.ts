@@ -31,7 +31,7 @@ export default {
         }
 
         if (pathname === '/') {
-            const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html`;
+            const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
             const docs = await fetch(doc).then(res => res.text());
             return new Response(docs, {
                 status: 200,

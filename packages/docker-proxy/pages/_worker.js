@@ -19,7 +19,7 @@ const k = {
         status: 200
       });
     if (e === "/") {
-      const n = await fetch("https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html").then((o) => o.text());
+      const t = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`, n = await fetch(t).then((o) => o.text());
       return new Response(n, {
         status: 200,
         headers: {
@@ -81,12 +81,12 @@ async function m(s) {
       return r.pathname = a.join("/"), Response.redirect(r.href, 301);
     }
   }
-  const d = new URL(t + e.pathname), f = new Request(d, {
+  const f = new URL(t + e.pathname), d = new Request(f, {
     method: s.method,
     headers: s.headers,
     redirect: "follow"
   });
-  return await fetch(f);
+  return await fetch(d);
 }
 function g(s) {
   const e = new RegExp('(?<==")(?:\\\\.|[^"\\\\])*(?=")', "g"), t = s.match(e);
