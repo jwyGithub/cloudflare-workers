@@ -108,7 +108,7 @@
 
             function k8sRegistry() {
                 const domain = getPageDomain();
-                return ['# docker pull registry.k8s.io/pause:latest', `docker pull k8s.${domain}/pause:latest  registry.k8s.io 镜像`].join(
+                return ['# docker pull registry.k8s.io/pause:latest', `docker pull k8s.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0:latest  registry.k8s.io 镜像`].join(
                     '\n'
                 );
             }
