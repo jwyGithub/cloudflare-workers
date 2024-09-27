@@ -103,7 +103,7 @@
 
             function k8sGcrRegistry() {
                 const domain = getPageDomain();
-                return ['# docker pull k8s.gcr.io/pause:latest', `docker pull k8s-gcr.${domain}/pause:latest  k8s.gcr.io 镜像`].join('\n');
+                return ['# docker pull k8s.gcr.io/pause:latest', `docker pull k8s-gcr.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  k8s.gcr.io 镜像`].join('\n');
             }
 
             function k8sRegistry() {
