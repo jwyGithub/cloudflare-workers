@@ -11,19 +11,29 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+
             - name: Determine release type
+              id: release_type
               run: |
                   commit_message="${{ github.event.head_commit.message }}"
                   if [[ "$commit_message" =~ ^docker: ]]; then
-                    echo "Release type: docker"
-                    RELEASE_TYPE="release-docker"
-                  elif [[ "$commit_message" =~ ^npm: ]]; then
-                    echo "Release type: npm"
-                    RELEASE_TYPE="release-npm"
+                    echo "type=release-docker" >> $GITHUB_OUTPUT
+                  elif [[ "$commit_message" =~ ^npmjs: ]]; then
+                    echo "type=release-npm" >> $GITHUB_OUTPUT
                   else
-                    echo "Release type: unknown"
-                    exit 1
+                    echo "type=unknown" >> $GITHUB_OUTPUT
                   fi
-            - name: Run release workflow
-              if: ${{ RELEASE_TYPE != 'unknown' }}
-              uses: ./.github/workflows/${{ RELEASE_TYPE }}.yml
+
+            - name: Run Docker release workflow
+              if: steps.release_type.outputs.type == 'release-docker'
+              uses: ./.github/workflows/release-docker.yml
+
+            - name: Run NPM release workflow
+              if: steps.release_type.outputs.type == 'release-npm'
+              uses: ./.github/workflows/release-npm.yml
+
+            - name: Unknown release type
+              if: steps.release_type.outputs.type == 'unknown'
+              run: |
+                  echo "Unknown release type. No action taken."
+                  exit 1
