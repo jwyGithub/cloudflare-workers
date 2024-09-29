@@ -6,36 +6,38 @@ on:
             - main
 
 jobs:
-    release:
+    determine_release_type:
         runs-on: ubuntu-latest
+        outputs:
+            release_type: ${{ steps.set_release_type.outputs.type }}
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
             - name: Determine release type
-              id: release_type
+              id: set_release_type
               run: |
                   commit_message="${{ github.event.head_commit.message }}"
                   if [[ "$commit_message" =~ ^docker: ]]; then
-                    echo "type=release-docker" >> $GITHUB_OUTPUT
+                    echo "type=docker" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^npmjs: ]]; then
-                    echo "type=release-npm" >> $GITHUB_OUTPUT
+                    echo "type=npm" >> $GITHUB_OUTPUT
                   else
                     echo "type=unknown" >> $GITHUB_OUTPUT
                   fi
 
-            - name: Run Docker release workflow
-              if: steps.release_type.outputs.type == 'release-docker'
-              uses: ./.github/workflows/release-docker.yml
+    run_docker_release:
+        needs: determine_release_type
+        if: needs.determine_release_type.outputs.release_type == 'docker'
+        uses: ./.github/workflows/release-docker.yml
 
-            - name: Run NPM release workflow
-              if: steps.release_type.outputs.type == 'release-npm'
-              uses: ./.github/workflows/release-npm.yml
+    run_npm_release:
+        needs: determine_release_type
+        if: needs.determine_release_type.outputs.release_type == 'npm'
+        uses: ./.github/workflows/release-npm.yml
 
-            - name: Unknown release type
-              if: steps.release_type.outputs.type == 'unknown'
-              run: |
+    unknown_release_type:
+        needs: determine_release_type
+        if: needs.determine_release_type.outputs.release_type == 'unknown'
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
                   echo "Unknown release type. No action taken."
                   exit 1
-
-
