@@ -1,9 +1,7 @@
 name: docker release
 
 on:
-    workflow_call:
-        inputs:
-            # Any inputs you need for this workflow
+    workflow_dispatch:
 
 jobs:
     build:
