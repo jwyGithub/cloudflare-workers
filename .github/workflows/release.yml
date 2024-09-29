@@ -26,12 +26,12 @@ jobs:
     run_docker_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'docker'
-        uses: ./.github/release/release-docker.yml
+        uses: ./.github/release/release-docker.yml@main
 
     run_npm_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'npm'
-        uses: ./.github/release/release-npm.yml
+        uses: ./.github/release/release-npm.yml@main
 
     unknown_release_type:
         needs: determine_release_type
