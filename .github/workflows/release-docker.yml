@@ -32,7 +32,7 @@ jobs:
               with:
                   name: build
                   path: packages/docker-proxy/pages
-            - name: Deploy to GitHub Pages
+            - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
                   github_token: ${{ secrets.DEPLOY_TOKEN }}
@@ -40,3 +40,4 @@ jobs:
                   publish_branch: release-docker
                   keep_files: false
                   enable_jekyll: true
+
