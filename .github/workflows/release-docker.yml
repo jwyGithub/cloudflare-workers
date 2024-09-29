@@ -1,0 +1,44 @@
+name: docker release
+
+on:
+    workflow_call:
+        inputs:
+            # Any inputs you need for this workflow
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: latest
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: latest
+            - run: pnpm install
+            - run: pnpm run pages:docker
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build
+                  path: packages/docker-proxy/pages
+
+    deploy:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - uses: actions/checkout@v4
+            - name: Download artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: build
+                  path: packages/docker-proxy/pages
+            - name: Deploy to GitHub Pages
+              uses: peaceiris/actions-gh-pages@v4
+              with:
+                  github_token: ${{ secrets.DEPLOY_TOKEN }}
+                  publish_dir: packages/docker-proxy/pages
+                  publish_branch: release-docker
+                  keep_files: false
+                  enable_jekyll: true
