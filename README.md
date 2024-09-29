@@ -16,3 +16,4 @@
 1. 在cloudflare worker中创建一个pages
 2. 选择上传文件
 3. 选择packages/npm-proxy目录下的pages文件夹
+
