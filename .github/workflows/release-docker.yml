@@ -35,9 +35,8 @@ jobs:
             - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
-                  github_token: ${{ secrets.DEPLOY_TOKEN }}
+                  personal_token: ${{ secrets.DEPLOY_TOKEN }}
                   publish_dir: packages/docker-proxy/pages
                   publish_branch: release-docker
                   keep_files: false
                   enable_jekyll: true
-
