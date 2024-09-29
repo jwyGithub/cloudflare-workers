@@ -24,10 +24,18 @@ jobs:
             - run: pnpm install
             - run: pnpm run build:pages:docker
     deploy:
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-            deploy_key: ${{ secrets.DEPLOY_TOKEN }}
-            external_repository: https://github.com/jwyGithub/cloudflare-workers.git
-            publish_dir: ./packages/docker-proxy/pages
-            keep_files: false
-            publish_branch: release-docker
+    runs-on: ubuntu-latest
+    needs: build # Ensure the build job completes before deploying
+    steps:
+        - uses: actions/checkout@v4
+        - name: Download artifact
+          uses: actions/download-artifact@v3
+          with:
+              name: build
+              path: packages/docker-proxy/pages
+        - name: Deploy to GitHub Pages
+          uses: peaceiris/actions-gh-pages@v3
+          with:
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              publish_dir: packages/docker-proxy/pages
+              publish_branch: release-docker
