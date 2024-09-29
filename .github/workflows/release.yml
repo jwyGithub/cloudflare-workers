@@ -19,7 +19,7 @@ jobs:
               with:
                   node-version: '18'
             - run: pnpm install
-            - run: pnpm run build:pages:docker
+            - run: pnpm run pages:docker
             - name: Upload artifact
               uses: actions/upload-artifact@v3
               with:
