@@ -2,6 +2,9 @@ name: docker release
 
 on:
     workflow_call:
+        secrets:
+            DEPLOY_TOKEN:
+                required: true
 
 jobs:
     build:
@@ -35,7 +38,7 @@ jobs:
             - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
-                  personal_token: ${{ secrets.DEPLOY_TOKEN }}
+                  github_token: ${{ secrets.DEPLOY_TOKEN }}
                   publish_dir: packages/docker-proxy/pages
                   publish_branch: release-docker
                   keep_files: false

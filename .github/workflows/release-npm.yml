@@ -2,6 +2,9 @@ name: npm release
 
 on:
     workflow_call:
+        secrets:
+            DEPLOY_TOKEN:
+                required: true
 
 jobs:
     build:
@@ -40,4 +43,3 @@ jobs:
                   publish_branch: release-npm
                   keep_files: false
                   enable_jekyll: true
-
