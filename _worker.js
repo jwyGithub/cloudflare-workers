@@ -1,16 +1,13 @@
-async function a(t) {
-  const e = new URL(t.url);
-  if (e.pathname.startsWith("/crates.io-index/")) {
-    const n = new URL("https://github.com/rust-lang/crates.io-index");
-    return n.pathname = e.pathname.slice(17), n.search = e.search, fetch(n.toString(), t);
-  }
-  return fetch(t);
-}
-const s = {
-  async fetch(t) {
-    return await a(t);
+const s = "https://github.com/rust-lang/crates.io-index", c = {
+  async fetch(e) {
+    const t = new URL(e.url), n = new URL(`${s}${t.pathname}${t.search}`), o = new Request(n.toString(), {
+      method: e.method,
+      headers: e.headers,
+      body: e.body
+    });
+    return fetch(o);
   }
 };
 export {
-  s as default
+  c as default
 };
