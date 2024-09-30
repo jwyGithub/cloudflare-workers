@@ -20,19 +20,6 @@ async function handleRequest(req: Request): Promise<Response> {
         redirect: 'follow'
     };
 
-    // 处理特定的npm命令
-    if (method === 'PUT' && url.pathname.startsWith('/-/user/org.couchdb.user:')) {
-        // console.log('Handling npm adduser / npm login');
-    } else if (method === 'GET' && url.pathname.startsWith('/')) {
-        // console.log(`Handling npm info for package: ${url.pathname.substring(1)}`);
-    } else if (method === 'PUT' && url.pathname.endsWith('.tgz')) {
-        // console.log(`Handling npm publish for package: ${url.pathname}`);
-    } else if (method === 'GET' && url.pathname.endsWith('.tgz')) {
-        // console.log(`Handling npm install (package download) for: ${url.pathname}`);
-    } else {
-        // console.log(`Handling other request: ${method} ${url.pathname}`);
-    }
-
     // 代理请求到目标 URL
     const proxyReq = new Request(targetUrl, proxyReqInit);
 
@@ -44,7 +31,7 @@ async function handleRequest(req: Request): Promise<Response> {
         return new Response('Internal Server Error', { status: 500 });
     }
 
-    // 如果是 npm login 或 npm adduser，我们需要处理响应
+    // npm login // npm adduser
     if (resp.status === 201 && pathStartsWithUser) {
         const contentType = resp.headers.get('content-type') || '';
         if (contentType.includes('application/json')) {
@@ -54,11 +41,6 @@ async function handleRequest(req: Request): Promise<Response> {
             } catch (e) {
                 console.error('Failed to parse response JSON', e);
                 return new Response('Internal Server Error', { status: 500 });
-            }
-
-            if (json.token) {
-                // 在这里，你可以选择保存 token 到本地存储
-                // console.log(`Received new token: ${json.token}`);
             }
 
             const modifiedBody = JSON.stringify(json);
