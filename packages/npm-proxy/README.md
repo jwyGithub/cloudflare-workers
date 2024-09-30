@@ -13,7 +13,7 @@
 1. 命令行直接使用
 
 ```bash
-npm install vue --registry=npm-proxy.vev.us.kg
+npm install vue --registry=https://npm-proxy.pages.dev
 ```
 
 2. .npmrc 配置
