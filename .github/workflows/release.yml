@@ -66,16 +66,6 @@ jobs:
               secrets:
                   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
-            - name: run npm release
-              uses: ./.github/workflows/release-npm.yml
-              secrets:
-                  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
-            - name: run cargo release
-              uses: ./.github/workflows/release-cargo.yml
-              secrets:
-                  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
     unknown_release_type:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'unknown'
