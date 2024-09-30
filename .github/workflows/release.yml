@@ -54,7 +54,7 @@ jobs:
 
     run_all_release:
         needs: [run_docker_release, run_npm_release, run_cargo_release]
-        if: needs.run_docker_release.outputs.release_type == 'feat'
+        if: needs.determine_release_type.outputs.release_type == 'feat'
         runs-on: ubuntu-latest
         steps:
             - run: |
