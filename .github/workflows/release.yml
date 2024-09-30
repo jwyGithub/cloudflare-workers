@@ -25,6 +25,8 @@ jobs:
                     echo "type=npm" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^cargo: ]]; then
                     echo "type=cargo" >> $GITHUB_OUTPUT
+                  elif [[ "$commit_message" =~ ^feat: ]]; then
+                    echo "type=feat" >> $GITHUB_OUTPUT
                   else
                     echo "type=unknown" >> $GITHUB_OUTPUT
                   fi
@@ -49,6 +51,14 @@ jobs:
         uses: ./.github/workflows/release-cargo.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+            
+    run_all_release:
+        needs: [run_docker_release, run_npm_release, run_cargo_release]
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
+                  echo "All releases have been run."
+                  exit 0
 
     unknown_release_type:
         needs: determine_release_type
