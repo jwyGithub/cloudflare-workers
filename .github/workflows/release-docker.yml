@@ -68,7 +68,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
                   tag_name: 'docker-release-${{ github.sha }}'
-                  release_name: 'Docker Release ${{ github.sha }}'
+                  name: 'Docker Release ${{ github.sha }}'
                   draft: false
                   prerelease: false
                   files: docker-proxy.zip
