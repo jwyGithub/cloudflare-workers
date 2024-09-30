@@ -58,7 +58,9 @@ jobs:
               run: ls -al packages/npm-proxy/pages
 
             - name: Zip Dist
-              run: zip -rj npm-proxy.zip packages/npm-proxy/pages/*
+              run: |
+                  cd packages/npm-proxy
+                  zip -r ../../npm-proxy.zip pages/*
 
             - name: create release
               id: create_release

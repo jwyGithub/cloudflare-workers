@@ -59,7 +59,9 @@ jobs:
               run: ls -al packages/docker-proxy/pages
 
             - name: Zip Dist
-              run: zip -rj docker-proxy.zip packages/docker-proxy/pages/*
+              run: |
+                  cd packages/docker-proxy
+                  zip -r ../../docker-proxy.zip pages/*
 
             - name: create release
               id: create_release

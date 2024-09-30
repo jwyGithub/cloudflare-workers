@@ -59,7 +59,9 @@ jobs:
               run: ls -al packages/cargo-proxy/pages
 
             - name: Zip Dist
-              run: zip -rj cargo-proxy.zip packages/cargo-proxy/pages/*
+              run: |
+                  cd packages/cargo-proxy
+                  zip -r ../../cargo-proxy.zip pages/*
 
             - name: create release
               id: create_release
