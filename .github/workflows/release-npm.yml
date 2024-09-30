@@ -58,7 +58,7 @@ jobs:
               run: ls -al packages/npm-proxy/pages
 
             - name: Zip Dist
-              run: zip -r npm-proxy.zip packages/npm-proxy/pages
+              run: zip -rj npm-proxy.zip packages/npm-proxy/pages/*
 
             - name: create release
               id: create_release
@@ -66,8 +66,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
-                  tag_name: 'docker-release-${{ github.sha }}'
-                  name: 'npm-proxy'
+                  tag_name: 'npm-release-${{ github.sha }}'
+                  name: 'cloudflare-workers release'
                   draft: false
                   prerelease: false
                   files: npm-proxy.zip

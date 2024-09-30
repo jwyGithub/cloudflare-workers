@@ -59,7 +59,7 @@ jobs:
               run: ls -al packages/cargo-proxy/pages
 
             - name: Zip Dist
-              run: zip -r cargo-proxy.zip packages/cargo-proxy/pages
+              run: zip -rj cargo-proxy.zip packages/cargo-proxy/pages/*
 
             - name: create release
               id: create_release
@@ -67,8 +67,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
-                  tag_name: 'docker-release-${{ github.sha }}'
-                  name: 'cargo-proxy'
+                  tag_name: 'cargo-release-${{ github.sha }}'
+                  name: 'cloudflare-workers release'
                   draft: false
                   prerelease: false
                   files: cargo-proxy.zip
