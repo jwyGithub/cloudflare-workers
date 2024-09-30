@@ -15,6 +15,11 @@ jobs:
         outputs:
             release_type: ${{ steps.set_release_type.outputs.type }}
         steps:
+            - name: Set environment variables
+              run: |
+                  TIME="$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
+                  echo "TIME=$TIME" >> $GITHUB_ENV
+
             - name: Determine release type
               id: set_release_type
               run: |
@@ -41,6 +46,7 @@ jobs:
         uses: ./.github/workflows/release-docker.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+            TIME: ${{ env.TIME }}
 
     run_npm_release:
         needs: determine_release_type
@@ -48,6 +54,7 @@ jobs:
         uses: ./.github/workflows/release-npm.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+            TIME: ${{ env.TIME }}
 
     run_cargo_release:
         needs: determine_release_type
@@ -55,6 +62,7 @@ jobs:
         uses: ./.github/workflows/release-cargo.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+            TIME: ${{ env.TIME }}
 
     unknown_release_type:
         needs: determine_release_type

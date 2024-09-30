@@ -5,6 +5,8 @@ on:
         secrets:
             DEPLOY_TOKEN:
                 required: true
+            TIME:
+                required: true
 
 jobs:
     build:
@@ -68,7 +70,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
                   tag_name: 'docker-release-${{ github.sha }}'
-                  name: 'Docker Release ${{ github.sha }}'
+                  name: 'docker-proxy-${{ secrets.TIME }}'
                   draft: false
                   prerelease: false
                   files: docker-proxy.zip
