@@ -30,6 +30,7 @@ jobs:
                   else
                       echo "type=unknown" >> $GITHUB_OUTPUT
                   fi
+                  echo "Release type: ${{ steps.set_release_type.outputs.type }}"
 
     run_docker_release:
         needs: determine_release_type
