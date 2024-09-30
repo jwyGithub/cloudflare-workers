@@ -35,9 +35,11 @@
 
 -   [npmjs](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/npm-proxy)
 
-    -   示例镜像地址：https://npmjs.vev.us.kg
+    -   示例镜像地址：https://npm-proxy.pages.dev/
 
 -   [docker](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/docker-proxy)
+
+    -   示例镜像地址：https://docker-proxy.vev.us.kg/
 
 ## 免责声明
 
