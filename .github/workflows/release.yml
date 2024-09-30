@@ -33,7 +33,7 @@ jobs:
 
             - name: Print release type
               run: |
-                  echo "Release type: ${{ steps.determine-release-type.outputs.release-type }}"
+                  echo "Release type: ${{ steps.set_release_type.outputs.type }}"
 
     run_docker_release:
         needs: determine_release_type
