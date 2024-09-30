@@ -20,15 +20,15 @@ jobs:
               run: |
                   commit_message="${{ github.event.head_commit.message }}"
                   if [[ "$commit_message" =~ ^docker: ]]; then
-                    echo "type=docker" >> $GITHUB_OUTPUT
+                      echo "::set-output name=type::docker"
                   elif [[ "$commit_message" =~ ^npm: ]]; then
-                    echo "type=npm" >> $GITHUB_OUTPUT
+                      echo "::set-output name=type::npm"
                   elif [[ "$commit_message" =~ ^cargo: ]]; then
-                    echo "type=cargo" >> $GITHUB_OUTPUT
+                      echo "::set-output name=type::cargo"
                   elif [[ "$commit_message" =~ ^feat: ]]; then
-                    echo "type=feat" >> $GITHUB_OUTPUT
+                      echo "::set-output name=type::feat"
                   else
-                    echo "type=unknown" >> $GITHUB_OUTPUT
+                      echo "::set-output name=type::unknown"
                   fi
 
     run_docker_release:
