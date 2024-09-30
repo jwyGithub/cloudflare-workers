@@ -37,21 +37,21 @@ jobs:
 
     run_docker_release:
         needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'docker'
+        if: needs.determine_release_type.outputs.release_type == 'docker' || needs.determine_release_type.outputs.release_type == 'feat'
         uses: ./.github/workflows/release-docker.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     run_npm_release:
         needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'npm'
+        if: needs.determine_release_type.outputs.release_type == 'npm' || needs.determine_release_type.outputs.release_type == 'feat'
         uses: ./.github/workflows/release-npm.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     run_cargo_release:
         needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'cargo'
+        if: needs.determine_release_type.outputs.release_type == 'cargo' || needs.determine_release_type.outputs.release_type == 'feat'
         uses: ./.github/workflows/release-cargo.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
