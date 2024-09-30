@@ -57,7 +57,7 @@ jobs:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     run_all_release:
-        needs: [run_docker_release, run_npm_release, run_cargo_release]
+        needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'feat'
         runs-on: ubuntu-latest
         steps:
