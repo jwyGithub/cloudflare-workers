@@ -5,6 +5,8 @@ on:
         secrets:
             DEPLOY_TOKEN:
                 required: true
+            TIME:
+                required: true
 
 jobs:
     build:
@@ -49,7 +51,7 @@ jobs:
         steps:
             - name: Zip Dist
               run: zip -r npm-proxy.zip packages/npm-proxy/pages
-            
+
             - name: create release
               id: create_release
               uses: actions/create-release@v1
@@ -60,7 +62,7 @@ jobs:
                   release_name: ${{ github.ref }}
                   draft: false
                   prerelease: false
-            
+
             - name: upload release asset
               uses: actions/upload-release-asset@v1
               env:

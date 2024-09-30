@@ -5,6 +5,8 @@ on:
         secrets:
             DEPLOY_TOKEN:
                 required: true
+            TIME:
+                required: true
 
 jobs:
     build:
