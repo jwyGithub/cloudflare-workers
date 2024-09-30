@@ -79,13 +79,7 @@ async function handleRequest(req: Request): Promise<Response> {
         });
     }
 
-    // 使用流传输返回响应
-    const { readable, writable } = new TransformStream();
-    if (resp.body) {
-        resp.body.pipeTo(writable);
-    }
-
-    return new Response(readable, {
+    return new Response(resp.body, {
         status: resp.status,
         statusText: resp.statusText,
         headers: resp.headers

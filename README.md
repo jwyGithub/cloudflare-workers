@@ -11,14 +11,14 @@
 
 > **由于\*.workers.dev域名已被墙，推荐使用pages方式部署**.
 
-### worker部署
+> ### worker部署
 
 1. 切换到对应代理镜像分支，比如release-docker
 2. 复制\_worker.js文件内容
 3. 在cloudflare workers控制台新建worker，将复制的内容粘贴到编辑器中
 4. 点击保存并部署
 
-### pages部署
+> ### pages部署
 
 1. fork本项目
 2. 在cloudflare中创建pages应用，选择刚刚fork的项目
@@ -34,6 +34,8 @@
 **点击查看使用方式**
 
 -   [npmjs](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/npm-proxy)
+
+    -   示例镜像地址：https://npmjs.vev.us.kg
 
 -   [docker](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/docker-proxy)
 
