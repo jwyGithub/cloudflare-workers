@@ -67,18 +67,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
-                  files: docker-proxy.zip
                   tag_name: 'docker-release-${{ github.sha }}'
-                  name: 'Docker Release ${{ github.sha }}'
+                  release_name: 'Docker Release ${{ github.sha }}'
                   draft: false
                   prerelease: false
-
-            - name: upload release asset
-              uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-              with:
-                  upload_url: ${{ steps.create_release.outputs.upload_url }}
-                  asset_path: docker-proxy.zip
-                  asset_name: docker-proxy.zip
-                  asset_content_type: application/zip
+                  files: docker-proxy.zip
