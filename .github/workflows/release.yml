@@ -61,6 +61,9 @@ jobs:
         if: needs.determine_release_type.outputs.release_type == 'feat'
         runs-on: ubuntu-latest
         steps:
+            - name: checkout node
+              uses: actions/checkout@v4
+
             - name: run docker release
               uses: ./.github/workflows/release-docker.yml
               with:
