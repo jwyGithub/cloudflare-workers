@@ -18,11 +18,18 @@
 3. 在cloudflare workers控制台新建worker，将复制的内容粘贴到编辑器中
 4. 点击保存并部署
 
-> ### pages部署
+> ### pages部署-fork
 
 1. fork本项目
 2. 在cloudflare中创建pages应用，选择刚刚fork的项目
 3. 选择分支，比如release-docker
+4. 点击部署
+
+> ### pages部署-手动
+
+1. 进入[release](https://github.com/jwyGithub/cloudflare-workers/releases)页面下载对应代理镜像的zip包
+2. 进入cloudflare pages，新建pages应用
+3. 上传zip包
 4. 点击部署
 
 ## 3. 绑定自定义域名
