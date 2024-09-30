@@ -5,6 +5,7 @@ on:
         secrets:
             DEPLOY_TOKEN:
                 required: true
+        env:
             TIME:
                 required: true
 
