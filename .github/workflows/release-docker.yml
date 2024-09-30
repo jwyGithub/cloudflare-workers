@@ -55,8 +55,11 @@ jobs:
                   name: build
                   path: packages/docker-proxy/pages
 
+            - name: Check files before zipping
+              run: ls -al packages/docker-proxy/pages
+
             - name: Zip Dist
-              run: zip -r docker-proxy.zip . -i packages/docker-proxy/pages
+              run: zip -r docker-proxy.zip packages/docker-proxy/pages
 
             - name: create release
               id: create_release
@@ -65,8 +68,8 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
                   files: docker-proxy.zip
-                  tag_name: "docker-release-${{ github.sha }}"
-                  name: "Docker Release ${{ github.sha }}"
+                  tag_name: 'docker-release-${{ github.sha }}'
+                  name: 'Docker Release ${{ github.sha }}'
                   draft: false
                   prerelease: false
 
