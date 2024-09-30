@@ -31,10 +31,6 @@ jobs:
                       echo "type=unknown" >> $GITHUB_OUTPUT
                   fi
 
-            - name: Print release type
-              run: |
-                  echo "Release type: ${{ steps.set_release_type.outputs.type }}"
-
             - name: Set current time
               id: set_time
               run: echo "TIME=$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
@@ -47,29 +43,38 @@ jobs:
     run_docker_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'docker'
-        uses: ./.github/workflows/release-docker.yml
-        secrets:
-            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        runs-on: ubuntu-latest
         env:
-            TIME: ${{ env.TIME }}
+            TIME: ${{ env.TIME }} # 使用当前时间
+        steps:
+            - name: Run Docker Release
+              uses: ./.github/workflows/release-docker.yml
+              with:
+                  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     run_npm_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'npm'
-        uses: ./.github/workflows/release-npm.yml
-        secrets:
-            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        runs-on: ubuntu-latest
         env:
-            TIME: ${{ env.TIME }}
+            TIME: ${{ env.TIME }} # 使用当前时间
+        steps:
+            - name: Run NPM Release
+              uses: ./.github/workflows/release-npm.yml
+              with:
+                  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     run_cargo_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'cargo'
-        uses: ./.github/workflows/release-cargo.yml
-        secrets:
-            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        runs-on: ubuntu-latest
         env:
-            TIME: ${{ env.TIME }}
+            TIME: ${{ env.TIME }} # 使用当前时间
+        steps:
+            - name: Run Cargo Release
+              uses: ./.github/workflows/release-cargo.yml
+              with:
+                  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     unknown_release_type:
         needs: determine_release_type
