@@ -49,7 +49,7 @@ jobs:
         needs: deploy
         steps:
             - name: Zip Dist
-              run: zip -r docker-proxy.zip packages/docker-proxy/pages
+              run: zip -r docker-proxy.zip . -i packages/docker-proxy/pages
 
             - name: create release
               id: create_release
