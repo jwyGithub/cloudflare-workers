@@ -14,6 +14,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             release_type: ${{ steps.set_release_type.outputs.type }}
+            release_time: ${{ steps.set_time.outputs.time }} # 添加输出时间
         steps:
             - name: Determine release type
               id: set_release_type
@@ -33,48 +34,48 @@ jobs:
 
             - name: Set current time
               id: set_time
-              run: echo "TIME=$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+              run: |
+                  current_time=$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')
+                  echo "time=${current_time}" >> $GITHUB_OUTPUT  # 设置输出变量
+                  echo "Current time: $current_time"  # 打印当前时间
 
             - name: Print release type
               run: |
                   echo "Release type: ${{ steps.set_release_type.outputs.type }}"
-                  echo "Current time: $TIME"
+                  echo "Current time: ${{ steps.set_time.outputs.time }}"
 
     run_docker_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'docker'
         runs-on: ubuntu-latest
-        env:
-            TIME: ${{ env.TIME }} # 使用当前时间
         steps:
             - name: Run Docker Release
               uses: ./.github/workflows/release-docker.yml
               with:
                   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+                  TIME: ${{ needs.determine_release_type.outputs.release_time }} # 传递时间
 
     run_npm_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'npm'
         runs-on: ubuntu-latest
-        env:
-            TIME: ${{ env.TIME }} # 使用当前时间
         steps:
             - name: Run NPM Release
               uses: ./.github/workflows/release-npm.yml
               with:
                   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+                  TIME: ${{ needs.determine_release_type.outputs.release_time }} # 传递时间
 
     run_cargo_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'cargo'
         runs-on: ubuntu-latest
-        env:
-            TIME: ${{ env.TIME }} # 使用当前时间
         steps:
             - name: Run Cargo Release
               uses: ./.github/workflows/release-cargo.yml
               with:
                   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+                  TIME: ${{ needs.determine_release_type.outputs.release_time }} # 传递时间
 
     unknown_release_type:
         needs: determine_release_type
