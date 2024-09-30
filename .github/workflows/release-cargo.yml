@@ -68,7 +68,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
                   tag_name: 'cargo-release-${{ github.sha }}'
-                  name: 'cloudflare-workers release'
+                  name: 'cargo-proxy'
                   draft: false
                   prerelease: false
                   files: cargo-proxy.zip
