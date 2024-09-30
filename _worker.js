@@ -1,46 +1,43 @@
 const y = {
-  async fetch(t) {
-    return await l(t);
+  async fetch(e) {
+    return await l(e);
   }
 };
-async function l(t) {
-  const s = new URL(t.url), o = `https://registry.npmjs.org${s.pathname}${s.search}`, n = t.method, u = new Headers(t.headers), i = s.pathname.startsWith("/-/user/org.couchdb.user:"), c = {
-    method: n,
+async function l(e) {
+  const s = new URL(e.url), a = `https://registry.npmjs.org${s.pathname}${s.search}`, o = e.method, u = new Headers(e.headers), c = s.pathname.startsWith("/-/user/org.couchdb.user:"), d = {
+    method: o,
     headers: u,
-    body: t.body ? t.body : void 0,
+    body: e.body ? e.body : void 0,
     redirect: "follow"
-  };
-  n === "PUT" && s.pathname.startsWith("/-/user/org.couchdb.user:") || n === "GET" && s.pathname.startsWith("/") || n === "PUT" && s.pathname.endsWith(".tgz") || n === "GET" && s.pathname.endsWith(".tgz");
-  const d = new Request(o, c);
-  let e;
+  }, i = new Request(a, d);
+  let t;
   try {
-    e = await fetch(d);
-  } catch (a) {
-    return console.error("Failed to send request to npm registry", a), new Response("Internal Server Error", { status: 500 });
+    t = await fetch(i);
+  } catch (r) {
+    return console.error("Failed to send request to npm registry", r), new Response("Internal Server Error", { status: 500 });
   }
-  if (e.status === 201 && i && (e.headers.get("content-type") || "").includes("application/json")) {
-    let r;
+  if (t.status === 201 && c && (t.headers.get("content-type") || "").includes("application/json")) {
+    let n;
     try {
-      r = await e.json();
+      n = await t.json();
     } catch (p) {
       return console.error("Failed to parse response JSON", p), new Response("Internal Server Error", { status: 500 });
     }
-    r.token;
-    const h = JSON.stringify(r);
+    const h = JSON.stringify(n);
     return new Response(h, {
-      status: e.status,
-      statusText: e.statusText,
-      headers: e.headers
+      status: t.status,
+      statusText: t.statusText,
+      headers: t.headers
     });
   }
-  return [101, 204, 205, 304].includes(e.status) ? new Response(null, {
-    status: e.status,
-    statusText: e.statusText,
-    headers: e.headers
-  }) : new Response(e.body, {
-    status: e.status,
-    statusText: e.statusText,
-    headers: e.headers
+  return [101, 204, 205, 304].includes(t.status) ? new Response(null, {
+    status: t.status,
+    statusText: t.statusText,
+    headers: t.headers
+  }) : new Response(t.body, {
+    status: t.status,
+    statusText: t.statusText,
+    headers: t.headers
   });
 }
 export {
