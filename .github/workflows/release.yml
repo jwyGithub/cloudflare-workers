@@ -44,7 +44,7 @@ jobs:
         uses: ./.github/workflows/release-npm.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-    
+
     run_cargo_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'cargo'
