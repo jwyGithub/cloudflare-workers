@@ -63,7 +63,17 @@ jobs:
         steps:
             - name: run docker release
               uses: ./.github/workflows/release-docker.yml
-              secrets:
+              with:
+                  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+            - name: run npm release
+              uses: ./.github/workflows/release-npm.yml
+              with:
+                  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+            - name: run cargo release
+              uses: ./.github/workflows/release-cargo.yml
+              with:
                   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     unknown_release_type:
