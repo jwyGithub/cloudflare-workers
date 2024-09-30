@@ -48,17 +48,25 @@ jobs:
         runs-on: ubuntu-latest
         needs: deploy
         steps:
+            - uses: actions/checkout@v4
+            - name: Download artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: build
+                  path: packages/docker-proxy/pages
+
             - name: Zip Dist
               run: zip -r docker-proxy.zip . -i packages/docker-proxy/pages
 
             - name: create release
               id: create_release
-              uses: actions/create-release@v1
+              uses: softprops/action-gh-release@v2
               env:
                   GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
+                  files: docker-proxy.zip
                   tag_name: "docker-release-${{ github.sha }}"
-                  release_name: "Docker Release ${{ github.sha }}"
+                  name: "Docker Release ${{ github.sha }}"
                   draft: false
                   prerelease: false
 
