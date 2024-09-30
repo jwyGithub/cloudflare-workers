@@ -33,7 +33,7 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
-                  name: build
+                  name: build-docker
                   path: packages/docker-proxy/pages
             - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
@@ -52,7 +52,7 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
-                  name: build
+                  name: build-docker
                   path: packages/docker-proxy/pages
 
             - name: Check files before zipping
