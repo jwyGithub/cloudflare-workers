@@ -38,6 +38,18 @@ function checkIpIsWhitelisted(ip: string | null, env: Env): boolean {
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         const { pathname } = new URL(request.url);
+
+        if (pathname === '/') {
+            const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
+            const docs = await fetch(doc).then(res => res.text());
+            return new Response(docs, {
+                status: 200,
+                headers: {
+                    'content-type': 'text/html'
+                }
+            });
+        }
+
         const real_ip = request.headers.get('x-real-ip');
 
         if (!checkIpIsWhitelisted(real_ip, env)) {
@@ -49,17 +61,6 @@ export default {
         if (pathname === '/favicon.ico') {
             return new Response('', {
                 status: 200
-            });
-        }
-
-        if (pathname === '/') {
-            const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
-            const docs = await fetch(doc).then(res => res.text());
-            return new Response(docs, {
-                status: 200,
-                headers: {
-                    'content-type': 'text/html'
-                }
             });
         }
 
