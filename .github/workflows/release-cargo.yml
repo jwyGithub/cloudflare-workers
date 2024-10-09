@@ -35,6 +35,19 @@ jobs:
               with:
                   name: build-cargo
                   path: packages/cargo-proxy/pages
+            - name: Zip pages folder
+              run: |
+                  cd packages/cargo-proxy
+                  worker_file=$(find pages -name '*worker*.js' -type f)
+                  if [ -z "$worker_file" ]; then
+                      echo "Error: No worker file found"
+                      exit 1
+                  fi
+                  echo "Found worker file: $worker_file"
+                  zip -j _worker.zip "$worker_file"
+                  mv _worker.zip pages/
+            - name: List contents of pages directory
+              run: ls -al packages/cargo-proxy/pages
             - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
@@ -43,34 +56,3 @@ jobs:
                   publish_branch: release-cargo
                   keep_files: false
                   enable_jekyll: true
-
-    release:
-        runs-on: ubuntu-latest
-        needs: deploy
-        steps:
-            - uses: actions/checkout@v4
-            - name: Download artifact
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-cargo
-                  path: packages/cargo-proxy/pages
-
-            - name: Check files before zipping
-              run: ls -al packages/cargo-proxy/pages
-
-            - name: Zip Dist
-              run: |
-                  cd packages/cargo-proxy
-                  zip -r ../../cargo-proxy.zip pages/*
-
-            - name: create release
-              id: create_release
-              uses: softprops/action-gh-release@v2
-              env:
-                  GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-              with:
-                  tag_name: 'cloudflare-release-${{ github.sha }}'
-                  name: 'cargo-proxy'
-                  draft: false
-                  prerelease: false
-                  files: cargo-proxy.zip
