@@ -38,8 +38,8 @@ jobs:
             - name: Zip pages folder
               run: |
                   cd packages/docker-proxy
-                  zip -r _worker.zip pages
-                  mv _worker.zip pages/
+                  zip -j ../../_worker.zip _worker.js
+                  mv ../../_worker.zip ./
             - name: List contents of pages directory
               run: ls -al packages/docker-proxy/pages
             - name: Deploy to Cloudflare Pages
