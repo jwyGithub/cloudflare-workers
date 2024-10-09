@@ -16,7 +16,7 @@
 
 ## 部署方式
 
-> **由于\*.workers.dev域名已被墙，推荐使用pages方式部署**.
+> [!TIP] > **由于\*.workers.dev域名已被墙，推荐使用pages方式部署**.
 
 ### worker部署
 
@@ -26,26 +26,14 @@
 
 ### pages部署
 
-1. 进入[release](https://github.com/jwyGithub/cloudflare-workers/releases)页面下载对应代理镜像的zip包
+1. 下载对应分支的\_worker.zip文件
 2. 进入cloudflare pages，新建pages应用
 3. 上传zip包
 4. 点击部署
 
-## 3. 绑定自定义域名
+## 镜像配置说明
 
-打开部署好的pages，选择自定义域绑定自己的域名
-
-## 4. 使用
-
-**点击查看使用方式**
-
--   [npmjs](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/npm-proxy)
-
-    -   示例镜像地址：https://npm-proxy.pages.dev/
-
--   [docker](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/docker-proxy)
-
-    -   示例镜像地址：https://docker-proxy.vev.us.kg/
+[npmjs](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/npm-proxy/README.md) <br /> [dockerhub](https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/docker-proxy/README.md) <br /> [cargo](https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/cargo-proxy/README.md)
 
 ## 免责声明
 
