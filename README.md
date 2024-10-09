@@ -14,25 +14,17 @@
 | dockerhub | release-docker | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-docker/_worker.js) |
 | cargo     | release-cargo  | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-cargo/_worker.js)  |
 
-## 开始部署
+## 部署方式
 
 > **由于\*.workers.dev域名已被墙，推荐使用pages方式部署**.
 
-> ### worker部署
+### worker部署
 
-1. 切换到对应代理镜像分支，比如release-docker
-2. 复制\_worker.js文件内容
-3. 在cloudflare workers控制台新建worker，将复制的内容粘贴到编辑器中
-4. 点击保存并部署
+1. 复制对应分支的\_worker.js文件内容
+2. 在cloudflare workers控制台新建worker，将复制的内容粘贴到编辑器中
+3. 点击保存并部署
 
-> ### pages部署-fork
-
-1. fork本项目
-2. 在cloudflare中创建pages应用，选择刚刚fork的项目
-3. 选择分支，比如release-docker
-4. 点击部署
-
-> ### pages部署-手动
+### pages部署
 
 1. 进入[release](https://github.com/jwyGithub/cloudflare-workers/releases)页面下载对应代理镜像的zip包
 2. 进入cloudflare pages，新建pages应用
