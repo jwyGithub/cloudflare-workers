@@ -1,5 +1,5 @@
-const l = "https://registry-1.docker.io", u = {
-  docker: l,
+const d = "https://registry-1.docker.io", f = {
+  docker: d,
   quay: "https://quay.io",
   gcr: "https://gcr.io",
   "k8s-gcr": "https://k8s.gcr.io",
@@ -7,102 +7,110 @@ const l = "https://registry-1.docker.io", u = {
   ghcr: "https://ghcr.io",
   cloudsmith: "https://docker.cloudsmith.io"
 };
-function w(s) {
-  const t = Object.keys(u).find((n) => s.startsWith(n));
-  return t ? u[t] : "";
+function w(e) {
+  const s = Object.keys(f).find((r) => e.startsWith(r));
+  return s ? f[s] : "";
 }
-const k = {
-  async fetch(s) {
-    const { pathname: e } = new URL(s.url);
-    if (e === "/favicon.ico")
+function m(e, t) {
+  return e ? Reflect.has(t, "IP_WHITELIST") ? typeof t.IP_WHITELIST == "string" ? t.IP_WHITELIST.split(`
+`).map((r) => r.trim()).includes(e) : !1 : !0 : !1;
+}
+const R = {
+  async fetch(e, t) {
+    const { pathname: s } = new URL(e.url), r = e.headers.get("x-real-ip");
+    if (!m(r, t))
+      return new Response("Unauthorized", {
+        status: 401
+      });
+    if (s === "/favicon.ico")
       return new Response("", {
         status: 200
       });
-    if (e === "/") {
-      const t = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`, n = await fetch(t).then((o) => o.text());
-      return new Response(n, {
+    if (s === "/") {
+      const o = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`, u = await fetch(o).then((l) => l.text());
+      return new Response(u, {
         status: 200,
         headers: {
           "content-type": "text/html"
         }
       });
     }
-    return await m(s);
+    return await g(e);
   }
 };
-async function m(s) {
-  const e = new URL(s.url), t = w(e.hostname);
-  if (t === "")
+async function g(e) {
+  const t = new URL(e.url), s = w(t.hostname);
+  if (s === "")
     return new Response(
       JSON.stringify({
-        routes: u
+        routes: f
       }),
       {
         status: 404
       }
     );
-  const n = t === l, o = s.headers.get("Authorization");
-  if (e.pathname === "/v2/") {
-    const a = new URL(`${t}/v2/`), r = new Headers();
-    o && r.set("Authorization", o);
-    const c = await fetch(a.toString(), {
+  const r = s === d, o = e.headers.get("Authorization");
+  if (t.pathname === "/v2/") {
+    const a = new URL(`${s}/v2/`), n = new Headers();
+    o && n.set("Authorization", o);
+    const i = await fetch(a.toString(), {
       method: "GET",
-      headers: r,
+      headers: n,
       redirect: "follow"
     });
-    return c.status === 401 ? (r.set("Www-Authenticate", `Bearer realm="https://${e.hostname}/v2/auth",service="cloudflare-docker-proxy"`), new Response(JSON.stringify({ message: "UNAUTHORIZED" }), {
+    return i.status === 401 ? (n.set("Www-Authenticate", `Bearer realm="https://${t.hostname}/v2/auth",service="cloudflare-docker-proxy"`), new Response(JSON.stringify({ message: "UNAUTHORIZED" }), {
       status: 401,
-      headers: r
-    })) : c;
+      headers: n
+    })) : i;
   }
-  if (e.pathname === "/v2/auth") {
-    const a = new URL(`${t}/v2/`), r = await fetch(a.toString(), {
+  if (t.pathname === "/v2/auth") {
+    const a = new URL(`${s}/v2/`), n = await fetch(a.toString(), {
       method: "GET",
       redirect: "follow"
     });
-    if (r.status !== 401)
-      return r;
-    const c = r.headers.get("WWW-Authenticate");
-    if (c === null)
-      return r;
-    const p = g(c);
-    let h = e.searchParams.get("scope");
-    if (h && n) {
-      const i = h.split(":");
-      i.length === 3 && !i[1].includes("/") && (i[1] = `library/${i[1]}`, h = i.join(":"));
+    if (n.status !== 401)
+      return n;
+    const i = n.headers.get("WWW-Authenticate");
+    if (i === null)
+      return n;
+    const p = y(i);
+    let h = t.searchParams.get("scope");
+    if (h && r) {
+      const c = h.split(":");
+      c.length === 3 && !c[1].includes("/") && (c[1] = `library/${c[1]}`, h = c.join(":"));
     }
-    return await y(p, h, o);
+    return await k(p, h, o);
   }
-  if (n) {
-    const a = e.pathname.split("/");
+  if (r) {
+    const a = t.pathname.split("/");
     if (a.length === 5) {
       a.splice(2, 0, "library");
-      const r = new URL(e);
-      return r.pathname = a.join("/"), Response.redirect(r.href, 301);
+      const n = new URL(t);
+      return n.pathname = a.join("/"), Response.redirect(n.href, 301);
     }
   }
-  const f = new URL(t + e.pathname), d = new Request(f, {
-    method: s.method,
-    headers: s.headers,
+  const u = new URL(s + t.pathname), l = new Request(u, {
+    method: e.method,
+    headers: e.headers,
     redirect: "follow"
   });
-  return await fetch(d);
+  return await fetch(l);
 }
-function g(s) {
-  const e = new RegExp('(?<==")(?:\\\\.|[^"\\\\])*(?=")', "g"), t = s.match(e);
-  if (t == null || t.length < 2)
-    throw new Error(`invalid Www-Authenticate Header: ${s}`);
+function y(e) {
+  const t = new RegExp('(?<==")(?:\\\\.|[^"\\\\])*(?=")', "g"), s = e.match(t);
+  if (s == null || s.length < 2)
+    throw new Error(`invalid Www-Authenticate Header: ${e}`);
   return {
-    realm: t[0],
-    service: t[1]
+    realm: s[0],
+    service: s[1]
   };
 }
-async function y(s, e, t) {
-  const n = new URL(s.realm);
-  s.service.length && n.searchParams.set("service", s.service), e && n.searchParams.set("scope", e);
+async function k(e, t, s) {
+  const r = new URL(e.realm);
+  e.service.length && r.searchParams.set("service", e.service), t && r.searchParams.set("scope", t);
   const o = new Headers();
-  return t && o.set("Authorization", t), await fetch(n, { method: "GET", headers: o });
+  return s && o.set("Authorization", s), await fetch(r, { method: "GET", headers: o });
 }
 export {
-  k as default
+  R as default
 };
