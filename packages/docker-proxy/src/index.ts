@@ -20,9 +20,31 @@ function routeByHosts(hostname: string): string {
     return '';
 }
 
+function checkIpIsWhitelisted(ip: string | null, env: Env): boolean {
+    if (!ip) return false;
+
+    if (Reflect.has(env, 'IP_WHITELIST')) {
+        if (typeof env.IP_WHITELIST === 'string') {
+            const whitelist = env.IP_WHITELIST.split('\n').map(ip => ip.trim());
+            return whitelist.includes(ip);
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
 export default {
-    async fetch(request: Request): Promise<Response> {
+    async fetch(request: Request, env: Env): Promise<Response> {
         const { pathname } = new URL(request.url);
+        const real_ip = request.headers.get('x-real-ip');
+
+        if (!checkIpIsWhitelisted(real_ip, env)) {
+            return new Response('Unauthorized', {
+                status: 401
+            });
+        }
 
         if (pathname === '/favicon.ico') {
             return new Response('', {
