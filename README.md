@@ -8,11 +8,11 @@
 
 ## 镜像对应的分支以及代码
 
-| 镜像      | 分支           | 部署代码                                                                                      |
-| --------- | -------------- | --------------------------------------------------------------------------------------------- |
-| npmjs     | release-npm    | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-npm/_worker.js)    |
-| dockerhub | release-docker | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-docker/_worker.js) |
-| cargo     | release-cargo  | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-cargo/_worker.js)  |
+| 镜像 | 分支 | worker部署代码 | pages部署代码 |
+| --- | --- | --- | --- |
+| npmjs | release-npm | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-npm/_worker.js) | [\_worker.zip](https://github.com/jwyGithub/cloudflare-workers/blob/release-npm/_worker.zip) |
+| dockerhub | release-docker | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-docker/_worker.js) | [\_worker.zip](https://github.com/jwyGithub/cloudflare-workers/blob/release-docker/_worker.zip) |
+| cargo | release-cargo | [\_worker.js](https://github.com/jwyGithub/cloudflare-workers/blob/release-cargo/_worker.js) | [\_worker.zip](https://github.com/jwyGithub/cloudflare-workers/blob/release-cargo/_worker.zip) |
 
 ## 部署方式
 
