@@ -7,17 +7,17 @@ const d = "https://registry-1.docker.io", f = {
   ghcr: "https://ghcr.io",
   cloudsmith: "https://docker.cloudsmith.io"
 };
-function w(e) {
-  const s = Object.keys(f).find((r) => e.startsWith(r));
+function w(t) {
+  const s = Object.keys(f).find((r) => t.startsWith(r));
   return s ? f[s] : "";
 }
-function m(e, t) {
-  return e ? Reflect.has(t, "IP_WHITELIST") ? typeof t.IP_WHITELIST == "string" ? t.IP_WHITELIST.split(`
-`).map((r) => r.trim()).includes(e) : !1 : !0 : !1;
+function m(t, e) {
+  return t ? Reflect.has(e, "IP_WHITELIST") ? e.IP_WHITELIST !== "*" && typeof e.IP_WHITELIST == "string" ? e.IP_WHITELIST.split(`
+`).map((r) => r.trim()).includes(t) : e.IP_WHITELIST === "*" : !0 : !1;
 }
-const R = {
-  async fetch(e, t) {
-    const { pathname: s } = new URL(e.url);
+const I = {
+  async fetch(t, e) {
+    const { pathname: s } = new URL(t.url);
     if (s === "/") {
       const o = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`, u = await fetch(o).then((l) => l.text());
       return new Response(u, {
@@ -27,16 +27,16 @@ const R = {
         }
       });
     }
-    const r = e.headers.get("x-real-ip");
-    return m(r, t) ? s === "/favicon.ico" ? new Response("", {
+    const r = t.headers.get("x-real-ip");
+    return m(r, e) ? s === "/favicon.ico" ? new Response("", {
       status: 200
-    }) : await g(e) : new Response("Unauthorized", {
+    }) : await g(t) : new Response("Unauthorized", {
       status: 401
     });
   }
 };
-async function g(e) {
-  const t = new URL(e.url), s = w(t.hostname);
+async function g(t) {
+  const e = new URL(t.url), s = w(e.hostname);
   if (s === "")
     return new Response(
       JSON.stringify({
@@ -46,8 +46,8 @@ async function g(e) {
         status: 404
       }
     );
-  const r = s === d, o = e.headers.get("Authorization");
-  if (t.pathname === "/v2/") {
+  const r = s === d, o = t.headers.get("Authorization");
+  if (e.pathname === "/v2/") {
     const a = new URL(`${s}/v2/`), n = new Headers();
     o && n.set("Authorization", o);
     const i = await fetch(a.toString(), {
@@ -55,12 +55,12 @@ async function g(e) {
       headers: n,
       redirect: "follow"
     });
-    return i.status === 401 ? (n.set("Www-Authenticate", `Bearer realm="https://${t.hostname}/v2/auth",service="cloudflare-docker-proxy"`), new Response(JSON.stringify({ message: "UNAUTHORIZED" }), {
+    return i.status === 401 ? (n.set("Www-Authenticate", `Bearer realm="https://${e.hostname}/v2/auth",service="cloudflare-docker-proxy"`), new Response(JSON.stringify({ message: "UNAUTHORIZED" }), {
       status: 401,
       headers: n
     })) : i;
   }
-  if (t.pathname === "/v2/auth") {
+  if (e.pathname === "/v2/auth") {
     const a = new URL(`${s}/v2/`), n = await fetch(a.toString(), {
       method: "GET",
       redirect: "follow"
@@ -71,7 +71,7 @@ async function g(e) {
     if (i === null)
       return n;
     const p = y(i);
-    let h = t.searchParams.get("scope");
+    let h = e.searchParams.get("scope");
     if (h && r) {
       const c = h.split(":");
       c.length === 3 && !c[1].includes("/") && (c[1] = `library/${c[1]}`, h = c.join(":"));
@@ -79,35 +79,35 @@ async function g(e) {
     return await k(p, h, o);
   }
   if (r) {
-    const a = t.pathname.split("/");
+    const a = e.pathname.split("/");
     if (a.length === 5) {
       a.splice(2, 0, "library");
-      const n = new URL(t);
+      const n = new URL(e);
       return n.pathname = a.join("/"), Response.redirect(n.href, 301);
     }
   }
-  const u = new URL(s + t.pathname), l = new Request(u, {
-    method: e.method,
-    headers: e.headers,
+  const u = new URL(s + e.pathname), l = new Request(u, {
+    method: t.method,
+    headers: t.headers,
     redirect: "follow"
   });
   return await fetch(l);
 }
-function y(e) {
-  const t = new RegExp('(?<==")(?:\\\\.|[^"\\\\])*(?=")', "g"), s = e.match(t);
+function y(t) {
+  const e = new RegExp('(?<==")(?:\\\\.|[^"\\\\])*(?=")', "g"), s = t.match(e);
   if (s == null || s.length < 2)
-    throw new Error(`invalid Www-Authenticate Header: ${e}`);
+    throw new Error(`invalid Www-Authenticate Header: ${t}`);
   return {
     realm: s[0],
     service: s[1]
   };
 }
-async function k(e, t, s) {
-  const r = new URL(e.realm);
-  e.service.length && r.searchParams.set("service", e.service), t && r.searchParams.set("scope", t);
+async function k(t, e, s) {
+  const r = new URL(t.realm);
+  t.service.length && r.searchParams.set("service", t.service), e && r.searchParams.set("scope", e);
   const o = new Headers();
   return s && o.set("Authorization", s), await fetch(r, { method: "GET", headers: o });
 }
 export {
-  R as default
+  I as default
 };
