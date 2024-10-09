@@ -34,8 +34,12 @@
 
 ## 镜像配置说明
 
-[npmjs](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/npm-proxy/README.md) <br /> [dockerhub](https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/docker-proxy/README.md) <br /> [cargo](https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/cargo-proxy/README.md)
-
+- [npmjs](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/npm-proxy/README.md)
+    * https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/npm-proxy/README.md
+- [dockerhub](https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/docker-proxy/README.md)
+    * https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/docker-proxy/README.md
+- [cargo](https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/cargo-proxy/README.md)
+    * https://github.com/jwyGithub/cloudflare-workers/blob/main/packages/cargo-proxy/README.md
 ## 免责声明
 
 在使用此项目时均被视为已经仔细阅读并完全同意以下条款：
