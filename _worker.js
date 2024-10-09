@@ -17,15 +17,7 @@ function m(e, t) {
 }
 const R = {
   async fetch(e, t) {
-    const { pathname: s } = new URL(e.url), r = e.headers.get("x-real-ip");
-    if (!m(r, t))
-      return new Response("Unauthorized", {
-        status: 401
-      });
-    if (s === "/favicon.ico")
-      return new Response("", {
-        status: 200
-      });
+    const { pathname: s } = new URL(e.url);
     if (s === "/") {
       const o = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`, u = await fetch(o).then((l) => l.text());
       return new Response(u, {
@@ -35,7 +27,12 @@ const R = {
         }
       });
     }
-    return await g(e);
+    const r = e.headers.get("x-real-ip");
+    return m(r, t) ? s === "/favicon.ico" ? new Response("", {
+      status: 200
+    }) : await g(e) : new Response("Unauthorized", {
+      status: 401
+    });
   }
 };
 async function g(e) {
