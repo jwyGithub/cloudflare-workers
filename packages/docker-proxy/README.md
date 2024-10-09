@@ -1,13 +1,13 @@
 # docker-proxy
 
-## 特性
+## 介绍
 
--   [ ] [dockerHub](https://registry-1.docker.io)
--   [ ] [ghcr.io](https://ghcr.io)
--   [ ] [gcr.io](https://gcr.io)
--   [ ] [quay.io](https://quay.io)
--   [ ] [k8s.gcr.io](https://registry.k8s.io)
--   [ ] [k8s-gcr](https://k8s.gcr.io)
+-   [x] [dockerHub](https://registry-1.docker.io)
+-   [x] [ghcr.io](https://ghcr.io)
+-   [x] [gcr.io](https://gcr.io)
+-   [x] [quay.io](https://quay.io)
+-   [x] [k8s.gcr.io](https://registry.k8s.io)
+-   [x] [k8s-gcr](https://k8s.gcr.io)
 
 ## 配置
 
@@ -22,4 +22,4 @@
 
 ## 使用
 
-打开docker.YOUR_DOMAIN页面，查看使用说明示例页面：[https://docker-proxy.vev.us.kg/](https://docker-proxy.vev.us.kg/)
+打开docker.YOUR_DOMAIN页面，查看使用说明页面
