@@ -38,7 +38,10 @@ jobs:
             - name: Zip pages folder
               run: |
                   cd packages/docker-proxy
-                  zip -r ../../docker-proxy.zip pages/*
+                  zip -r _worker.zip pages
+                  mv _worker.zip pages/
+            - name: List contents of pages directory
+              run: ls -al packages/docker-proxy/pages
             - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
@@ -47,34 +50,3 @@ jobs:
                   publish_branch: release-docker
                   keep_files: false
                   enable_jekyll: true
-
-    release:
-        runs-on: ubuntu-latest
-        needs: deploy
-        steps:
-            - uses: actions/checkout@v4
-            - name: Download artifact
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-docker
-                  path: packages/docker-proxy/pages
-
-            - name: Check files before zipping
-              run: ls -al packages/docker-proxy/pages
-
-            - name: Zip Dist
-              run: |
-                  cd packages/docker-proxy
-                  zip -r ../../docker-proxy.zip pages/*
-
-            - name: create release
-              id: create_release
-              uses: softprops/action-gh-release@v2
-              env:
-                  GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-              with:
-                  tag_name: 'cloudflare-release-${{ github.sha }}'
-                  name: 'docker-proxy'
-                  draft: false
-                  prerelease: false
-                  files: docker-proxy.zip
