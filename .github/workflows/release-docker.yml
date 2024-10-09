@@ -63,14 +63,11 @@ jobs:
                   cd packages/docker-proxy
                   zip -r ../../docker-proxy.zip pages/*
 
-            - name: create release
-              id: create_release
-              uses: softprops/action-gh-release@v2
-              env:
-                  GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+            - name: Upload zip
+              uses: peaceiris/actions-gh-pages@v4
               with:
-                  tag_name: 'cloudflare-release-${{ github.sha }}'
-                  name: 'docker-proxy'
-                  draft: false
-                  prerelease: false
-                  files: docker-proxy.zip
+                  github_token: ${{ secrets.DEPLOY_TOKEN }}
+                  publish_dir: packages/docker-proxy
+                  publish_branch: release-docker
+                  keep_files: false
+                  enable_jekyll: true
