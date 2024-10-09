@@ -1,13 +1,12 @@
-# 使用cloudflare代理各种镜像站
+# 使用cloudflare代理镜像站
 
-## 1. 代理镜像列表
+## 支持代理的镜像列表
 
-<ol>
-<li>npm - https://registry.npmjs.org/</li>
-<li>docker - https://registry-1.docker.io</li>
-</ol>
+-   [x] npmjs: [https://registry.npmjs.org/](https://registry.npmjs.org/)
+-   [x] dockerhub [https://registry-1.docker.io](https://registry-1.docker.io)
+-   [ ] cargo [https://crates.io](https://crates.io)
 
-## 2. 开始部署
+## 开始部署
 
 > **由于\*.workers.dev域名已被墙，推荐使用pages方式部署**.
 
