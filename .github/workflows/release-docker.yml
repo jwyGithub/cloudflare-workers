@@ -35,6 +35,10 @@ jobs:
               with:
                   name: build-docker
                   path: packages/docker-proxy/pages
+            - name: Zip pages folder
+              run: |
+                  cd packages/docker-proxy
+                  zip -r _worker.zip pages
             - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
@@ -63,11 +67,14 @@ jobs:
                   cd packages/docker-proxy
                   zip -r ../../docker-proxy.zip pages/*
 
-            - name: Upload zip
-              uses: peaceiris/actions-gh-pages@v4
+            - name: create release
+              id: create_release
+              uses: softprops/action-gh-release@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
               with:
-                  github_token: ${{ secrets.DEPLOY_TOKEN }}
-                  publish_dir: packages/docker-proxy
-                  publish_branch: release-docker
-                  keep_files: false
-                  enable_jekyll: true
+                  tag_name: 'cloudflare-release-${{ github.sha }}'
+                  name: 'docker-proxy'
+                  draft: false
+                  prerelease: false
+                  files: docker-proxy.zip
