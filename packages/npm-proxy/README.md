@@ -2,11 +2,11 @@
 
 ## 特性
 
--   [ ] npm info
--   [ ] npm login
--   [ ] npm publish
--   [ ] npm adduser
--   [ ] npm install
+-   [x] npm info
+-   [x] npm login
+-   [x] npm publish
+-   [x] npm adduser
+-   [x] npm install
 
 ## 使用
 
