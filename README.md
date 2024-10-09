@@ -16,7 +16,8 @@
 
 ## 部署方式
 
-> [!TIP] > **由于\*.workers.dev域名已被墙，推荐使用pages方式部署**.
+> [!TIP]
+> **由于\*.workers.dev域名已被墙，推荐使用pages方式部署**.
 
 ### worker部署
 
