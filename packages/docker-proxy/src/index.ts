@@ -24,9 +24,11 @@ function checkIpIsWhitelisted(ip: string | null, env: Env): boolean {
     if (!ip) return false;
 
     if (Reflect.has(env, 'IP_WHITELIST')) {
-        if (typeof env.IP_WHITELIST === 'string') {
+        if (env.IP_WHITELIST !== '*' && typeof env.IP_WHITELIST === 'string') {
             const whitelist = env.IP_WHITELIST.split('\n').map(ip => ip.trim());
             return whitelist.includes(ip);
+        } else if (env.IP_WHITELIST === '*') {
+            return true;
         } else {
             return false;
         }
