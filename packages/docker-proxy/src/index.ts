@@ -1,3 +1,5 @@
+import { toStream, toSuccess, toUnauthorized } from '@jiangweiye/cloudflare-service';
+import { RESPONSE_UNAUTHORIZED_CODE } from 'node_modules/@jiangweiye/cloudflare-service/dist/types/src/lib';
 import { ValidateIp } from './validate';
 
 const validateIp = new ValidateIp();
@@ -31,27 +33,20 @@ export default {
 
         if (pathname === '/') {
             const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
-            const docs = await fetch(doc).then(res => res.text());
-            return new Response(docs, {
-                status: 200,
-                headers: {
-                    'content-type': 'text/html'
-                }
-            });
+            const docs = await fetch(doc);
+            const headers = docs.headers;
+            const content = await docs.text();
+            return toStream(content, headers);
         }
 
         const real_ip = request.headers.get('x-real-ip');
 
         if (!validateIp.checkIpIsWhitelisted(real_ip)) {
-            return new Response('Unauthorized', {
-                status: 401
-            });
+            return toUnauthorized();
         }
 
         if (pathname === '/favicon.ico') {
-            return new Response('', {
-                status: 200
-            });
+            return toStream('', request.headers);
         }
 
         return await handleRequest(request);
@@ -62,14 +57,7 @@ async function handleRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const upstream = routeByHosts(url.hostname);
     if (upstream === '') {
-        return new Response(
-            JSON.stringify({
-                routes
-            }),
-            {
-                status: 404
-            }
-        );
+        return toSuccess(routes, 'success', request.headers);
     }
     const isDockerHub = upstream === dockerHub;
     const authorization = request.headers.get('Authorization');
@@ -86,10 +74,7 @@ async function handleRequest(request: Request): Promise<Response> {
         });
         if (resp.status === 401) {
             headers.set('Www-Authenticate', `Bearer realm="https://${url.hostname}/v2/auth",service="cloudflare-docker-proxy"`);
-            return new Response(JSON.stringify({ message: 'UNAUTHORIZED' }), {
-                status: 401,
-                headers
-            });
+            return toUnauthorized('UNAUTHORIZED', RESPONSE_UNAUTHORIZED_CODE, headers);
         } else {
             return resp;
         }
