@@ -1,4 +1,4 @@
-import { RESPONSE_UNAUTHORIZED_CODE, toStream, toSuccess, toUnauthorized } from '@jiangweiye/cloudflare-service';
+import { RESPONSE_UNAUTHORIZED_CODE, toServerError, toStream, toSuccess, toUnauthorized } from '@jiangweiye/cloudflare-service';
 import { ValidateIp } from './validate';
 
 const validateIp = new ValidateIp();
@@ -27,29 +27,33 @@ function routeByHosts(hostname: string): string {
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
-        validateIp.setEnv(env);
-        const { pathname } = new URL(request.url);
+        try {
+            validateIp.setEnv(env);
+            const { pathname } = new URL(request.url);
 
-        if (pathname === '/') {
-            const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
-            const docs = await fetch(doc);
-            const headers = new Headers(docs.headers);
-            headers.set('Content-Type', 'text/html');
-            const content = await docs.text();
-            return toStream(content, headers);
+            if (pathname === '/') {
+                const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
+                const docs = await fetch(doc);
+                const headers = new Headers(docs.headers);
+                headers.set('Content-Type', 'text/html');
+                const content = await docs.text();
+                return toStream(content, headers);
+            }
+
+            const real_ip = request.headers.get('x-real-ip');
+
+            if (!validateIp.checkIpIsWhitelisted(real_ip)) {
+                return toUnauthorized();
+            }
+
+            if (pathname === '/favicon.ico') {
+                return toStream('', request.headers);
+            }
+
+            return await handleRequest(request);
+        } catch (error: any) {
+            return toServerError(error.message);
         }
-
-        const real_ip = request.headers.get('x-real-ip');
-
-        if (!validateIp.checkIpIsWhitelisted(real_ip)) {
-            return toUnauthorized();
-        }
-
-        if (pathname === '/favicon.ico') {
-            return toStream('', request.headers);
-        }
-
-        return await handleRequest(request);
     }
 };
 
