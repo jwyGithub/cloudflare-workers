@@ -57,11 +57,11 @@ const b = {
       });
     }
     const r = t.headers.get("x-real-ip");
-    return k.checkIpIsWhitelisted(r) ? new Response("Unauthorized", {
-      status: 401
-    }) : s === "/favicon.ico" ? new Response("", {
+    return k.checkIpIsWhitelisted(r) ? s === "/favicon.ico" ? new Response("", {
       status: 200
-    }) : await x(t);
+    }) : await x(t) : new Response("Unauthorized", {
+      status: 401
+    });
   }
 };
 async function x(t) {
