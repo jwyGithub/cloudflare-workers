@@ -1,6 +1,28 @@
+import { toServerError, toStream, toUnauthorized } from '@jiangweiye/cloudflare-service';
+import { ValidateIp } from './validate';
+
+const validateIp = new ValidateIp();
+
 export default {
-    async fetch(request: Request): Promise<Response> {
-        return await handleRequest(request);
+    async fetch(request: Request, env: Env): Promise<Response> {
+        try {
+            const { pathname } = new URL(request.url);
+            validateIp.setEnv(env);
+
+            const real_ip = request.headers.get('x-real-ip');
+
+            if (!validateIp.checkIpIsWhitelisted(real_ip)) {
+                return toUnauthorized();
+            }
+
+            if (pathname === '/favicon.ico') {
+                return toStream('', request.headers);
+            }
+
+            return await handleRequest(request);
+        } catch (error: any) {
+            return toServerError(error.message);
+        }
     }
 };
 
@@ -28,7 +50,7 @@ async function handleRequest(req: Request): Promise<Response> {
         resp = await fetch(proxyReq);
     } catch (e) {
         console.error('Failed to send request to npm registry', e);
-        return new Response('Internal Server Error', { status: 500 });
+        return toServerError();
     }
 
     // npm login // npm adduser
@@ -40,7 +62,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 json = await resp.json();
             } catch (e) {
                 console.error('Failed to parse response JSON', e);
-                return new Response('Internal Server Error', { status: 500 });
+                return toServerError();
             }
 
             const modifiedBody = JSON.stringify(json);
