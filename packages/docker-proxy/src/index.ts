@@ -1,4 +1,11 @@
-import { RESPONSE_UNAUTHORIZED_CODE, toServerError, toStream, toSuccess, toUnauthorized } from '@jiangweiye/cloudflare-service';
+import {
+    RESPONSE_HTML_HEADER,
+    RESPONSE_UNAUTHORIZED_CODE,
+    toServerError,
+    toStream,
+    toSuccess,
+    toUnauthorized
+} from '@jiangweiye/cloudflare-service';
 import { ValidateIp } from './validate';
 
 const validateIp = new ValidateIp();
@@ -34,10 +41,8 @@ export default {
             if (pathname === '/') {
                 const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
                 const docs = await fetch(doc);
-                const headers = new Headers(docs.headers);
-                headers.set('Content-Type', 'text/html');
                 const content = await docs.text();
-                return toStream(content, headers);
+                return toStream(content, RESPONSE_HTML_HEADER);
             }
 
             const real_ip = request.headers.get('x-real-ip');
