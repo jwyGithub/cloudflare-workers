@@ -1,3 +1,7 @@
+import { ValidateIp } from './validate';
+
+const validateIp = new ValidateIp();
+
 const dockerHub = 'https://registry-1.docker.io';
 
 const routes = {
@@ -20,25 +24,9 @@ function routeByHosts(hostname: string): string {
     return '';
 }
 
-function checkIpIsWhitelisted(ip: string | null, env: Env): boolean {
-    if (!ip) return false;
-
-    if (Reflect.has(env, 'IP_WHITELIST')) {
-        if (env.IP_WHITELIST !== '*' && typeof env.IP_WHITELIST === 'string') {
-            const whitelist = env.IP_WHITELIST.split('\n').map(ip => ip.trim());
-            return whitelist.includes(ip);
-        } else if (env.IP_WHITELIST === '*') {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        return true;
-    }
-}
-
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
+        validateIp.setEnv(env);
         const { pathname } = new URL(request.url);
 
         if (pathname === '/') {
@@ -54,7 +42,7 @@ export default {
 
         const real_ip = request.headers.get('x-real-ip');
 
-        if (!checkIpIsWhitelisted(real_ip, env)) {
+        if (validateIp.checkIpIsWhitelisted(real_ip)) {
             return new Response('Unauthorized', {
                 status: 401
             });
