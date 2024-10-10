@@ -1,8 +1,8 @@
-var h = (e) => {
-  throw TypeError(e);
+var h = (t) => {
+  throw TypeError(t);
 };
-var l = (e, t, s) => t.has(e) || h("Cannot " + s);
-var a = (e, t, s) => (l(e, t, "read from private field"), s ? s.call(e) : t.get(e)), p = (e, t, s) => t.has(e) ? h("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), i = (e, t, s, o) => (l(e, t, "write to private field"), o ? o.call(e, s) : t.set(e, s), s);
+var l = (t, e, s) => e.has(t) || h("Cannot " + s);
+var a = (t, e, s) => (l(t, e, "read from private field"), s ? s.call(t) : e.get(t)), p = (t, e, s) => e.has(t) ? h("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), o = (t, e, s, i) => (l(t, e, "write to private field"), i ? i.call(t, s) : e.set(t, s), s);
 const I = "unauthorized", S = "internal server error", y = new Headers({
   "Content-type": "application/json"
 }), H = new Headers({
@@ -14,37 +14,37 @@ new Headers({
 new Headers({
   "Content-type": "text/html"
 });
-const W = (e, t = H) => new Response(e, {
+const W = (t, e = H) => new Response(t, {
   status: 200,
-  headers: t
-}), b = (e = I, t = 401, s = y) => new Response(
+  headers: e
+}), b = (t = I, e = 401, s = y) => new Response(
   JSON.stringify({
-    status: t,
-    message: e
+    status: e,
+    message: t
   }),
   {
-    status: t,
-    statusText: e,
+    status: e,
+    statusText: t,
     headers: s
   }
-), d = (e = S, t = 500, s = y) => new Response(
+), d = (t = S, e = 500, s = y) => new Response(
   JSON.stringify({
-    status: t,
-    message: e
+    status: e,
+    message: t
   }),
   {
-    status: t,
-    statusText: e,
+    status: e,
+    statusText: t,
     headers: s
   }
 ), j = /^(?:(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.){3}(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])(?::(?:\d|[1-9]\d{1,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5]))?$/;
-function v(e) {
-  return e ? j.test(e) : !1;
+function v(t) {
+  return t ? j.test(t) : !1;
 }
-function A(e, t) {
-  if (!e || !t || !v(e)) return !1;
-  for (let s = 0; s < t.length; s++)
-    if (new RegExp(t[s].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(e))
+function A(t, e) {
+  if (!t || !e || !v(t)) return !1;
+  for (let s = 0; s < e.length; s++)
+    if (new RegExp(e[s].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(t))
       return !0;
   return !1;
 }
@@ -52,35 +52,35 @@ var n;
 class N {
   constructor() {
     p(this, n, []);
-    i(this, n, []);
+    o(this, n, []);
   }
-  setEnv(t) {
-    if (a(this, n).length || !Reflect.has(t, "IP_WHITELIST")) return;
-    const s = Reflect.get(t, "IP_WHITELIST") ?? "*";
-    s === "*" ? i(this, n, "*") : i(this, n, s.split(",").map((o) => o.trim()));
+  setEnv(e) {
+    if (a(this, n).length || a(this, n) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
+    const s = Reflect.get(e, "IP_WHITELIST") ?? "*";
+    s === "*" ? o(this, n, "*") : o(this, n, s.split(",").map((i) => i.trim()));
   }
-  checkIpIsWhitelisted(t) {
-    return (typeof a(this, n) == "string" && a(this, n)) === "*" || Array.isArray(a(this, n)) && a(this, n).length === 0 ? !0 : Array.isArray(a(this, n)) && a(this, n).length > 0 ? A(t, a(this, n)) : !1;
+  checkIpIsWhitelisted(e) {
+    return (typeof a(this, n) == "string" && a(this, n)) === "*" || Array.isArray(a(this, n)) && a(this, n).length === 0 ? !0 : Array.isArray(a(this, n)) && a(this, n).length > 0 ? A(e, a(this, n)) : !1;
   }
 }
 n = new WeakMap();
 const f = new N(), J = {
-  async fetch(e, t) {
+  async fetch(t, e) {
     try {
-      const { pathname: s } = new URL(e.url);
-      f.setEnv(t);
-      const o = e.headers.get("x-real-ip");
-      return f.checkIpIsWhitelisted(o) ? s === "/favicon.ico" ? W("", e.headers) : await _(e) : b();
+      const { pathname: s } = new URL(t.url);
+      f.setEnv(e);
+      const i = t.headers.get("x-real-ip");
+      return f.checkIpIsWhitelisted(i) ? s === "/favicon.ico" ? W("", t.headers) : await _(t) : b();
     } catch (s) {
       return d(s.message);
     }
   }
 };
-async function _(e) {
-  const t = new URL(e.url), s = `https://registry.npmjs.org${t.pathname}${t.search}`, o = e.method, g = new Headers(e.headers), w = t.pathname.startsWith("/-/user/org.couchdb.user:"), x = {
-    method: o,
+async function _(t) {
+  const e = new URL(t.url), s = `https://registry.npmjs.org${e.pathname}${e.search}`, i = t.method, g = new Headers(t.headers), w = e.pathname.startsWith("/-/user/org.couchdb.user:"), x = {
+    method: i,
     headers: g,
-    body: e.body ? e.body : void 0,
+    body: t.body ? t.body : void 0,
     redirect: "follow"
   }, m = new Request(s, x);
   let r;
