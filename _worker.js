@@ -65,7 +65,7 @@ class C {
     l(this, n, []);
   }
   setEnv(t) {
-    if (i(this, n).length || !Reflect.has(t, "IP_WHITELIST")) return;
+    if (i(this, n).length || i(this, n) === "*" || !Reflect.has(t, "IP_WHITELIST")) return;
     const s = Reflect.get(t, "IP_WHITELIST") ?? "*";
     s === "*" ? l(this, n, "*") : l(this, n, s.split(",").map((r) => r.trim()));
   }
