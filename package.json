@@ -22,7 +22,7 @@
         "pages:cargo": "pnpm --dir packages/cargo-proxy run pages"
     },
     "dependencies": {
-        "@jiangweiye/cloudflare-service": "^0.0.5",
+        "@jiangweiye/cloudflare-service": "^0.0.6",
         "@jiangweiye/cloudflare-shared": "^0.0.5"
     },
     "devDependencies": {

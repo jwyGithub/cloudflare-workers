@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@jiangweiye/cloudflare-service':
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^0.0.6
+        version: 0.0.6
       '@jiangweiye/cloudflare-shared':
         specifier: ^0.0.5
         version: 0.0.5
@@ -431,8 +431,8 @@ packages:
     engines: {node: '>=18.18'}
     dev: true
 
-  /@jiangweiye/cloudflare-service@0.0.5:
-    resolution: {integrity: sha512-bODzmE5H+ehNhdCQTBN/40t768eu4/YWX1XP6t2UyaAkLmyt+IkQeS+1Kw1zCl64qRQdfx3fKz1hj/0KahsILQ==}
+  /@jiangweiye/cloudflare-service@0.0.6:
+    resolution: {integrity: sha512-zs/tBO4GxaUkF/vShC94Ey6wQXVxdbtYuGX2r39nDskD02MW3HQOJUm4srLMMpfAahiRbl771Iz1fdE9pW9jaw==}
     dev: false
 
   /@jiangweiye/cloudflare-shared@0.0.5:

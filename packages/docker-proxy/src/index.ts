@@ -1,5 +1,4 @@
-import { toStream, toSuccess, toUnauthorized } from '@jiangweiye/cloudflare-service';
-import { RESPONSE_UNAUTHORIZED_CODE } from 'node_modules/@jiangweiye/cloudflare-service/dist/types/src/lib';
+import { RESPONSE_UNAUTHORIZED_CODE, toStream, toSuccess, toUnauthorized } from '@jiangweiye/cloudflare-service';
 import { ValidateIp } from './validate';
 
 const validateIp = new ValidateIp();
