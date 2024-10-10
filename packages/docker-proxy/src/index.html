@@ -83,32 +83,37 @@
                 ].join('\n');
             }
 
+            // 测试通过
             function dockerRegistry() {
                 const domain = getPageDomain();
                 return ['# docker pull nginx:latest', `docker pull docker.${domain}/library/nginx:latest  Docker 官方镜像`].join('\n');
             }
 
+            // 测试通过
             function quayRegistry() {
                 const domain = getPageDomain();
-                return ['# docker pull quay.io/cephcsi/cephcsi:v3.9.0', `docker pull quay.${domain}/cephcsi/cephcsi:v3.9.0  Quay 镜像`].join('\n');
+                return [
+                    '# docker pull quay.io/opstree/redis-operator',
+                    `docker pull quay.${domain}/opstree/redis-operator  Quay 镜像`
+                ].join('\n');
             }
 
+            // 测试通过
             function gcrRegistry() {
                 const domain = getPageDomain();
                 return [
-                    '# docker pull gcr.io/google-containers/busybox:latest',
-                    `docker pull gcr.${domain}/google-containers/busybox:latest  GCR 镜像`
+                    '# docker pull gcr.io/kaniko-project/executor:latest',
+                    `docker pull gcr.${domain}/kaniko-project/executor:latest  GCR 镜像`
                 ].join('\n');
             }
 
+            // 测试通过
             function k8sGcrRegistry() {
                 const domain = getPageDomain();
-                return [
-                    '# docker pull k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0',
-                    `docker pull k8s-gcr.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  k8s.gcr.io 镜像`
-                ].join('\n');
+                return ['# docker pull k8s.gcr.io/pause', `docker pull k8s-gcr.${domain}/pause  k8s.gcr.io 镜像`].join('\n');
             }
 
+            // 测试通过
             function k8sRegistry() {
                 const domain = getPageDomain();
                 return [
@@ -117,6 +122,7 @@
                 ].join('\n');
             }
 
+            // 测试通过
             function ghcrRegistry() {
                 const domain = getPageDomain();
                 return [
@@ -128,8 +134,8 @@
             function cloudsmithRegistry() {
                 const domain = getPageDomain();
                 return [
-                    '# docker pull docker.cloudsmith.io/public/repo/image:latest',
-                    `docker pull cloudsmith.${domain}/public/repo/image:latest  Cloudsmith 镜像`
+                    '# docker pull docker.cloudsmith.io/org/registry/image',
+                    `docker pull cloudsmith.${domain}/org/registry/image  Cloudsmith 镜像`
                 ].join('\n');
             }
 

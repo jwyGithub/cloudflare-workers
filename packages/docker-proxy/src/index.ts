@@ -34,6 +34,7 @@ export default {
             const doc = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`;
             const docs = await fetch(doc);
             const headers = docs.headers;
+            headers.set('Content-Type', 'text/html');
             const content = await docs.text();
             return toStream(content, headers);
         }
