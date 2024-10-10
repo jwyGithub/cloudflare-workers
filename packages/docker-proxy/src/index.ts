@@ -42,7 +42,7 @@ export default {
 
         const real_ip = request.headers.get('x-real-ip');
 
-        if (validateIp.checkIpIsWhitelisted(real_ip)) {
+        if (!validateIp.checkIpIsWhitelisted(real_ip)) {
             return new Response('Unauthorized', {
                 status: 401
             });
