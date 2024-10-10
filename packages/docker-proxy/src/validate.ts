@@ -8,7 +8,7 @@ export class ValidateIp {
     }
 
     public setEnv(env: Env): void {
-        if (this.#ip_rules.length) return;
+        if (this.#ip_rules.length || this.#ip_rules === '*') return;
         if (!Reflect.has(env, 'IP_WHITELIST')) return;
         const whitelist = Reflect.get(env, 'IP_WHITELIST') ?? '*';
 
