@@ -1,22 +1,11 @@
-import path from 'node:path';
-import fs from 'node:fs';
 import { defineConfig } from 'vite';
-
-const functions_root = path.resolve(__dirname, './src/functions');
-
-const functions_entry = fs.readdirSync(functions_root).reduce<string[]>((acc, file) => {
-    acc.push(path.resolve(functions_root, file));
-    return acc;
-}, []);
 
 export default defineConfig({
     build: {
         lib: {
-            entry: ['src/index.ts', ...functions_entry],
+            entry: 'src/index.ts',
             formats: ['es'],
-            fileName: (_, filename) => {
-                return filename === 'index' ? '_worker.js' : `functions/${filename}.js`;
-            }
+            fileName: '_worker'
         },
         minify: true,
         outDir: 'pages'
