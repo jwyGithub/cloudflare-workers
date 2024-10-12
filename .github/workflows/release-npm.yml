@@ -54,7 +54,6 @@ jobs:
                   cd temp_zip
                   zip -r ../_worker.zip .
                   cd ..
-                  mv _worker.zip pages/
                   rm -rf temp_zip
             - name: List contents of pages directory
               run: ls -al packages/npm-proxy/pages
