@@ -44,8 +44,18 @@ jobs:
                       exit 1
                   fi
                   echo "Found worker file: $worker_file"
-                  zip -j _worker.zip "$worker_file"
+                  mkdir -p temp_zip
+                  cp "$worker_file" temp_zip/
+                  if [ -d "pages/functions" ]; then
+                      cp -r pages/functions temp_zip/
+                  else
+                      echo "Warning: functions folder not found"
+                  fi
+                  cd temp_zip
+                  zip -r ../_worker.zip .
+                  cd ..
                   mv _worker.zip pages/
+                  rm -rf temp_zip
             - name: List contents of pages directory
               run: ls -al packages/npm-proxy/pages
             - name: Deploy to GitHub Pages
