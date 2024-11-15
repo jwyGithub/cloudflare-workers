@@ -19,21 +19,24 @@
         "pages:docker": "pnpm --dir packages/docker-proxy run pages",
         "dev:cargo": "pnpm --dir packages/cargo-proxy run dev",
         "deploy:cargo": "pnpm --dir packages/cargo-proxy run deploy",
-        "pages:cargo": "pnpm --dir packages/cargo-proxy run pages"
+        "pages:cargo": "pnpm --dir packages/cargo-proxy run pages",
+        "dev:vps": "pnpm --dir packages/vps-parse run dev",
+        "deploy:vps": "pnpm --dir packages/vps-parse run deploy",
+        "pages:vps": "pnpm --dir packages/vps-parse run pages"
     },
     "dependencies": {
         "@jiangweiye/cloudflare-service": "^0.0.6",
         "@jiangweiye/cloudflare-shared": "^0.0.5"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20240925.0",
-        "@jiangweiye/eslint-config": "0.1.8-beta.3",
-        "@jiangweiye/prettier-config": "^0.0.16",
+        "@cloudflare/workers-types": "^4.20241112.0",
+        "@jiangweiye/eslint-config": "0.1.13",
+        "@jiangweiye/prettier-config": "^0.0.18",
         "@jiangweiye/tsconfig": "^0.0.11",
-        "@types/node": "^22.5.4",
+        "@types/node": "^22.9.0",
         "eslint": "^9.10.0",
         "prettier": "^3.3.3",
-        "typescript": "^5.6.2",
-        "vite": "^5.4.3"
+        "typescript": "^5.6.3",
+        "vite": "^5.4.11"
     }
 }
