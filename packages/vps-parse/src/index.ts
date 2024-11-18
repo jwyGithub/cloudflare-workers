@@ -1,6 +1,10 @@
 import { base64Decode } from '@jiangweiye/cloudflare-shared';
 import { getVless } from './shared';
 
+function getTime(): string {
+    return new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+}
+
 async function init(env: Env): Promise<Response> {
     const vlessLinks = await fetch('https://vless.fxxk.dedyn.io/auto').then(async res => base64Decode(await res.text()));
 
@@ -8,7 +12,7 @@ async function init(env: Env): Promise<Response> {
     const contentBase64 = btoa(content.join('\n'));
 
     // 首先获取文件的当前 SHA（如果存在）
-    const filePath = 'addressesapi.txt'; // 要更新的文件路径
+    const filePath = 'packages/vps-parse/addressesapi.txt'; // 要更新的文件路径
     let sha = '';
 
     try {
@@ -28,7 +32,7 @@ async function init(env: Env): Promise<Response> {
 
         // 准备更新或创建文件的请求体
         const requestBody = {
-            message: 'update data.json',
+            message: `auto: update ${filePath} by ${getTime()}`,
             content: contentBase64,
             branch: env.REPO_BRANCH,
             sha
