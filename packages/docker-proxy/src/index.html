@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>docker代理</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css" />
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            .registry {
+                padding: 1vw;
+            }
+            .registry h4 {
+                margin-bottom: 1vw;
+                line-height: 1.5;
+            }
+            .registry .hljs {
+                padding: 1vw;
+                border-radius: 1em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="registry change">
+            <h4>更换docker镜像</h4>
+        </div>
+
+        <div class="registry docker">
+            <h4>Docker 官方镜像</h4>
+        </div>
+
+        <div class="registry quay">
+            <h4>Quay 镜像</h4>
+        </div>
+
+        <div class="registry gcr">
+            <h4>GCR 镜像</h4>
+        </div>
+
+        <div class="registry k8s-gcr">
+            <h4>k8s.gcr.io 镜像</h4>
+        </div>
+
+        <div class="registry k8s">
+            <h4>registry.k8s.io 镜像</h4>
+        </div>
+
+        <div class="registry ghcr">
+            <h4>GitHub 容器镜像</h4>
+        </div>
+
+        <div class="registry cloudsmith">
+            <h4>Cloudsmith 镜像</h4>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+
+        <script>
+            function getPageDomain() {
+                const host = window.location.host;
+                const firstDotIndex = host.indexOf('.');
+                return host.slice(firstDotIndex + 1);
+            }
+
+            function getChangeRegistryCode() {
+                const domain = getPageDomain();
+                return [
+                    'sudo tee /etc/docker/daemon.json <<EOF',
+                    '{',
+                    `  "registry-mirrors": ["https://docker.${domain}"]`,
+                    '}',
+                    'EOF',
+                    '\n',
+                    '# 配置完后需要重启 Docker 服务',
+                    'sudo systemctl restart docker'
+                ].join('\n');
+            }
+
+            // 测试通过
+            function dockerRegistry() {
+                const domain = getPageDomain();
+                return ['# docker pull nginx:latest', `docker pull docker.${domain}/library/nginx:latest  Docker 官方镜像`].join('\n');
+            }
+
+            // 测试通过
+            function quayRegistry() {
+                const domain = getPageDomain();
+                return [
+                    '# docker pull quay.io/opstree/redis-operator',
+                    `docker pull quay.${domain}/opstree/redis-operator  Quay 镜像`
+                ].join('\n');
+            }
+
+            // 测试通过
+            function gcrRegistry() {
+                const domain = getPageDomain();
+                return [
+                    '# docker pull gcr.io/kaniko-project/executor:latest',
+                    `docker pull gcr.${domain}/kaniko-project/executor:latest  GCR 镜像`
+                ].join('\n');
+            }
+
+            // 测试通过
+            function k8sGcrRegistry() {
+                const domain = getPageDomain();
+                return ['# docker pull k8s.gcr.io/pause', `docker pull k8s-gcr.${domain}/pause  k8s.gcr.io 镜像`].join('\n');
+            }
+
+            // 测试通过
+            function k8sRegistry() {
+                const domain = getPageDomain();
+                return [
+                    '# docker pull registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.3.0',
+                    `docker pull k8s.${domain}/sig-storage/csi-node-driver-registrar:v2.3.0  registry.k8s.io 镜像`
+                ].join('\n');
+            }
+
+            // 测试通过
+            function ghcrRegistry() {
+                const domain = getPageDomain();
+                return [
+                    '# docker pull ghcr.io/jinnrry/pmail:latest',
+                    `docker pull ghcr.${domain}/jinnrry/pmail:latest  GitHub 容器镜像`
+                ].join('\n');
+            }
+
+            function cloudsmithRegistry() {
+                const domain = getPageDomain();
+                return [
+                    '# docker pull docker.cloudsmith.io/org/registry/image',
+                    `docker pull cloudsmith.${domain}/org/registry/image  Cloudsmith 镜像`
+                ].join('\n');
+            }
+
+            function appendCode(el, code) {
+                const pre = document.createElement('pre');
+                pre.classList.add('hljs');
+                pre.innerHTML = `<code class="bash">${code}</code>`;
+                document.querySelector(`.${el}`).appendChild(pre);
+            }
+
+            appendCode('change', window.hljs.highlight(getChangeRegistryCode(), { language: 'bash' }).value);
+            appendCode('docker', window.hljs.highlight(dockerRegistry(), { language: 'bash' }).value);
+            appendCode('quay', window.hljs.highlight(quayRegistry(), { language: 'bash' }).value);
+            appendCode('gcr', window.hljs.highlight(gcrRegistry(), { language: 'bash' }).value);
+            appendCode('k8s-gcr', window.hljs.highlight(k8sGcrRegistry(), { language: 'bash' }).value);
+            appendCode('k8s', window.hljs.highlight(k8sRegistry(), { language: 'bash' }).value);
+            appendCode('ghcr', window.hljs.highlight(ghcrRegistry(), { language: 'bash' }).value);
+            appendCode('cloudsmith', window.hljs.highlight(cloudsmithRegistry(), { language: 'bash' }).value);
+        </script>
+    </body>
+</html>
