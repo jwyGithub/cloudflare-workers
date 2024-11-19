@@ -2,6 +2,14 @@ import { toServerError, toSuccess } from '@jiangweiye/cloudflare-service';
 import { base64Decode } from '@jiangweiye/cloudflare-shared';
 import { genHeader, genSha, getTime, getTrojan, getVless } from './shared';
 
+function tryBase64Decode(s: string): string {
+    try {
+        return base64Decode(s);
+    } catch {
+        return s;
+    }
+}
+
 async function getVps(links: string[]): Promise<{ trojan: string[]; vless: string[] }> {
     const result: string[] = [];
 
@@ -9,7 +17,7 @@ async function getVps(links: string[]): Promise<{ trojan: string[]; vless: strin
     const vlessVps: string[] = [];
     for await (const link of links) {
         const r = await fetch(link, { headers: genHeader(), redirect: 'manual' }).then(r => r.text());
-        result.push(base64Decode(r));
+        result.push(tryBase64Decode(r));
     }
     const vps = result.map(item => item.split('\n')).flat();
 
