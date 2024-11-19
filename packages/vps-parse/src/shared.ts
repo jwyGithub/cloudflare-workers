@@ -41,3 +41,20 @@ export async function genSha(content: string): Promise<string> {
     const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(content));
     return Array.prototype.map.call(new Uint8Array(buf), x => `00${x.tfoString(16)}`.slice(-2)).join('');
 }
+
+export function genHeader(): Headers {
+    const headers = new Headers();
+    headers.set('Accept', 'application/json, text/plain, */*');
+    headers.set('Accept-Encoding', 'gzip, deflate, br');
+    headers.set('Accept-Language', 'zh-CN');
+    headers.set('Connection', 'keep-alive');
+    headers.set('Sec-Fetch-Dest', 'empty');
+    headers.set('Sec-Fetch-Mode', 'cors');
+    headers.set('Sec-Fetch-Site', 'cross-site');
+    headers.set('User-Agent', 'ClashforWindows/0.20.39');
+    headers.set('sec-ch-ua', '"Not?A_Brand";v="8", "Chromium";v="108"');
+    headers.set('sec-ch-ua-mobile', '?0');
+    headers.set('sec-ch-ua-platform', '"macOS"');
+
+    return headers;
+}
