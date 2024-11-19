@@ -1,50 +1,46 @@
+import { toServerError, toSuccess } from '@jiangweiye/cloudflare-service';
 import { base64Decode } from '@jiangweiye/cloudflare-shared';
-import { getVless } from './shared';
+import { genSha, getTime, getTrojan, getVless } from './shared';
 
-function getTime(): string {
-    return new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+async function getVps(links: string[]): Promise<{ trojan: string[]; vless: string[] }> {
+    const result: string[] = [];
+
+    const trojanVps: string[] = [];
+    const vlessVps: string[] = [];
+    for await (const link of links) {
+        const r = await fetch(link).then(r => r.text());
+        result.push(base64Decode(r));
+    }
+    const vps = result.map(item => item.split('\n')).flat();
+
+    for (const item of vps) {
+        if (item.startsWith('trojan://')) {
+            trojanVps.push(item);
+        } else if (item.startsWith('vless://')) {
+            vlessVps.push(item);
+        }
+    }
+
+    return {
+        trojan: trojanVps,
+        vless: vlessVps
+    };
 }
 
-async function init(env: Env): Promise<Response> {
-    const vlessLinks = await fetch('https://vless.fxxk.dedyn.io/auto').then(async res => base64Decode(await res.text()));
-
-    const content = getVless(vlessLinks);
-    const contentBase64 = btoa(content.join('\n'));
-
-    // 首先获取文件的当前 SHA（如果存在）
-    const filePath = 'packages/vps-parse/addressesapi.txt'; // 要更新的文件路径
-    let sha = '';
-
+async function pushGithub(content: string[], path: string, env: Env): Promise<Response> {
     try {
-        const url = `https://api.github.com/repos/${env.GITHUB_USERNAME}/${env.REPO_NAME}/contents/${filePath}?ref=${env.REPO_BRANCH}`;
-        const fileResponse = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-                Accept: 'application/vnd.github.v3+json',
-                'User-Agent': 'Cloudflare-Worker'
-            }
-        });
-
-        if (fileResponse.ok) {
-            const fileData: { sha: string } = await fileResponse.json();
-            sha = fileData.sha;
-        }
-
+        const contentBase64 = btoa(content.join('\n'));
+        const sha = await genSha(content.join('\n'));
         // 准备更新或创建文件的请求体
         const requestBody = {
-            message: `auto: update ${filePath} by ${getTime()}`,
+            message: `auto: update ${path} by ${getTime()}`,
             content: contentBase64,
             branch: env.REPO_BRANCH,
             sha
         };
 
-        // 如果文件已存在，添加 sha
-        if (sha) {
-            requestBody.sha = sha;
-        }
-
         // 发送请求到 GitHub API
-        const response = await fetch(`https://api.github.com/repos/${env.GITHUB_USERNAME}/${env.REPO_NAME}/contents/${filePath}`, {
+        const response = await fetch(`https://api.github.com/repos/${env.GITHUB_USERNAME}/${env.REPO_NAME}/contents/${path}`, {
             method: 'PUT',
             headers: {
                 Authorization: `Bearer ${env.GITHUB_TOKEN}`,
@@ -54,19 +50,34 @@ async function init(env: Env): Promise<Response> {
             },
             body: JSON.stringify(requestBody)
         });
-
         if (!response.ok) {
             throw new Error(`GitHub API responded with ${response.status}`);
         }
-
         const result = await response.json();
-        return new Response(JSON.stringify(result), {
-            headers: { 'Content-Type': 'application/json' }
+        return toSuccess(result);
+    } catch (error: any) {
+        return toServerError(error);
+    }
+}
+
+async function init(env: Env): Promise<Response> {
+    try {
+        const { trojan, vless } = await getVps(env.LINKS.split(','));
+
+        const vlessVps = getVless(vless);
+
+        const trojanVps = getTrojan(trojan);
+
+        const vlessRes = await pushGithub(vlessVps, 'packages/vps-parse/vless_api.txt', env);
+
+        const troRes = await pushGithub(trojanVps, 'packages/vps-parse/trojan_api.txt', env);
+
+        return toSuccess({
+            vless: vlessRes,
+            trojan: troRes
         });
-    } catch (error) {
-        return Response.json({
-            error
-        });
+    } catch (error: any) {
+        return toServerError(error);
     }
 }
 

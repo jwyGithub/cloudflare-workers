@@ -6,4 +6,5 @@ interface Env {
     GITHUB_USERNAME?: string;
     REPO_NAME?: string;
     REPO_BRANCH?: string;
+    LINKS: string;
 }
