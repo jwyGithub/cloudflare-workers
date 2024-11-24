@@ -137,7 +137,7 @@ async function init(env: Env): Promise<Response> {
 
         const vmessRes = await pushGithub(vmessVps, getPath('vmess_api.txt'), env);
 
-        await syncClashConfig(env);
+        syncClashConfig(env);
 
         return toSuccess({
             vless: vlessRes,
