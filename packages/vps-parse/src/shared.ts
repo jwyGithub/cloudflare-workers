@@ -76,3 +76,27 @@ export function genHeader(): Headers {
 
     return headers;
 }
+
+export function getClashConfig(subs: string, config: string): Record<string, string> {
+    return {
+        target: 'clash',
+        new_name: 'true',
+        url: subs.split(',').join('|'),
+        insert: 'false',
+        config: encodeURIComponent(config),
+        emoji: 'true',
+        list: 'false',
+        tfo: 'false',
+        scv: 'false',
+        fdn: 'false',
+        sort: 'false'
+    };
+}
+
+export function getConvertUrl(config: ReturnType<typeof getClashConfig>): string {
+    const url = new URL('https://sub.looby.us.kg/sub');
+    for (const [key, value] of Object.entries(config)) {
+        url.searchParams.set(key, value);
+    }
+    return url.toString();
+}

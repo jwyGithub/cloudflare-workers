@@ -1,5 +1,15 @@
 import { toServerError, toSuccess } from '@jiangweiye/cloudflare-service';
-import { genHeader, getTime, getTrojan, getVless, getVmess, tryBase64Decode, tryBase64Encode } from './shared';
+import {
+    genHeader,
+    getClashConfig,
+    getConvertUrl,
+    getTime,
+    getTrojan,
+    getVless,
+    getVmess,
+    tryBase64Decode,
+    tryBase64Encode
+} from './shared';
 
 const getPath = (filePath: string): string => {
     return `packages/vps-parse/address/${filePath}`;
@@ -89,6 +99,29 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
     }
 }
 
+async function syncClashConfig(env: Env): Promise<void> {
+    try {
+        const clashConfigUrl = getClashConfig(env.SUBS, env.REMOTE_CONFIG);
+        const convertUrl = getConvertUrl(clashConfigUrl);
+
+        const clashConfg = await fetch(convertUrl).then(res => res.blob());
+
+        const formData = new FormData();
+        formData.append('file', clashConfg, 'sub.yml');
+
+        const response = await fetch(env.UPLOAD_URL, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to upload config: ${response.status} ${response.statusText}`);
+        }
+    } catch (error: any) {
+        throw new Error(error);
+    }
+}
+
 async function init(env: Env): Promise<Response> {
     try {
         const { trojan, vless, vmess } = await getVps(env.LINKS.split(','));
@@ -103,6 +136,8 @@ async function init(env: Env): Promise<Response> {
         const troRes = await pushGithub(trojanVps, getPath('trojan_api.txt'), env);
 
         const vmessRes = await pushGithub(vmessVps, getPath('vmess_api.txt'), env);
+
+        await syncClashConfig(env);
 
         return toSuccess({
             vless: vlessRes,

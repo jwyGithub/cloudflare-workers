@@ -20,7 +20,7 @@ importers:
         version: 4.20241112.0
       '@jiangweiye/eslint-config':
         specifier: 0.1.13
-        version: 0.1.13(@typescript-eslint/utils@8.5.0)(@vue/compiler-sfc@3.4.33)(eslint@9.10.0)(typescript@5.6.3)
+        version: 0.1.13(@typescript-eslint/utils@8.14.0)(@vue/compiler-sfc@3.4.33)(eslint@9.10.0)(typescript@5.6.3)
       '@jiangweiye/prettier-config':
         specifier: ^0.0.18
         version: 0.0.18
@@ -47,9 +47,11 @@ importers:
 
   packages/docker-proxy: {}
 
-  packages/get-vps: {}
-
   packages/npm-proxy: {}
+
+  packages/sub-parse: {}
+
+  packages/vps-parse: {}
 
 packages:
 
@@ -467,7 +469,7 @@ packages:
     resolution: {integrity: sha512-Zg2C7aXVHWLSkHmlHb6cOyiqPHG2utBgs8CDUfHFD3+olyGb+DgUrfJ4wMcIbCJ/yeEfBiato4U+Ajp3m1l8xQ==}
     dev: false
 
-  /@jiangweiye/eslint-config@0.1.13(@typescript-eslint/utils@8.5.0)(@vue/compiler-sfc@3.4.33)(eslint@9.10.0)(typescript@5.6.3):
+  /@jiangweiye/eslint-config@0.1.13(@typescript-eslint/utils@8.14.0)(@vue/compiler-sfc@3.4.33)(eslint@9.10.0)(typescript@5.6.3):
     resolution: {integrity: sha512-a3W744E0UWpko4XwpptXJeuwCMw5FWcTBE2JsuXbMNYmYK7tO+tPYdgganowEghMvNmsPWmpkm/EplQzgwz8OQ==}
     hasBin: true
     peerDependencies:
@@ -520,7 +522,7 @@ packages:
       '@stylistic/eslint-plugin': 2.10.1(eslint@9.10.0)(typescript@5.6.3)
       '@typescript-eslint/eslint-plugin': 8.14.0(@typescript-eslint/parser@8.14.0)(eslint@9.10.0)(typescript@5.6.3)
       '@typescript-eslint/parser': 8.14.0(eslint@9.10.0)(typescript@5.6.3)
-      '@vitest/eslint-plugin': 1.1.10(@typescript-eslint/utils@8.5.0)(eslint@9.10.0)(typescript@5.6.3)
+      '@vitest/eslint-plugin': 1.1.10(@typescript-eslint/utils@8.14.0)(eslint@9.10.0)(typescript@5.6.3)
       eslint: 9.10.0
       eslint-config-flat-gitignore: 0.3.0(eslint@9.10.0)
       eslint-flat-config-utils: 0.4.0
@@ -1009,7 +1011,7 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@vitest/eslint-plugin@1.1.10(@typescript-eslint/utils@8.5.0)(eslint@9.10.0)(typescript@5.6.3):
+  /@vitest/eslint-plugin@1.1.10(@typescript-eslint/utils@8.14.0)(eslint@9.10.0)(typescript@5.6.3):
     resolution: {integrity: sha512-uScH5Kz5v32vvtQYB2iodpoPg2mGASK+VKpjlc2IUgE0+16uZKqVKi2vQxjxJ6sMCQLBs4xhBFZlmZBszsmfKQ==}
     peerDependencies:
       '@typescript-eslint/utils': '>= 8.0'
@@ -1022,7 +1024,7 @@ packages:
       vitest:
         optional: true
     dependencies:
-      '@typescript-eslint/utils': 8.5.0(eslint@9.10.0)(typescript@5.6.3)
+      '@typescript-eslint/utils': 8.14.0(eslint@9.10.0)(typescript@5.6.3)
       eslint: 9.10.0
       typescript: 5.6.3
     dev: true
