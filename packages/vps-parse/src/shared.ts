@@ -83,7 +83,7 @@ export function getClashConfig(subs: string, config: string): Record<string, str
         new_name: 'true',
         url: subs.split(',').join('|'),
         insert: 'false',
-        config: encodeURIComponent(config),
+        config,
         emoji: 'true',
         list: 'false',
         tfo: 'false',

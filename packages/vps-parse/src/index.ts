@@ -96,7 +96,7 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
     }
 }
 
-async function syncClashConfig(env: Env): Promise<string> {
+async function syncClashConfig(env: Env): Promise<{ convertUrl: string; result: object }> {
     try {
         const clashConfigUrl = getClashConfig(env.SUBS, env.REMOTE_CONFIG);
         const convertUrl = getConvertUrl(clashConfigUrl);
@@ -114,7 +114,7 @@ async function syncClashConfig(env: Env): Promise<string> {
         if (!response.ok) {
             throw new Error(`Failed to upload config: ${response.status} ${response.statusText}`);
         }
-        return response.text();
+        return { convertUrl, result: response.json() };
     } catch (error: any) {
         throw new Error(error);
     }
@@ -135,13 +135,13 @@ async function init(env: Env): Promise<Response> {
 
         const vmessRes = await pushGithub(vmessVps, getPath('vmess_api.txt'), env);
 
-        const syncRes = await syncClashConfig(env);
+        const { convertUrl, result } = await syncClashConfig(env);
 
         return toSuccess({
             vless: vlessRes,
             trojan: troRes,
             vmess: vmessRes,
-            sync: syncRes
+            sync: { result, convertUrl }
         });
     } catch (error: any) {
         throw new Error(error);
