@@ -16,32 +16,36 @@ const getPath = (filePath: string): string => {
 };
 
 async function getVps(links: string[]): Promise<{ trojan: string[]; vless: string[]; vmess: string[] }> {
-    const result: string[] = [];
+    try {
+        const result: string[] = [];
 
-    const trojanVps: string[] = [];
-    const vlessVps: string[] = [];
-    const vmessVps: string[] = [];
-    for await (const link of links) {
-        const r = await fetch(link, { headers: genHeader(), redirect: 'manual' }).then(r => r.text());
-        result.push(tryBase64Decode(r));
-    }
-    const vps = result.map(item => item.split('\n')).flat();
-
-    for (const item of vps) {
-        if (item.startsWith('trojan://')) {
-            trojanVps.push(item);
-        } else if (item.startsWith('vless://')) {
-            vlessVps.push(item);
-        } else if (item.startsWith('vmess://')) {
-            vmessVps.push(item);
+        const trojanVps: string[] = [];
+        const vlessVps: string[] = [];
+        const vmessVps: string[] = [];
+        for await (const link of links) {
+            const r = await fetch(link, { headers: genHeader(), redirect: 'manual' }).then(r => r.text());
+            result.push(tryBase64Decode(r));
         }
-    }
+        const vps = result.map(item => item.split('\n')).flat();
 
-    return {
-        trojan: trojanVps,
-        vless: vlessVps,
-        vmess: vmessVps
-    };
+        for (const item of vps) {
+            if (item.startsWith('trojan://')) {
+                trojanVps.push(item);
+            } else if (item.startsWith('vless://')) {
+                vlessVps.push(item);
+            } else if (item.startsWith('vmess://')) {
+                vmessVps.push(item);
+            }
+        }
+
+        return {
+            trojan: trojanVps,
+            vless: vlessVps,
+            vmess: vmessVps
+        };
+    } catch (error: any) {
+        throw new Error(`catch on getVps => reason: ${error.message || error}`);
+    }
 }
 
 async function pushGithub(content: string[], path: string, env: Env): Promise<string> {
@@ -92,11 +96,11 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
 
         return response.json();
     } catch (error: any) {
-        throw new Error(error.message || 'Failed to push to GitHub');
+        throw new Error(`catch on pushGithub => reason: ${error.message || error}`);
     }
 }
 
-async function syncClashConfig(env: Env): Promise<{ convertUrl: string; result: object }> {
+async function syncClashConfig(env: Env): Promise<{ convertUrl: string; result: string }> {
     try {
         const clashConfigUrl = getClashConfig(env.SUBS, env.REMOTE_CONFIG);
         const convertUrl = getConvertUrl(clashConfigUrl);
@@ -114,9 +118,9 @@ async function syncClashConfig(env: Env): Promise<{ convertUrl: string; result: 
         if (!response.ok) {
             throw new Error(`Failed to upload config: ${response.status} ${response.statusText}`);
         }
-        return { convertUrl, result: response.json() };
+        return { convertUrl, result: JSON.stringify(response.json()) };
     } catch (error: any) {
-        throw new Error(error);
+        throw new Error(`cache on sync => reason: ${error.message || error}`);
     }
 }
 
@@ -144,7 +148,7 @@ async function init(env: Env): Promise<Response> {
             sync: { result, convertUrl }
         });
     } catch (error: any) {
-        throw new Error(error);
+        throw new Error(`cache on init => reason: ${error.message || error}`);
     }
 }
 
