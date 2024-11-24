@@ -48,7 +48,6 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
     try {
         const contentBase64 = tryBase64Encode(content.join('\n'));
 
-        // 首先获取文件的当前信息
         const url = `https://api.github.com/repos/${env.GITHUB_USERNAME}/${env.REPO_NAME}/contents/${path}`;
         const getCurrentFile = await fetch(url, {
             headers: {
@@ -64,14 +63,12 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
             sha = fileInfo.sha;
         }
 
-        // 准备更新或创建文件的请求体
         const requestBody: any = {
             message: `auto: update ${path} by ${getTime()}`,
             content: contentBase64,
             branch: env.REPO_BRANCH
         };
 
-        // 只有在文件已存在时才添加 sha
         if (sha) {
             requestBody.sha = sha;
         }
