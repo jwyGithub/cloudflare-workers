@@ -133,11 +133,11 @@ async function init(env: Env): Promise<Response> {
 
         const vmessVps = getVmess(vmess);
 
-        const vlessRes = await pushGithub(vlessVps, getPath('vless_api.txt'), env);
-
-        const troRes = await pushGithub(trojanVps, getPath('trojan_api.txt'), env);
-
-        const vmessRes = await pushGithub(vmessVps, getPath('vmess_api.txt'), env);
+        const [vlessRes, troRes, vmessRes] = await Promise.allSettled([
+            pushGithub(vlessVps, getPath('vless_api.txt'), env),
+            pushGithub(trojanVps, getPath('trojan_api.txt'), env),
+            pushGithub(vmessVps, getPath('vmess_api.txt'), env)
+        ]);
 
         const { convertUrl, result } = await syncClashConfig(env);
 
