@@ -1691,7 +1691,7 @@ const de = {
 };
 async function Eo(e) {
   try {
-    const { url: n, lockBackend: i, remoteConfig: o, host: r } = e, u = await fetch(`${n}?t=${Date.now()}`);
+    const { url: n, lockBackend: i, remoteConfig: o, origin: r } = e, u = await fetch(`${n}?t=${Date.now()}`);
     if (u.status !== 200)
       throw new Error(u.statusText);
     let l = await u.text();
@@ -1709,7 +1709,7 @@ async function Eo(e) {
 const bo = {
   async fetch(e, n) {
     try {
-      const { pathname: i, host: o } = new URL(e.url);
+      const { pathname: i, origin: o } = new URL(e.url);
       if (i === "/sub") {
         const { confuseUrl: r, vpsMap: u } = mo(e.url, n.BACKEND ?? de.BACKEND), l = await fetch(r);
         if (!l.ok)
@@ -1727,7 +1727,7 @@ const bo = {
         url: n.PAGE_URL ?? de.PAGE_URL,
         lockBackend: n.LOCK_BACKEND ?? de.LOCK_BACKEND,
         remoteConfig: n.REMOTE_CONFIG ?? de.REMOTE_CONFIG,
-        host: o
+        origin: o
       });
     } catch (i) {
       return ze(i.message || i);
