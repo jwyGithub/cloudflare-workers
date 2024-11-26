@@ -1692,7 +1692,7 @@ function wo(e, n) {
   return e.replace("[] // #{CLOUDFLARE_ENV_REMOTE}", JSON.stringify(i));
 }
 function _o(e, n) {
-  return e.replace("'#{DISABLED_BACKEND}'", n);
+  return e.replace("'#{DISABLED_BACKEND}'", n ? "true" : "false");
 }
 const de = {
   PAGE_URL: "https://raw.githubusercontent.com/jwyGithub/subconverter-cloudflare/main/index.html",
@@ -1727,7 +1727,7 @@ const bo = {
           throw new Error(l.statusText);
         const t = await l.text(), c = Ao(t, u);
         return Je(
-          fo(c, { indent: 4, lineWidth: 200 }),
+          fo(c, { indent: 2, lineWidth: 200 }),
           new Headers({
             "Content-Type": "text/yaml; charset=UTF-8",
             "Cache-Control": "no-store"
