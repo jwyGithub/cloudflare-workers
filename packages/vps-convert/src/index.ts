@@ -7,8 +7,7 @@ import { DEFAULT_CONFIG, showPage } from './page';
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         try {
-            const { pathname, host } = new URL(request.url);
-
+            const { pathname, origin } = new URL(request.url);
             if (pathname === '/sub') {
                 const { confuseUrl, vpsMap } = getConfuseUrl(request.url, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
                 const response = await fetch(confuseUrl);
@@ -30,7 +29,7 @@ export default {
                 url: env.PAGE_URL ?? DEFAULT_CONFIG.PAGE_URL,
                 lockBackend: env.LOCK_BACKEND ?? DEFAULT_CONFIG.LOCK_BACKEND,
                 remoteConfig: env.REMOTE_CONFIG ?? DEFAULT_CONFIG.REMOTE_CONFIG,
-                host
+                origin
             });
         } catch (error: any) {
             return toServerError(error.message || error);

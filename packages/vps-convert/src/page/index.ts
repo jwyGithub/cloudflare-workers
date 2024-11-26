@@ -4,7 +4,7 @@ interface IPageOption {
     url: string;
     lockBackend: boolean;
     remoteConfig: string;
-    host: string;
+    origin: string;
 }
 
 function getRemoteConfig(envConfig = ''): { label: string; value: string }[] {
@@ -18,8 +18,8 @@ function getRemoteConfig(envConfig = ''): { label: string; value: string }[] {
     }, []);
 }
 
-function replaceBackend(data: string, host: string): string {
-    return data.replace('#{cloudflare_worker_sub}', host);
+function replaceBackend(data: string, origin: string): string {
+    return data.replace('#{cloudflare_worker_sub}', origin);
 }
 
 function replaceRemoteConfig(data: string, config: string): string {
@@ -42,14 +42,14 @@ export const DEFAULT_CONFIG: Required<Env> = {
 
 export async function showPage(pageOptions: IPageOption): Promise<Response> {
     try {
-        const { url, lockBackend, remoteConfig, host } = pageOptions;
+        const { url, lockBackend, remoteConfig, origin } = pageOptions;
         const response = await fetch(`${url}?t=${Date.now()}`);
         if (response.status !== 200) {
             throw new Error(response.statusText);
         }
         let originPage = await response.text();
         //  替换后端地址
-        originPage = replaceBackend(originPage, host);
+        originPage = replaceBackend(originPage, origin);
         // 替换远程配置
         originPage = replaceRemoteConfig(originPage, remoteConfig);
         // 替换是否锁定后端
