@@ -51,11 +51,11 @@ function jn(e, n) {
     i += e;
   return i;
 }
-function Kn(e) {
+function $n(e) {
   return e === 0 && Number.NEGATIVE_INFINITY === 1 / e;
 }
-var $n = en, Gn = Un, Wn = Yn, qn = jn, Qn = Kn, Vn = Hn, w = {
-  isNothing: $n,
+var Kn = en, Gn = Un, Wn = Yn, qn = jn, Qn = $n, Vn = Hn, w = {
+  isNothing: Kn,
   isObject: Gn,
   toArray: Wn,
   repeat: qn,
@@ -517,14 +517,14 @@ var ji = new _("tag:yaml.org,2002:binary", {
   construct: Ui,
   predicate: Hi,
   represent: Yi
-}), Ki = Object.prototype.hasOwnProperty, $i = Object.prototype.toString;
+}), $i = Object.prototype.hasOwnProperty, Ki = Object.prototype.toString;
 function Gi(e) {
   if (e === null) return !0;
   var n = [], i, o, r, u, l, t = e;
   for (i = 0, o = t.length; i < o; i += 1) {
-    if (r = t[i], l = !1, $i.call(r) !== "[object Object]") return !1;
+    if (r = t[i], l = !1, Ki.call(r) !== "[object Object]") return !1;
     for (u in r)
-      if (Ki.call(r, u))
+      if ($i.call(r, u))
         if (!l) l = !0;
         else return !1;
     if (!l) return !1;
@@ -851,7 +851,7 @@ function gr(e, n) {
   }
   return !0;
 }
-function Ke(e, n) {
+function $e(e, n) {
   var i, o = e.tag, r = e.anchor, u = [], l, t = !1, c;
   if (e.firstTabInLine !== -1) return !1;
   for (e.anchor !== null && (e.anchorMap[e.anchor] = u), c = e.input.charCodeAt(e.position); c !== 0 && (e.firstTabInLine !== -1 && (e.position = e.firstTabInLine, p(e, "tab characters must not be used in indentation")), !(c !== 45 || (l = e.input.charCodeAt(e.position + 1), !b(l)))); ) {
@@ -936,7 +936,7 @@ function j(e, n, i, o, r) {
   if (e.listener !== null && e.listener("open", e), e.tag = null, e.anchor = null, e.kind = null, e.result = null, u = l = t = me === i || tn === i, o && y(e, !0, -1) && (f = !0, e.lineIndent > n ? c = 1 : e.lineIndent === n ? c = 0 : e.lineIndent < n && (c = -1)), c === 1)
     for (; xr(e) || Cr(e); )
       y(e, !0, -1) ? (f = !0, t = u, e.lineIndent > n ? c = 1 : e.lineIndent === n ? c = 0 : e.lineIndent < n && (c = -1)) : t = !1;
-  if (t && (t = f || r), (c === 1 || me === i) && (ge === i || un === i ? x = n : x = n + 1, v = e.position - e.lineStart, c === 1 ? t && (Ke(e, v) || mr(e, v, x)) || dr(e, x) ? s = !0 : (l && gr(e, x) || pr(e, x) || hr(e, x) ? s = !0 : Ar(e) ? (s = !0, (e.tag !== null || e.anchor !== null) && p(e, "alias node should not have any properties")) : sr(e, x, ge === i) && (s = !0, e.tag === null && (e.tag = "?")), e.anchor !== null && (e.anchorMap[e.anchor] = e.result)) : c === 0 && (s = t && Ke(e, v))), e.tag === null)
+  if (t && (t = f || r), (c === 1 || me === i) && (ge === i || un === i ? x = n : x = n + 1, v = e.position - e.lineStart, c === 1 ? t && ($e(e, v) || mr(e, v, x)) || dr(e, x) ? s = !0 : (l && gr(e, x) || pr(e, x) || hr(e, x) ? s = !0 : Ar(e) ? (s = !0, (e.tag !== null || e.anchor !== null) && p(e, "alias node should not have any properties")) : sr(e, x, ge === i) && (s = !0, e.tag === null && (e.tag = "?")), e.anchor !== null && (e.anchorMap[e.anchor] = e.result)) : c === 0 && (s = t && $e(e, v))), e.tag === null)
     e.anchor !== null && (e.anchorMap[e.anchor] = e.result);
   else if (e.tag === "?") {
     for (e.result !== null && e.kind !== "scalar" && p(e, 'unacceptable node kind for !<?> tag; it should be "scalar", not "' + e.kind + '"'), a = 0, h = e.implicitTypes.length; a < h; a += 1)
@@ -1049,8 +1049,8 @@ var jr = [
   "off",
   "Off",
   "OFF"
-], Kr = /^[-+]?[0-9_]+(?::[0-9_]+)+(?:\.[0-9_]*)?$/;
-function $r(e, n) {
+], $r = /^[-+]?[0-9_]+(?::[0-9_]+)+(?:\.[0-9_]*)?$/;
+function Kr(e, n) {
   var i, o, r, u, l, t, c;
   if (n === null) return {};
   for (i = {}, o = Object.keys(n), r = 0, u = o.length; r < u; r += 1)
@@ -1071,9 +1071,9 @@ function Gr(e) {
 }
 var Wr = 1, X = 2;
 function qr(e) {
-  this.schema = e.schema || ln, this.indent = Math.max(1, e.indent || 2), this.noArrayIndent = e.noArrayIndent || !1, this.skipInvalid = e.skipInvalid || !1, this.flowLevel = w.isNothing(e.flowLevel) ? -1 : e.flowLevel, this.styleMap = $r(this.schema, e.styles || null), this.sortKeys = e.sortKeys || !1, this.lineWidth = e.lineWidth || 80, this.noRefs = e.noRefs || !1, this.noCompatMode = e.noCompatMode || !1, this.condenseFlow = e.condenseFlow || !1, this.quotingType = e.quotingType === '"' ? X : Wr, this.forceQuotes = e.forceQuotes || !1, this.replacer = typeof e.replacer == "function" ? e.replacer : null, this.implicitTypes = this.schema.compiledImplicit, this.explicitTypes = this.schema.compiledExplicit, this.tag = null, this.result = "", this.duplicates = [], this.usedDuplicates = null;
+  this.schema = e.schema || ln, this.indent = Math.max(1, e.indent || 2), this.noArrayIndent = e.noArrayIndent || !1, this.skipInvalid = e.skipInvalid || !1, this.flowLevel = w.isNothing(e.flowLevel) ? -1 : e.flowLevel, this.styleMap = Kr(this.schema, e.styles || null), this.sortKeys = e.sortKeys || !1, this.lineWidth = e.lineWidth || 80, this.noRefs = e.noRefs || !1, this.noCompatMode = e.noCompatMode || !1, this.condenseFlow = e.condenseFlow || !1, this.quotingType = e.quotingType === '"' ? X : Wr, this.forceQuotes = e.forceQuotes || !1, this.replacer = typeof e.replacer == "function" ? e.replacer : null, this.implicitTypes = this.schema.compiledImplicit, this.explicitTypes = this.schema.compiledExplicit, this.tag = null, this.result = "", this.duplicates = [], this.usedDuplicates = null;
 }
-function $e(e, n) {
+function Ke(e, n) {
   for (var i = w.repeat(" ", n), o = 0, r = -1, u = "", l, t = e.length; o < t; )
     r = e.indexOf(`
 `, o), r === -1 ? (l = e.slice(o), o = t) : (l = e.slice(o, r + 1), o = r + 1), l.length && l !== `
@@ -1150,7 +1150,7 @@ function Jr(e, n, i, o, r) {
   e.dump = function() {
     if (n.length === 0)
       return e.quotingType === X ? '""' : "''";
-    if (!e.noCompatMode && (jr.indexOf(n) !== -1 || Kr.test(n)))
+    if (!e.noCompatMode && (jr.indexOf(n) !== -1 || $r.test(n)))
       return e.quotingType === X ? '"' + n + '"' : "'" + n + "'";
     var u = e.indent * Math.max(1, i), l = e.lineWidth === -1 ? -1 : Math.max(Math.min(e.lineWidth, 40), e.lineWidth - u), t = o || e.flowLevel > -1 && i >= e.flowLevel;
     function c(f) {
@@ -1171,9 +1171,9 @@ function Jr(e, n, i, o, r) {
       case Le:
         return "'" + n.replace(/'/g, "''") + "'";
       case _n:
-        return "|" + qe(n, e.indent) + Qe($e(n, u));
+        return "|" + qe(n, e.indent) + Qe(Ke(n, u));
       case En:
-        return ">" + qe(n, e.indent) + Qe($e(zr(n, l), u));
+        return ">" + qe(n, e.indent) + Qe(Ke(zr(n, l), u));
       case U:
         return '"' + eo(n) + '"';
       default:
@@ -1509,16 +1509,16 @@ ue = new WeakMap(), te = new WeakMap(), D = new WeakMap(), R = new WeakSet(), Fn
   const { username: i, hostname: o, port: r, search: u, hash: l } = this.confuseConfig;
   F(this, te, `ss://${i}@${o}:${r}${u ?? ""}${l}`);
 };
-var ce, fe, K, Ln, kn;
+var ce, fe, $, Ln, kn;
 class po extends we {
   constructor(i) {
     super();
-    A(this, K);
+    A(this, $);
     /** * @description 原始链接 */
     A(this, ce, "");
     /** * @description 混淆链接 */
     A(this, fe, "");
-    T(this, K, Ln).call(this, i);
+    T(this, $, Ln).call(this, i);
   }
   restore(i, o) {
     var r, u;
@@ -1531,7 +1531,7 @@ class po extends we {
     return C(this, ce);
   }
 }
-ce = new WeakMap(), fe = new WeakMap(), K = new WeakSet(), Ln = function(i) {
+ce = new WeakMap(), fe = new WeakMap(), $ = new WeakSet(), Ln = function(i) {
   F(this, ce, i);
   const o = new URL(i);
   this.setOriginConfig(o, o.hash), this.setConfuseConfig({
@@ -1540,21 +1540,21 @@ ce = new WeakMap(), fe = new WeakMap(), K = new WeakSet(), Ln = function(i) {
     port: this.getPort(),
     search: this.originConfig.search,
     hash: P.setPs(this.originPs, this.confusePs)
-  }), T(this, K, kn).call(this);
+  }), T(this, $, kn).call(this);
 }, kn = function() {
   const { password: i, hostname: o, port: r, search: u, hash: l } = this.confuseConfig;
   F(this, fe, `trojan://${i}@${o}:${r}${u}${l}`);
 };
-var ae, se, $, In, Nn;
+var ae, se, K, In, Nn;
 class ho extends we {
   constructor(i) {
     super();
-    A(this, $);
+    A(this, K);
     /** * @description 原始链接 */
     A(this, ae, "");
     /** * @description 混淆链接 */
     A(this, se, "");
-    T(this, $, In).call(this, i);
+    T(this, K, In).call(this, i);
   }
   restore(i, o) {
     var r;
@@ -1567,7 +1567,7 @@ class ho extends we {
     return C(this, ae);
   }
 }
-ae = new WeakMap(), se = new WeakMap(), $ = new WeakSet(), In = function(i) {
+ae = new WeakMap(), se = new WeakMap(), K = new WeakSet(), In = function(i) {
   F(this, ae, i);
   const o = new URL(i);
   this.setOriginConfig(o, o.hash), this.setConfuseConfig({
@@ -1576,7 +1576,7 @@ ae = new WeakMap(), se = new WeakMap(), $ = new WeakSet(), In = function(i) {
     port: this.getPort(),
     search: this.originConfig.search,
     hash: P.setPs(this.originPs, this.confusePs)
-  }), T(this, $, Nn).call(this);
+  }), T(this, K, Nn).call(this);
 }, Nn = function() {
   const { password: i, hostname: o, port: r, search: u, hash: l } = this.confuseConfig;
   F(this, se, `vless://${i}@${o}:${r}${u}${l}`);
@@ -1618,8 +1618,7 @@ pe = new WeakMap(), he = new WeakMap(), G = new WeakSet(), Pn = function(i) {
   F(this, he, `vmess://${bn(JSON.stringify({ v: s, ps: u, add: i, port: o, id: r, scy: l, net: t, type: c, tls: f }))}`);
 };
 function mo(e, n) {
-  const { searchParams: i } = new URL(e), r = i.get("url").split(`
-`).filter(Boolean), u = /* @__PURE__ */ new Set(), l = /* @__PURE__ */ new Map();
+  const { searchParams: i } = new URL(e), r = i.get("url").split(/\||\n/).filter(Boolean), u = /* @__PURE__ */ new Set(), l = /* @__PURE__ */ new Map();
   for (const c of r) {
     if (c.startsWith("vless:")) {
       const f = new ho(c);
@@ -1646,25 +1645,37 @@ function mo(e, n) {
   };
 }
 function xo(e, n) {
-  const i = [];
-  for (const o of e) {
-    const [r, u] = P.getPs(o.name);
-    if (n.has(u)) {
-      const l = n.get(u);
-      l == null || l.restore(o, r), i.push(o);
+  try {
+    const i = [];
+    for (const o of e) {
+      const [r, u] = P.getPs(o.name);
+      if (n.has(u)) {
+        const l = n.get(u);
+        l == null || l.restore(o, r), i.push(o);
+      }
     }
+    return i;
+  } catch (i) {
+    throw new Error(`Restore proxies failed: ${i.message || i}, function trace: ${i.stack}`);
   }
-  return i;
 }
 function Co(e) {
-  return e.map((n) => {
-    const [i] = P.getPs(n);
-    return i;
-  });
+  try {
+    return e.map((n) => {
+      const [i] = P.getPs(n);
+      return i;
+    });
+  } catch (n) {
+    throw new Error(`Update proxies groups failed: ${n.message || n}, function trace: ${n.stack}`);
+  }
 }
 function Ao(e, n) {
-  const i = co(e);
-  return i.proxies = xo(i.proxies, n), i["proxy-groups"] = i["proxy-groups"].map((o) => (o.proxies && (o.proxies = Co(o.proxies)), o)), i;
+  try {
+    const i = co(e);
+    return i.proxies = xo(i.proxies, n), i["proxy-groups"] = i["proxy-groups"].map((o) => (o.proxies && (o.proxies = Co(o.proxies)), o)), i;
+  } catch (i) {
+    throw new Error(`Get origin config failed: ${i.message || i}, function trace: ${i.stack}`);
+  }
 }
 function vo(e = "") {
   return e.split(`
