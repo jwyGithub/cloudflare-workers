@@ -54,6 +54,6 @@ jobs:
               with:
                   github_token: ${{ secrets.DEPLOY_TOKEN }}
                   publish_dir: packages/vps-convert/pages
-                  publish_branch: release-vps
+                  publish_branch: release-convert
                   keep_files: false
                   enable_jekyll: true
