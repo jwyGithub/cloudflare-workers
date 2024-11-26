@@ -28,9 +28,7 @@ function replaceRemoteConfig(data: string, config: string): string {
 }
 
 function replaceDisabled(data: string, v: boolean): string {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error
-    return data.replace(`'#{DISABLED_BACKEND}'`, v);
+    return data.replace(`'#{DISABLED_BACKEND}'`, v ? 'true' : 'false');
 }
 
 export const DEFAULT_CONFIG: Required<Env> = {

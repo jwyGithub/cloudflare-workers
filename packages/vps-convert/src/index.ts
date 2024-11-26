@@ -17,7 +17,7 @@ export default {
                 const confuseConfig = await response.text();
                 const originConfig = getOriginConfig(confuseConfig, vpsMap);
                 return toStream(
-                    dump(originConfig, { indent: 4, lineWidth: 200 }),
+                    dump(originConfig, { indent: 2, lineWidth: 200 }),
                     new Headers({
                         'Content-Type': 'text/yaml; charset=UTF-8',
                         'Cache-Control': 'no-store'
