@@ -29,6 +29,8 @@ jobs:
                       echo "type=cargo" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^vps: ]]; then
                       echo "type=vps" >> $GITHUB_OUTPUT
+                  elif [[ "$commit_message" =~ ^convert: ]]; then
+                      echo "type=convert" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^feat: ]]; then
                       echo "type=feat" >> $GITHUB_OUTPUT
                   else
@@ -64,6 +66,13 @@ jobs:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'vps' || needs.determine_release_type.outputs.release_type == 'feat'
         uses: ./.github/workflows/release-vps.yml
+        secrets:
+            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+    run_vps_release:
+        needs: determine_release_type
+        if: needs.determine_release_type.outputs.release_type == 'convert' || needs.determine_release_type.outputs.release_type == 'feat'
+        uses: ./.github/workflows/release-convert.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 

@@ -22,21 +22,26 @@
         "pages:cargo": "pnpm --dir packages/cargo-proxy run pages",
         "dev:vps": "pnpm --dir packages/vps-parse run dev",
         "deploy:vps": "pnpm --dir packages/vps-parse run deploy",
-        "pages:vps": "pnpm --dir packages/vps-parse run pages"
+        "pages:vps": "pnpm --dir packages/vps-parse run pages",
+        "dev:convert": "pnpm --dir packages/vps-convert run dev",
+        "deploy:convert": "pnpm --dir packages/vps-convert run deploy",
+        "pages:convert": "pnpm --dir packages/vps-convert run pages"
     },
     "dependencies": {
         "@jiangweiye/cloudflare-service": "^0.0.6",
-        "@jiangweiye/cloudflare-shared": "^0.0.5"
+        "@jiangweiye/cloudflare-shared": "^0.0.7"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20241112.0",
         "@jiangweiye/eslint-config": "0.1.13",
         "@jiangweiye/prettier-config": "^0.0.18",
         "@jiangweiye/tsconfig": "^0.0.11",
-        "@types/node": "^22.9.0",
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^22.10.0",
         "eslint": "^9.10.0",
-        "prettier": "^3.3.3",
-        "typescript": "^5.6.3",
+        "js-yaml": "^4.1.0",
+        "prettier": "^3.4.0",
+        "typescript": "^5.7.2",
         "vite": "^5.4.11"
     }
 }
