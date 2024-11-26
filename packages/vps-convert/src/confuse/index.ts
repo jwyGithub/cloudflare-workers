@@ -13,7 +13,7 @@ export function getConfuseUrl(
     const { searchParams } = new URL(url);
     const vpsUrl = searchParams.get('url');
 
-    const vps = vpsUrl!.split('\n').filter(Boolean);
+    const vps = vpsUrl!.split(/\||\n/).filter(Boolean);
 
     const urls = new Set();
 
