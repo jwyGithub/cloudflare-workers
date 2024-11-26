@@ -1698,7 +1698,7 @@ const de = {
   PAGE_URL: "https://raw.githubusercontent.com/jwyGithub/subconverter-cloudflare/main/index.html",
   BACKEND: "https://url.v1.mk",
   LOCK_BACKEND: !1,
-  REMOTE_CONFIG: "[]"
+  REMOTE_CONFIG: ""
 };
 async function Eo(e) {
   try {
@@ -1727,7 +1727,7 @@ const bo = {
           throw new Error(l.statusText);
         const t = await l.text(), c = Ao(t, u);
         return Je(
-          fo(c),
+          fo(c, { indent: 4, lineWidth: 200 }),
           new Headers({
             "Content-Type": "text/yaml; charset=UTF-8",
             "Cache-Control": "no-store"
