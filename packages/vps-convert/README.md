@@ -1,42 +1,25 @@
-# docker-proxy
+# vps-convert
 
-## 介绍
+## 支持解析的类型
 
--   [x] [dockerHub](https://registry-1.docker.io)
--   [x] [ghcr.io](https://ghcr.io)
--   [x] [gcr.io](https://gcr.io)
--   [x] [quay.io](https://quay.io)
--   [x] [k8s.gcr.io](https://registry.k8s.io)
--   [x] [k8s-gcr](https://k8s.gcr.io)
-
-## 配置
-
-> 需要配置如下自定义域:
-
-    - docker.YOUR_DOMAIN
-    - gcr.YOUR_DOMAIN
-    - ghcr.YOUR_DOMAIN
-    - k8s-gcr.YOUR_DOMAIN
-    - k8s.YOUR_DOMAIN
-    - quay.YOUR_DOMAIN
+- [x] [vless](vless)
+- [x] [vmess](vmess)
+- [x] [trojan](trojan)
+- [x] [ss](ss)
+- [x] [ssr](ssr)
+- [] [hysteria]()
+- [] [hysteria2]()
+- [] [hy2]()
+- [] [sub]()
 
 ## 环境变量配置
 
-| 变量KEY      | 说明                                                           | 默认值 | 是否必填 |
-| ------------ | -------------------------------------------------------------- | ------ | -------- |
-| IP_WHITELIST | 允许的IP白名单,多个规则以，分隔，例如：`192.168.*.*,202.*.*.*` | \*     | 否       |
+| 变量KEY       | 说明                     | 默认值            | 是否必填 |
+| ------------- | ------------------------ | ----------------- | -------- |
+| BACKEND       | 转换的后端服务           | https://url.v1.mk | 否       |
+| LOCK_BACKEND  | 是否禁止更改后端         | false             | 否       |
+| REMOTE_CONFIG | 自定义远端配置，多个换行 | https://xxxxx1    | 否       |
 
-## IP匹配规则
+## 开源协议
 
--   \* 允许所有ip访问
--   192.\*.\*.\* 允许192开头的ip访问
--   192.168.\*.\* 允许192.168开头的ip访问
--   192.168.1.\* 允许192.168.1开头的ip访问
--   192.168.1.1 只允许192.168.1.1访问
--   192.\*.1.\* 允许192开头1结尾的ip访问
--   192.\*.1.1 允许192开头1结尾的ip访问
--   192.168.\*.1 允许192.168开头1结尾的ip访问
-
-## 使用
-
-打开docker.YOUR_DOMAIN页面，查看使用说明页面
+[MIT](../../LICENSE)

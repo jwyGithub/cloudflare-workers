@@ -1,42 +1,19 @@
-# docker-proxy
-
-## 介绍
-
--   [x] [dockerHub](https://registry-1.docker.io)
--   [x] [ghcr.io](https://ghcr.io)
--   [x] [gcr.io](https://gcr.io)
--   [x] [quay.io](https://quay.io)
--   [x] [k8s.gcr.io](https://registry.k8s.io)
--   [x] [k8s-gcr](https://k8s.gcr.io)
-
-## 配置
-
-> 需要配置如下自定义域:
-
-    - docker.YOUR_DOMAIN
-    - gcr.YOUR_DOMAIN
-    - ghcr.YOUR_DOMAIN
-    - k8s-gcr.YOUR_DOMAIN
-    - k8s.YOUR_DOMAIN
-    - quay.YOUR_DOMAIN
+# vps-parse
 
 ## 环境变量配置
 
-| 变量KEY      | 说明                                                           | 默认值 | 是否必填 |
-| ------------ | -------------------------------------------------------------- | ------ | -------- |
-| IP_WHITELIST | 允许的IP白名单,多个规则以，分隔，例如：`192.168.*.*,202.*.*.*` | \*     | 否       |
+| 变量KEY         | 说明                  | 默认值 | 是否必填 |
+| --------------- | --------------------- | ------ | -------- |
+| GITHUB_TOKEN    | 推送到github时的token |        | 是       |
+| GITHUB_USERNAME | github用户名          |        | 是       |
+| REPO_NAME       | github仓库名          |        | 是       |
+| REPO_BRANCH     | github仓库分支        |        | 是       |
+| LINKS           | 需要被解析的订阅链接  |        | 否       |
+| SUBS            | 转换的vps链接         |        | 否       |
+| UPLOAD_URL      | 转换后上传的服务      |        | 否       |
+| REMOTE_CONFIG   | 转换时的远端配置      |        | 否       |
+| SUB_CONVERT     | 转换后端服务          |        | 否       |
 
-## IP匹配规则
+## 开源协议
 
--   \* 允许所有ip访问
--   192.\*.\*.\* 允许192开头的ip访问
--   192.168.\*.\* 允许192.168开头的ip访问
--   192.168.1.\* 允许192.168.1开头的ip访问
--   192.168.1.1 只允许192.168.1.1访问
--   192.\*.1.\* 允许192开头1结尾的ip访问
--   192.\*.1.1 允许192开头1结尾的ip访问
--   192.168.\*.1 允许192.168开头1结尾的ip访问
-
-## 使用
-
-打开docker.YOUR_DOMAIN页面，查看使用说明页面
+[MIT](../../LICENSE)
