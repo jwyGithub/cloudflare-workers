@@ -1,9 +1,9 @@
-var h = (t) => {
-  throw TypeError(t);
+var l = (e) => {
+  throw TypeError(e);
 };
-var l = (t, e, s) => e.has(t) || h("Cannot " + s);
-var a = (t, e, s) => (l(t, e, "read from private field"), s ? s.call(t) : e.get(t)), p = (t, e, s) => e.has(t) ? h("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), o = (t, e, s, i) => (l(t, e, "write to private field"), i ? i.call(t, s) : e.set(t, s), s);
-const I = "unauthorized", S = "internal server error", y = new Headers({
+var p = (e, t, s) => t.has(e) || l("Cannot " + s);
+var a = (e, t, s) => (p(e, t, "read from private field"), s ? s.call(e) : t.get(e)), d = (e, t, s) => t.has(e) ? l("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), i = (e, t, s, o) => (p(e, t, "write to private field"), o ? o.call(e, s) : t.set(e, s), s);
+const I = "unauthorized", j = "internal server error", y = new Headers({
   "Content-type": "application/json"
 }), H = new Headers({
   "Content-type": "application/octet-stream"
@@ -14,89 +14,86 @@ new Headers({
 new Headers({
   "Content-type": "text/html"
 });
-const W = (t, e = H) => new Response(t, {
+const S = (e, t = H) => new Response(e, {
   status: 200,
-  headers: e
-}), b = (t = I, e = 401, s = y) => new Response(
-  JSON.stringify({
-    status: e,
-    message: t
-  }),
+  headers: t
+}), W = (e = I, t = 401, s = y) => Response.json(
   {
-    status: e,
-    statusText: t,
+    status: t,
+    message: e
+  },
+  {
+    status: t,
+    statusText: e,
     headers: s
   }
-), d = (t = S, e = 500, s = y) => new Response(
-  JSON.stringify({
-    status: e,
-    message: t
-  }),
+), u = (e = j, t = 500, s = y) => Response.json(
   {
-    status: e,
-    statusText: t,
+    status: t,
+    message: e
+  },
+  {
+    status: t,
+    statusText: e,
     headers: s
   }
-), j = /^(?:(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.){3}(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])(?::(?:\d|[1-9]\d{1,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5]))?$/;
-function v(t) {
-  return t ? j.test(t) : !1;
-}
-function A(t, e) {
-  if (!t || !e || !v(t)) return !1;
-  for (let s = 0; s < e.length; s++)
-    if (new RegExp(e[s].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(t))
+);
+function b(e, t) {
+  if (!e || !t) return !1;
+  for (let s = 0; s < t.length; s++)
+    if (new RegExp(t[s].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(e))
       return !0;
   return !1;
 }
 var n;
-class N {
+class v {
   constructor() {
-    p(this, n, []);
-    o(this, n, []);
+    d(this, n, []);
+    i(this, n, []);
   }
-  setEnv(e) {
-    if (a(this, n).length || a(this, n) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
-    const s = Reflect.get(e, "IP_WHITELIST") ?? "*";
-    s === "*" ? o(this, n, "*") : o(this, n, s.split(",").map((i) => i.trim()));
+  setEnv(t) {
+    if (a(this, n).length || a(this, n) === "*" || !Reflect.has(t, "IP_WHITELIST")) return;
+    const s = Reflect.get(t, "IP_WHITELIST") ?? "*";
+    s === "*" ? i(this, n, "*") : i(this, n, s.split(",").map((o) => o.trim()));
   }
-  checkIpIsWhitelisted(e) {
-    return (typeof a(this, n) == "string" && a(this, n)) === "*" || Array.isArray(a(this, n)) && a(this, n).length === 0 ? !0 : Array.isArray(a(this, n)) && a(this, n).length > 0 ? A(e, a(this, n)) : !1;
+  checkIpIsWhitelisted(t) {
+    return (typeof a(this, n) == "string" && a(this, n)) === "*" || Array.isArray(a(this, n)) && a(this, n).length === 0 ? !0 : Array.isArray(a(this, n)) && a(this, n).length > 0 ? b(t, a(this, n)) : !1;
   }
 }
 n = new WeakMap();
-const f = new N(), J = {
-  async fetch(t, e) {
+const f = new v(), C = {
+  async fetch(e, t) {
     try {
-      const { pathname: s } = new URL(t.url);
-      f.setEnv(e);
-      const i = t.headers.get("x-real-ip");
-      return f.checkIpIsWhitelisted(i) ? s === "/favicon.ico" ? W("", t.headers) : await _(t) : b();
+      const { pathname: s } = new URL(e.url);
+      f.setEnv(t);
+      const o = e.headers.get("x-real-ip");
+      return o && !f.checkIpIsWhitelisted(o) ? W() : s === "/favicon.ico" ? S("", e.headers) : await _(e);
     } catch (s) {
-      return d(s.message);
+      return u(s.message);
     }
   }
 };
-async function _(t) {
-  const e = new URL(t.url), s = `https://registry.npmjs.org${e.pathname}${e.search}`, i = t.method, g = new Headers(t.headers), w = e.pathname.startsWith("/-/user/org.couchdb.user:"), x = {
-    method: i,
+async function _(e) {
+  const t = new URL(e.url), s = `https://registry.npmjs.org${t.pathname}${t.search}`, o = e.method, g = new Headers(e.headers), w = t.pathname.startsWith("/-/user/org.couchdb.user:"), x = {
+    method: o,
     headers: g,
-    body: t.body ? t.body : void 0,
+    body: e.body ? e.body : void 0,
     redirect: "follow"
   }, m = new Request(s, x);
   let r;
   try {
     r = await fetch(m);
   } catch (c) {
-    return console.error("Failed to send request to npm registry", c), d();
+    return console.error("Failed to send request to npm registry", c), u();
   }
   if (r.status === 201 && w && (r.headers.get("content-type") || "").includes("application/json")) {
-    let u;
+    let h;
     try {
-      u = await r.json();
+      h = await r.json();
     } catch (T) {
-      return console.error("Failed to parse response JSON", T), d();
+      return console.error("Failed to parse response JSON", T), u();
     }
-    const R = JSON.stringify(u);
+    const R = JSON.stringify(h);
     return new Response(R, {
       status: r.status,
       statusText: r.statusText,
@@ -114,5 +111,5 @@ async function _(t) {
   });
 }
 export {
-  J as default
+  C as default
 };
