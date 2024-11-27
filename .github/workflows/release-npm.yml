@@ -17,7 +17,7 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: latest
-            - run: pnpm install
+            - run: pnpm install --no-frozen-lockfile
             - run: pnpm run pages:npm
             - name: Upload artifact
               uses: actions/upload-artifact@v4
