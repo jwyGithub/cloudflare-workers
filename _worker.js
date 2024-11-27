@@ -1,9 +1,9 @@
-var m = (e) => {
+var g = (e) => {
   throw TypeError(e);
 };
-var y = (e, t, s) => t.has(e) || m("Cannot " + s);
-var i = (e, t, s) => (y(e, t, "read from private field"), s ? s.call(e) : t.get(e)), k = (e, t, s) => t.has(e) ? m("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), l = (e, t, s, r) => (y(e, t, "write to private field"), r ? r.call(e, s) : t.set(e, s), s);
-const U = "success", A = "unauthorized", T = "internal server error", w = new Headers({
+var y = (e, t, s) => t.has(e) || g("Cannot " + s);
+var i = (e, t, s) => (y(e, t, "read from private field"), s ? s.call(e) : t.get(e)), k = (e, t, s) => t.has(e) ? g("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), d = (e, t, s, r) => (y(e, t, "write to private field"), r ? r.call(e, s) : t.set(e, s), s);
+const I = "success", U = "unauthorized", A = "internal server error", w = new Headers({
   "Content-type": "application/json"
 }), W = new Headers({
   "Content-type": "application/octet-stream"
@@ -13,12 +13,12 @@ new Headers({
 });
 const L = new Headers({
   "Content-type": "text/html"
-}), E = (e, t = U, s = w) => new Response(
-  JSON.stringify({
+}), j = (e, t = I, s = w) => Response.json(
+  {
     status: 200,
     message: t,
     data: e
-  }),
+  },
   {
     status: 200,
     statusText: t,
@@ -27,55 +27,52 @@ const L = new Headers({
 ), R = (e, t = W) => new Response(e, {
   status: 200,
   headers: t
-}), x = (e = A, t = 401, s = w) => new Response(
-  JSON.stringify({
+}), x = (e = U, t = 401, s = w) => Response.json(
+  {
     status: t,
     message: e
-  }),
+  },
   {
     status: t,
     statusText: e,
     headers: s
   }
-), P = (e = T, t = 500, s = w) => new Response(
-  JSON.stringify({
+), P = (e = A, t = 500, s = w) => Response.json(
+  {
     status: t,
     message: e
-  }),
+  },
   {
     status: t,
     statusText: e,
     headers: s
   }
-), S = /^(?:(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.){3}(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])(?::(?:\d|[1-9]\d{1,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5]))?$/;
-function b(e) {
-  return e ? S.test(e) : !1;
-}
-function $(e, t) {
-  if (!e || !t || !b(e)) return !1;
+);
+function b(e, t) {
+  if (!e || !t) return !1;
   for (let s = 0; s < t.length; s++)
     if (new RegExp(t[s].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(e))
       return !0;
   return !1;
 }
 var n;
-class C {
+class E {
   constructor() {
     k(this, n, []);
-    l(this, n, []);
+    d(this, n, []);
   }
   setEnv(t) {
     if (i(this, n).length || i(this, n) === "*" || !Reflect.has(t, "IP_WHITELIST")) return;
     const s = Reflect.get(t, "IP_WHITELIST") ?? "*";
-    s === "*" ? l(this, n, "*") : l(this, n, s.split(",").map((r) => r.trim()));
+    s === "*" ? d(this, n, "*") : d(this, n, s.split(",").map((r) => r.trim()));
   }
   checkIpIsWhitelisted(t) {
-    return (typeof i(this, n) == "string" && i(this, n)) === "*" || Array.isArray(i(this, n)) && i(this, n).length === 0 ? !0 : Array.isArray(i(this, n)) && i(this, n).length > 0 ? $(t, i(this, n)) : !1;
+    return (typeof i(this, n) == "string" && i(this, n)) === "*" || Array.isArray(i(this, n)) && i(this, n).length === 0 ? !0 : Array.isArray(i(this, n)) && i(this, n).length > 0 ? b(t, i(this, n)) : !1;
   }
 }
 n = new WeakMap();
-const v = new C(), H = "https://registry-1.docker.io", p = {
-  docker: H,
+const v = new E(), T = "https://registry-1.docker.io", f = {
+  docker: T,
   quay: "https://quay.io",
   gcr: "https://gcr.io",
   "k8s-gcr": "https://k8s.gcr.io",
@@ -83,31 +80,31 @@ const v = new C(), H = "https://registry-1.docker.io", p = {
   ghcr: "https://ghcr.io",
   cloudsmith: "https://docker.cloudsmith.io"
 };
-function j(e) {
-  const s = Object.keys(p).find((r) => e.startsWith(r));
-  return s ? p[s] : "";
+function $(e) {
+  const s = Object.keys(f).find((r) => e.startsWith(r));
+  return s ? f[s] : "";
 }
-const D = {
+const C = {
   async fetch(e, t) {
     try {
       v.setEnv(t);
       const { pathname: s } = new URL(e.url);
       if (s === "/") {
-        const o = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`, f = await (await fetch(o)).text();
-        return R(f, L);
+        const o = `https://raw.githubusercontent.com/jwyGithub/cloudflare-workers/refs/heads/main/packages/docker-proxy/src/index.html?t=${Date.now()}`, p = await (await fetch(o)).text();
+        return R(p, L);
       }
       const r = e.headers.get("x-real-ip");
-      return v.checkIpIsWhitelisted(r) ? s === "/favicon.ico" ? R("", e.headers) : await N(e) : x();
+      return r && !v.checkIpIsWhitelisted(r) ? x() : s === "/favicon.ico" ? R("", e.headers) : await G(e);
     } catch (s) {
       return P(s.message);
     }
   }
 };
-async function N(e) {
-  const t = new URL(e.url), s = j(t.hostname);
+async function G(e) {
+  const t = new URL(e.url), s = $(t.hostname);
   if (s === "")
-    return E(p, "success", e.headers);
-  const r = s === H, o = e.headers.get("Authorization");
+    return j(f, "success", e.headers);
+  const r = s === T, o = e.headers.get("Authorization");
   if (t.pathname === "/v2/") {
     const c = new URL(`${s}/v2/`), a = new Headers();
     o && a.set("Authorization", o);
@@ -128,13 +125,13 @@ async function N(e) {
     const h = a.headers.get("WWW-Authenticate");
     if (h === null)
       return a;
-    const I = O(h);
-    let d = t.searchParams.get("scope");
-    if (d && r) {
-      const u = d.split(":");
-      u.length === 3 && !u[1].includes("/") && (u[1] = `library/${u[1]}`, d = u.join(":"));
+    const H = S(h);
+    let l = t.searchParams.get("scope");
+    if (l && r) {
+      const u = l.split(":");
+      u.length === 3 && !u[1].includes("/") && (u[1] = `library/${u[1]}`, l = u.join(":"));
     }
-    return await _(I, d, o);
+    return await _(H, l, o);
   }
   if (r) {
     const c = t.pathname.split("/");
@@ -144,14 +141,14 @@ async function N(e) {
       return a.pathname = c.join("/"), Response.redirect(a.href, 301);
     }
   }
-  const g = new URL(s + t.pathname), f = new Request(g, {
+  const m = new URL(s + t.pathname), p = new Request(m, {
     method: e.method,
     headers: e.headers,
     redirect: "follow"
   });
-  return await fetch(f);
+  return await fetch(p);
 }
-function O(e) {
+function S(e) {
   const t = new RegExp('(?<==")(?:\\\\.|[^"\\\\])*(?=")', "g"), s = e.match(t);
   if (s == null || s.length < 2)
     throw new Error(`invalid Www-Authenticate Header: ${e}`);
@@ -167,5 +164,5 @@ async function _(e, t, s) {
   return s && o.set("Authorization", s), await fetch(r, { method: "GET", headers: o });
 }
 export {
-  D as default
+  C as default
 };
