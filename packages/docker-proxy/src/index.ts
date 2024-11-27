@@ -47,7 +47,7 @@ export default {
 
             const real_ip = request.headers.get('x-real-ip');
 
-            if (!validateIp.checkIpIsWhitelisted(real_ip)) {
+            if (real_ip && !validateIp.checkIpIsWhitelisted(real_ip)) {
                 return toUnauthorized();
             }
 
