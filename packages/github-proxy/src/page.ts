@@ -1,5 +1,5 @@
 export const getPage = (url: URL): string => {
-    const proto = url.protocol.startsWith('https://') ? 'wss' : 'ws';
+    const proto = url.protocol.startsWith('https') ? 'wss' : 'ws';
 
     return `<!DOCTYPE html>
 <html lang="en">
