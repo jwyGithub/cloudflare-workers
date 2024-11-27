@@ -2,9 +2,10 @@
     "name": "cloudflare-workers",
     "type": "module",
     "version": "1.0.0",
-    "description": "",
-    "author": "",
-    "license": "ISC",
+    "description": "cloudflare workers",
+    "author": "jiangweiye <jiangweiye@outlook.com> (https://github.com/jwyGithub)",
+    "license": "MIT",
+    "homepage": "https://github.com/jwyGithub/cloudflare-workers",
     "keywords": [
         "cloudflare",
         "workers"
@@ -28,8 +29,8 @@
         "pages:convert": "pnpm --dir packages/vps-convert run pages"
     },
     "dependencies": {
-        "@jiangweiye/cloudflare-service": "^0.0.6",
-        "@jiangweiye/cloudflare-shared": "^0.0.7",
+        "@jiangweiye/cloudflare-service": "^0.0.7",
+        "@jiangweiye/cloudflare-shared": "^0.0.8",
         "js-yaml": "^4.1.0"
     },
     "devDependencies": {
@@ -40,8 +41,8 @@
         "@types/js-yaml": "^4.0.9",
         "@types/node": "^22.10.0",
         "eslint": "^9.10.0",
-        "prettier": "^3.4.0",
+        "prettier": "^3.4.1",
         "typescript": "^5.7.2",
-        "vite": "^5.4.11"
+        "vite": "^6.0.0"
     }
 }

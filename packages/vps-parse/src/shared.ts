@@ -1,24 +1,7 @@
-import { base64Decode, base64Encode } from '@jiangweiye/cloudflare-shared';
 import { parseTrojanLink, parseVlessLink, parseVmessLink } from './parse';
 
 export function getTime(): string {
     return new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
-}
-
-export function tryBase64Decode(s: string): string {
-    try {
-        return base64Decode(s);
-    } catch {
-        return s;
-    }
-}
-
-export function tryBase64Encode(s: string): string {
-    try {
-        return base64Encode(s);
-    } catch {
-        return s;
-    }
 }
 
 export function hasHost(ip: string, links: Array<{ host: string; port: number; remark: string }>): boolean {
@@ -77,13 +60,13 @@ export function genHeader(): Headers {
     return headers;
 }
 
-export function getClashConfig(subs: string, config: string): Record<string, string> {
+export function getClashConfig(subs: string, config?: string): Record<string, string> {
     return {
         target: 'clash',
         new_name: 'true',
         url: subs.split(',').join('|'),
         insert: 'false',
-        config,
+        config: config ?? 'https://main.08050611.xyz/appStatic/clashConfig/ACL4SSR_Online_Full.ini',
         emoji: 'true',
         list: 'false',
         tfo: 'false',
@@ -93,8 +76,9 @@ export function getClashConfig(subs: string, config: string): Record<string, str
     };
 }
 
-export function getConvertUrl(config: ReturnType<typeof getClashConfig>): string {
-    const url = new URL('https://sub.looby.us.kg/sub');
+export function getConvertUrl(config: ReturnType<typeof getClashConfig>, env: Env): string {
+    const _url = env.SUB_CONVERT ?? 'https://sub.looby.us.kg/sub';
+    const url = new URL(_url);
     for (const [key, value] of Object.entries(config)) {
         url.searchParams.set(key, value);
     }

@@ -1,15 +1,6 @@
 import { toServerError, toSuccess } from '@jiangweiye/cloudflare-service';
-import {
-    genHeader,
-    getClashConfig,
-    getConvertUrl,
-    getTime,
-    getTrojan,
-    getVless,
-    getVmess,
-    tryBase64Decode,
-    tryBase64Encode
-} from './shared';
+import { tryBase64Decode, tryBase64Encode } from '@jiangweiye/cloudflare-shared';
+import { genHeader, getClashConfig, getConvertUrl, getTime, getTrojan, getVless, getVmess } from './shared';
 
 const getPath = (filePath: string): string => {
     return `packages/vps-parse/address/${filePath}`;
@@ -68,7 +59,7 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
         }
 
         const requestBody: any = {
-            message: `auto: update ${path} by ${getTime()}`,
+            message: `scheduled: update ${path} by ${getTime()}`,
             content: contentBase64,
             branch: env.REPO_BRANCH
         };
@@ -103,7 +94,7 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
 async function syncClashConfig(env: Env): Promise<{ convertUrl: string; result: string }> {
     try {
         const clashConfigUrl = getClashConfig(env.SUBS, env.REMOTE_CONFIG);
-        const convertUrl = getConvertUrl(clashConfigUrl);
+        const convertUrl = getConvertUrl(clashConfigUrl, env);
 
         const clashConfg = await fetch(convertUrl).then(res => res.blob());
 

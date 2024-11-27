@@ -10,5 +10,7 @@ interface Env {
 
     SUBS: string;
     UPLOAD_URL: string;
-    REMOTE_CONFIG: string;
+    REMOTE_CONFIG?: string;
+
+    SUB_CONVERT?: string;
 }
