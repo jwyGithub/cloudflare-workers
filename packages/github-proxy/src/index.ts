@@ -28,7 +28,7 @@ export default {
             return handleWebSocket(request);
         }
 
-        return handleDownload(request, url, ctx);
+        return handleDownload(request, url, ctx, env);
     }
 } satisfies ExportedHandler<Env>;
 
@@ -60,14 +60,14 @@ function handleWebSocket(request: Request): Response {
     });
 }
 
-async function handleDownload(_: Request, url: URL, ctx: ExecutionContext): Promise<Response> {
+async function handleDownload(_: Request, url: URL, ctx: ExecutionContext, env: Env): Promise<Response> {
     const targetUrl = url.pathname.startsWith('/http') ? url.pathname.slice(1) : `https://github.com${url.pathname}`;
 
     const pair = new WebSocketPair();
     const [__, server] = Object.values(pair);
 
     server.accept();
-    const downloadHandler = new DownloadHandler(server, targetUrl, ctx);
+    const downloadHandler = new DownloadHandler(server, targetUrl, ctx, env);
 
     try {
         return await downloadHandler.download();

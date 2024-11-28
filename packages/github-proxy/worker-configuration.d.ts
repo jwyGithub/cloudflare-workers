@@ -4,6 +4,6 @@
 interface Env {
     // ip白名单
     IP_WHITELIST?: string;
-    // 最大重试次数  5
-    MAX_RETRIES?: number;
+    // 最大文件大小  50M
+    MAX_SIZE?: string;
 }

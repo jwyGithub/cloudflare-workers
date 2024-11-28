@@ -9,12 +9,12 @@ export class DownloadHandler {
     private startTime: number;
     private ctx: ExecutionContext;
 
-    constructor(ws: WebSocket, url: string, ctx: ExecutionContext) {
+    constructor(ws: WebSocket, url: string, ctx: ExecutionContext, env: Env) {
         this.ws = ws;
         this.url = url;
         this.ctx = ctx;
         this.options = {
-            maxSize: MAX_FILE_SIZE,
+            maxSize: env.MAX_SIZE ? Number(env.MAX_SIZE) : MAX_FILE_SIZE,
             timeout: TIMEOUT
         };
         this.abortController = new AbortController();
