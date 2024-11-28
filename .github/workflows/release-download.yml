@@ -1,4 +1,4 @@
-name: github release
+name: download release
 
 on:
     workflow_call:
@@ -18,12 +18,12 @@ jobs:
               with:
                   node-version: latest
             - run: pnpm install --no-frozen-lockfile
-            - run: pnpm run pages:github
+            - run: pnpm run pages:download
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: build-github
-                  path: packages/github-proxy/pages
+                  name: build-download
+                  path: packages/download-proxy/pages
 
     deploy:
         runs-on: ubuntu-latest
@@ -33,11 +33,11 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
-                  name: build-github
-                  path: packages/github-proxy/pages
+                  name: build-download
+                  path: packages/download-proxy/pages
             - name: Zip pages folder
               run: |
-                  cd packages/github-proxy
+                  cd packages/download-proxy
                   worker_file=$(find pages -name '*worker*.js' -type f)
                   if [ -z "$worker_file" ]; then
                       echo "Error: No worker file found"
@@ -47,12 +47,12 @@ jobs:
                   zip -j _worker.zip "$worker_file"
                   mv _worker.zip pages/
             - name: List contents of pages directory
-              run: ls -al packages/github-proxy/pages
+              run: ls -al packages/download-proxy/pages
             - name: Deploy to Cloudflare Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
                   github_token: ${{ secrets.DEPLOY_TOKEN }}
-                  publish_dir: packages/github-proxy/pages
-                  publish_branch: release-github
+                  publish_dir: packages/download-proxy/pages
+                  publish_branch: release-download
                   keep_files: false
                   enable_jekyll: true

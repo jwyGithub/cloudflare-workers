@@ -31,8 +31,8 @@ jobs:
                       echo "type=vps" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^convert: ]]; then
                       echo "type=convert" >> $GITHUB_OUTPUT
-                  elif [[ "$commit_message" =~ ^github: ]]; then
-                      echo "type=github" >> $GITHUB_OUTPUT
+                  elif [[ "$commit_message" =~ ^download: ]]; then
+                      echo "type=download" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^feat: ]]; then
                       echo "type=feat" >> $GITHUB_OUTPUT
                   else
@@ -78,10 +78,10 @@ jobs:
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
-    run_github_release:
+    run_download_release:
         needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'github' || needs.determine_release_type.outputs.release_type == 'feat'
-        uses: ./.github/workflows/release-github.yml
+        if: needs.determine_release_type.outputs.release_type == 'download' || needs.determine_release_type.outputs.release_type == 'feat'
+        uses: ./.github/workflows/release-download.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 

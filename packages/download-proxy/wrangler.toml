@@ -1,5 +1,5 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "docker-proxy"
+name = "download-proxy"
 main = "src/index.ts"
 compatibility_date = "2023-05-18"
 compatibility_flags = ["nodejs_compat"]
