@@ -121,10 +121,7 @@ export class DownloadHandler {
         try {
             while (true) {
                 const { done, value } = await reader.read();
-
                 if (done) {
-                    await writer.close();
-                    this.sendComplete(this.url, loaded);
                     break;
                 }
 
@@ -143,8 +140,11 @@ export class DownloadHandler {
                 }
             }
         } catch (error) {
-            await writer.abort(error);
+            writer.abort(error);
             throw error;
+        } finally {
+            await writer.close();
+            this.sendComplete(this.url, loaded); // 确保这一行位于writer.close之后
         }
     }
 

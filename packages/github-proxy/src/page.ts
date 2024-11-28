@@ -528,6 +528,8 @@ export function generateHTML(): string {
                     fileSize: data.size,
                     url: data.url
                 });
+
+                updateHistory();  // 确保这个函数被调用来更新界面
             }
 
             handleError(data) {
