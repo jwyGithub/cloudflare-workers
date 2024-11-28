@@ -19,7 +19,8 @@ export class ValidateIp {
         }
     }
 
-    public checkIpIsWhitelisted(ip: string): boolean {
+    public checkIpIsWhitelisted(request: Request): boolean {
+        const ip = request.headers.get('x-real-ip') || '';
         if ((typeof this.#ip_rules === 'string' && this.#ip_rules) === '*') {
             return true;
         } else if (Array.isArray(this.#ip_rules) && this.#ip_rules.length === 0) {

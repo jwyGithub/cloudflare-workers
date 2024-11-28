@@ -1,236 +1,243 @@
-import { convertToRawUrl } from './shared';
+import type { DownloadOptions, WebSocketMessage } from './types';
+import { ERROR_MESSAGES, MAX_FILE_SIZE, TIMEOUT } from './constants';
 
-export class Downloader {
-    private readonly wsConnection: WebSocket;
-    private readonly cache: Cache;
-    private readonly ctx: ExecutionContext;
-    private maxRetries = 3;
-    private readonly allowedTypes = [
-        'application/octet-stream',
-        'text/plain',
-        'application/zip',
-        'application/x-zip-compressed',
-        'application/x-gzip',
-        'text/markdown',
-        'application/json',
-        'text/javascript',
-        'text/typescript',
-        'text/css',
-        'text/html',
-        'application/xml',
-        'text/xml',
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/svg+xml'
-    ];
+export class DownloadHandler {
+    private ws: WebSocket;
+    private url: string;
+    private options: DownloadOptions;
+    private abortController: AbortController;
+    private startTime: number;
+    private ctx: ExecutionContext;
 
-    constructor(env: Env, ctx: ExecutionContext, wsConnection: WebSocket) {
-        this.cache = caches.default;
+    constructor(ws: WebSocket, url: string, ctx: ExecutionContext) {
+        this.ws = ws;
+        this.url = url;
         this.ctx = ctx;
-        this.maxRetries = Math.min(env.MAX_RETRIES ?? 3, 5);
-        this.wsConnection = wsConnection;
+        this.options = {
+            maxSize: MAX_FILE_SIZE,
+            timeout: TIMEOUT
+        };
+        this.abortController = new AbortController();
+        this.startTime = 0;
     }
 
-    private createHeaders(response: Response, fileName?: string): Headers {
-        const headers = new Headers({
-            'Access-Control-Allow-Origin': '*',
-            'Cache-Control': 'public, max-age=3600',
-            'Content-Type': response.headers.get('Content-Type') || 'application/octet-stream'
+    async download(): Promise<Response> {
+        try {
+            const cache = caches.default;
+            const cacheKey = new Request(this.url);
+
+            // 检查缓存
+            const cachedResponse = await cache.match(cacheKey);
+            if (cachedResponse) {
+                this.sendComplete(this.url, Number.parseInt(cachedResponse.headers.get('content-length') || '0'));
+                return this.createFinalResponse(cachedResponse);
+            }
+
+            // 如果没有缓存，先检查文件大小
+            await this.checkFileSize();
+
+            // 执行下载
+            const response = await this.fetchWithProgress();
+
+            // 克隆响应用于缓存
+            const responseToCache = response.clone();
+
+            // 异步缓存，但不等待它完成
+            this.ctx.waitUntil(cache.put(cacheKey, responseToCache));
+
+            return this.createFinalResponse(response);
+        } catch (error: any) {
+            this.sendError(error);
+            throw error;
+        }
+    }
+
+    private async checkFileSize(): Promise<void> {
+        try {
+            const headResponse = await fetch(this.url, {
+                method: 'HEAD',
+                headers: this.getRequestHeaders()
+            });
+
+            this.handleErrorResponse(headResponse);
+
+            const contentLength = Number.parseInt(headResponse.headers.get('content-length') || '0');
+            if (contentLength > this.options.maxSize) {
+                throw new Error(ERROR_MESSAGES.FILE_TOO_LARGE);
+            }
+        } catch (error: any) {
+            if (error.message === ERROR_MESSAGES.FILE_TOO_LARGE) {
+                throw error;
+            }
+            // 如果 HEAD 请求失败，我们将在实际下载时检查文件大小
+        }
+    }
+
+    private async fetchWithProgress(): Promise<Response> {
+        this.startTime = Date.now();
+        const signal = this.abortController.signal;
+
+        const response = await fetch(this.url, {
+            headers: this.getRequestHeaders(),
+            signal
         });
 
-        if (fileName) {
-            headers.set('Content-Disposition', `attachment; filename="${fileName}"`);
+        this.handleErrorResponse(response);
+
+        const contentLength = Number.parseInt(response.headers.get('content-length') || '0');
+        const { readable, writable } = new TransformStream();
+
+        // 使用 waitUntil 确保流处理完成
+        this.ctx.waitUntil(
+            (async () => {
+                const writer = writable.getWriter();
+                try {
+                    await this.streamResponse(response.body!, writer, contentLength);
+                } finally {
+                    await writer.close();
+                }
+            })()
+        );
+
+        return new Response(readable, {
+            headers: this.getResponseHeaders(response)
+        });
+    }
+
+    private createFinalResponse(response: Response): Response {
+        const headers = this.getResponseHeaders(response);
+        return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers
+        });
+    }
+
+    private async streamResponse(body: ReadableStream, writer: WritableStreamDefaultWriter, totalSize: number): Promise<void> {
+        let loaded = 0;
+        let lastUpdate = Date.now();
+        const reader = body.getReader();
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) {
+                    await writer.close();
+                    this.sendComplete(this.url, loaded);
+                    break;
+                }
+
+                loaded += value.length;
+                if (loaded > this.options.maxSize) {
+                    throw new Error(ERROR_MESSAGES.FILE_TOO_LARGE);
+                }
+
+                await writer.write(value);
+
+                const now = Date.now();
+                if (now - lastUpdate > 200) {
+                    const speed = loaded / ((now - this.startTime) / 1000);
+                    this.sendProgress(loaded, totalSize, speed);
+                    lastUpdate = now;
+                }
+            }
+        } catch (error) {
+            await writer.abort(error);
+            throw error;
+        }
+    }
+
+    private handleErrorResponse(response: Response): void {
+        switch (response.status) {
+            case 401:
+                throw new Error(ERROR_MESSAGES.UNAUTHORIZED);
+            case 403:
+                throw new Error(ERROR_MESSAGES.FORBIDDEN);
+            case 404:
+                throw new Error(ERROR_MESSAGES.NOT_FOUND);
+            default:
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+        }
+    }
+
+    private getRequestHeaders(): Headers {
+        return new Headers({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            Accept: '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            Connection: 'keep-alive'
+        });
+    }
+
+    private getResponseHeaders(originalResponse: Response): Headers {
+        const headers = new Headers();
+
+        const headersToCopy = ['content-type', 'content-disposition', 'content-length', 'last-modified', 'etag', 'cache-control'];
+
+        headersToCopy.forEach(header => {
+            const value = originalResponse.headers.get(header);
+            if (value) headers.set(header, value);
+        });
+
+        // 设置缓存控制头
+        if (!headers.has('cache-control')) {
+            headers.set('cache-control', 'public, max-age=86400'); // 24小时缓存
         }
 
-        // 保留原始响应的一些重要头信息
-        const contentLength = response.headers.get('Content-Length');
-        if (contentLength) {
-            headers.set('Content-Length', contentLength);
-        }
+        headers.set('Access-Control-Allow-Origin', '*');
 
-        // 添加跨域相关的头
-        headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        headers.set('Access-Control-Max-Age', '86400');
+        if (!headers.has('content-disposition')) {
+            const filename = this.getFilenameFromUrl(this.url);
+            headers.set('Content-Disposition', `attachment; filename="${filename}"`);
+        }
 
         return headers;
     }
 
-    private async getCachedResponse(url: string): Promise<Response | undefined> {
+    private getFilenameFromUrl(url: string): string {
         try {
-            const cacheKey = new Request(new URL(url).href, { method: 'GET' });
-            return await this.cache.match(cacheKey);
+            const urlObj = new URL(url);
+            const pathname = urlObj.pathname;
+            const filename = pathname.split('/').pop() || 'download';
+            return decodeURIComponent(filename);
         } catch {
-            return undefined;
+            return 'download';
         }
     }
 
-    private async cacheResponse(url: string, response: Response): Promise<void> {
-        try {
-            const cacheKey = new Request(new URL(url).href, { method: 'GET' });
-            const clonedResponse = response.clone();
-            await this.ctx.waitUntil(this.cache.put(cacheKey, clonedResponse));
-        } catch {
-            console.error('Failed to cache response');
-        }
-    }
-
-    private extractFileName(response: Response, url: string): string {
-        const contentDisposition = response.headers.get('content-disposition');
-        if (contentDisposition) {
-            const matches = contentDisposition.match(/filename="?([^"]+)"?/);
-            if (matches && matches[1]) {
-                return matches[1];
-            }
-        }
-        return decodeURIComponent(url.split('/').pop() || 'download');
-    }
-
-    private createGithubRequest(url: string): Request {
-        return new Request(url, {
-            method: 'GET',
-            headers: {
-                'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
+    private sendProgress(loaded: number, total: number, speed: number): void {
+        this.sendMessage({
+            type: 'progress',
+            loaded,
+            total,
+            percent: Math.round((loaded / total) * 100),
+            speed
         });
     }
 
-    private validateContentType(contentType: string | null): void {
-        if (!contentType) return;
-
-        const type = contentType.split(';')[0].toLowerCase();
-        if (!this.allowedTypes.includes(type)) {
-            throw new Error(`Unsupported file type: ${type}`);
-        }
-    }
-
-    private async fetchWithRetry(request: Request): Promise<Response> {
-        let lastError: Error | null = null;
-
-        for (let i = 0; i < this.maxRetries; i++) {
-            try {
-                const response = await fetch(request);
-                if (response.ok) {
-                    // 验证内容类型
-                    this.validateContentType(response.headers.get('Content-Type'));
-                    return response;
-                }
-                lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
-            } catch (error: any) {
-                lastError = error;
-                if (i < this.maxRetries - 1) {
-                    // 指数退避重试
-                    await new Promise(resolve => setTimeout(resolve, 2 ** i * 1000));
-                    continue;
-                }
-            }
-        }
-
-        throw lastError || new Error('Maximum retries reached');
-    }
-
-    private async streamWithRateLimit(response: Response): Promise<Response> {
-        // eslint-disable-next-line ts/no-this-alias
-        const _this = this;
-        const reader = response.body!.getReader();
-        const contentLength = response.headers.get('Content-Length');
-        let bytesRead = 0;
-
-        const stream = new ReadableStream({
-            async pull(controller) {
-                try {
-                    const { done, value } = await reader.read();
-
-                    if (done) {
-                        controller.close();
-                        // 发送完成消息
-                        if (_this.wsConnection) {
-                            _this.wsConnection.send(
-                                JSON.stringify({
-                                    type: 'progress',
-                                    progress: 100,
-                                    status: 'complete'
-                                })
-                            );
-                        }
-                        return;
-                    }
-
-                    bytesRead += value.length;
-                    controller.enqueue(value);
-
-                    if (contentLength && _this.wsConnection) {
-                        const progress = (bytesRead / Number.parseInt(contentLength)) * 100;
-                        _this.wsConnection.send(
-                            JSON.stringify({
-                                type: 'progress',
-                                progress,
-                                bytesRead,
-                                totalBytes: Number.parseInt(contentLength)
-                            })
-                        );
-                    }
-                } catch (error: any) {
-                    controller.error(error);
-                    if (_this.wsConnection) {
-                        _this.wsConnection.send(
-                            JSON.stringify({
-                                type: 'error',
-                                message: error.message
-                            })
-                        );
-                    }
-                }
-            },
-            cancel() {
-                reader.cancel();
-                if (_this.wsConnection) {
-                    _this.wsConnection.send(
-                        JSON.stringify({
-                            type: 'cancelled'
-                        })
-                    );
-                }
-            }
-        });
-
-        return new Response(stream, {
-            headers: response.headers
+    private sendComplete(url: string, size: number): void {
+        this.sendMessage({
+            type: 'complete',
+            url,
+            size,
+            filename: this.getFilenameFromUrl(url)
         });
     }
 
-    public async download(url: string): Promise<Response> {
-        try {
-            // 转换为实际的下载URL
-            const downloadUrl = convertToRawUrl(url);
-            // 检查缓存
-            const cachedResponse = await this.getCachedResponse(url);
-            if (cachedResponse) {
-                return cachedResponse;
-            }
+    private sendError(error: Error): void {
+        this.sendMessage({
+            type: 'error',
+            code: 500,
+            message: error.message || ERROR_MESSAGES.UNKNOWN
+        });
+    }
 
-            // 发起下载请求
-            const githubRequest = this.createGithubRequest(downloadUrl);
-            const response = await this.fetchWithRetry(githubRequest);
-
-            // 获取文件名并创建新的响应
-            const fileName = this.extractFileName(response, url);
-            const headers = this.createHeaders(response, fileName);
-
-            // 使用流式传输并进行速率限制
-            const streamResponse = await this.streamWithRateLimit(response);
-            const newResponse = new Response(streamResponse.body, {
-                status: response.status,
-                headers
-            });
-
-            // 缓存响应
-            await this.cacheResponse(url, newResponse.clone());
-
-            return newResponse;
-        } catch (error: any) {
-            throw new Error(`Download failed: ${error.message}`);
+    private sendMessage(message: WebSocketMessage): void {
+        if (this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(message));
         }
     }
 }
