@@ -43,23 +43,6 @@ export function getVmess(links: string[]): string[] {
     return vmessLinks.map(item => `${item.host}:${item.port}${item.remark}`);
 }
 
-export function genHeader(): Headers {
-    const headers = new Headers();
-    headers.set('Accept', 'application/json, text/plain, */*');
-    headers.set('Accept-Encoding', 'gzip, deflate, br');
-    headers.set('Accept-Language', 'zh-CN');
-    headers.set('Connection', 'keep-alive');
-    headers.set('Sec-Fetch-Dest', 'empty');
-    headers.set('Sec-Fetch-Mode', 'cors');
-    headers.set('Sec-Fetch-Site', 'cross-site');
-    headers.set('sec-ch-ua', '"Not?A_Brand";v="8", "Chromium";v="108"');
-    headers.set('sec-ch-ua-mobile', '?0');
-    headers.set('sec-ch-ua-platform', '"macOS"');
-    headers.set('host', 'raw.githubusercontent.com');
-
-    return headers;
-}
-
 export function getClashConfig(subs: string, config?: string): Record<string, string> {
     return {
         target: 'clash',
@@ -83,4 +66,10 @@ export function getConvertUrl(config: ReturnType<typeof getClashConfig>, env: En
         url.searchParams.set(key, value);
     }
     return url.toString();
+}
+
+export function sleep(ms: number = 1000): Promise<void> {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
 }

@@ -50,7 +50,7 @@ export function parseVlessLink(link: string): VlessLink {
             host: url.hostname,
             port: Number.parseInt(url.port),
             id: url.username,
-            remark: url.hash
+            remark: decodeURIComponent(url.hash)
         };
         return vlessLink;
     } catch (error: any) {
@@ -66,7 +66,7 @@ export function parseTrojanLink(link: string): TrojanLink {
             host: url.hostname,
             port: Number.parseInt(url.port),
             id: url.username,
-            remark: url.hash
+            remark: decodeURIComponent(url.hash)
         };
         return trojanLink;
     } catch (error: any) {
@@ -82,7 +82,7 @@ export function parseVmessLink(link: string): VmessLink {
             host: content.add,
             port: Number.parseInt(content.port),
             id: content.id,
-            remark: content.ps
+            remark: decodeURIComponent(content.ps)
         };
     } catch (error: any) {
         throw new Error(error);
