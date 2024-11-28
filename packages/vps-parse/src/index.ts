@@ -36,7 +36,15 @@ async function getVps(links: string[]): Promise<{ trojan: string[]; vless: strin
                 })
             );
 
-            const linkRes = await fetch(link, { redirect: 'manual' });
+            const linkRes = await fetch(link, {
+                headers: new Headers({
+                    'User-Agent': 'PostmanRuntime/7.43.0',
+                    Accept: '*/*',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    Connection: 'keep-alive'
+                }),
+                redirect: 'manual'
+            });
             const linkStr = await linkRes.text();
             if (linkRes.ok) {
                 await sendMessage(
