@@ -225,21 +225,27 @@ async function syncClashConfig(env: Env): Promise<{ convertUrl: string; result: 
             })
         );
 
-        const clashConfg = await fetch(convertUrl).then(res => res.blob());
+        const clashConfigRes = await fetch(convertUrl);
+        const clashConfig = await clashConfigRes.blob();
+
+        await sendMessage(JSON.stringify({ type: 'info', content: '获取Clash配置成功...' }));
 
         const formData = new FormData();
-        formData.append('file', clashConfg, 'sub.yml');
+        formData.append('file', clashConfig, 'sub.yml');
 
         await sendMessage(
             JSON.stringify({
                 type: 'info',
-                content: '上传配置文件...'
+                content: `上传配置文件... 上传地址：${env.UPLOAD_URL}`
             })
         );
 
         const response = await fetch(env.UPLOAD_URL, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: new Headers({
+                ...clashConfigRes.headers
+            })
         });
 
         if (!response.ok) {
