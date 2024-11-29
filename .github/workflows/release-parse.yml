@@ -1,4 +1,4 @@
-name: vps release
+name: parse release
 
 on:
     workflow_call:
@@ -18,11 +18,11 @@ jobs:
               with:
                   node-version: latest
             - run: pnpm install --no-frozen-lockfile
-            - run: pnpm run pages:vps
+            - run: pnpm run pages:parse
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: build-vps
+                  name: build-parse
                   path: packages/vps-parse/pages
 
     deploy:
@@ -33,7 +33,7 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
-                  name: build-vps
+                  name: build-parse
                   path: packages/vps-parse/pages
             - name: Zip pages folder
               run: |
@@ -53,6 +53,6 @@ jobs:
               with:
                   github_token: ${{ secrets.DEPLOY_TOKEN }}
                   publish_dir: packages/vps-parse/pages
-                  publish_branch: release-vps
+                  publish_branch: release-parse
                   keep_files: false
                   enable_jekyll: true

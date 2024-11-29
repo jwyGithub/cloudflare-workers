@@ -24,9 +24,9 @@
         "dev:download": "pnpm --dir packages/download-proxy run dev",
         "deploy:download": "pnpm --dir packages/download-proxy run deploy",
         "pages:download": "pnpm --dir packages/download-proxy run pages",
-        "dev:vps": "pnpm --dir packages/vps-parse run dev",
-        "deploy:vps": "pnpm --dir packages/vps-parse run deploy",
-        "pages:vps": "pnpm --dir packages/vps-parse run pages",
+        "dev:parse": "pnpm --dir packages/vps-parse run dev",
+        "deploy:parse": "pnpm --dir packages/vps-parse run deploy",
+        "pages:parse": "pnpm --dir packages/vps-parse run pages",
         "dev:convert": "pnpm --dir packages/vps-convert run dev",
         "deploy:convert": "pnpm --dir packages/vps-convert run deploy",
         "pages:convert": "pnpm --dir packages/vps-convert run pages"
