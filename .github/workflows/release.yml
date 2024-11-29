@@ -64,7 +64,7 @@ jobs:
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
-    run_vps_release:
+    run_parse_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'parse' || needs.determine_release_type.outputs.release_type == 'feat'
         uses: ./.github/workflows/release-parse.yml
