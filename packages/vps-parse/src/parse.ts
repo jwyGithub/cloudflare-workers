@@ -1,4 +1,5 @@
 import { tryBase64Decode } from '@jiangweiye/cloudflare-shared';
+import { tryDecode } from './shared';
 
 export interface VlessLink {
     type: 'vless';
@@ -42,35 +43,33 @@ export interface Vmess {
     fp: string;
 }
 
-export function parseVlessLink(link: string): VlessLink {
+export function parseVlessLink(url: URL, link: string): VlessLink {
     try {
-        const url = new URL(link);
         const vlessLink: VlessLink = {
             type: 'vless',
             host: url.hostname,
             port: Number.parseInt(url.port),
             id: url.username,
-            remark: decodeURIComponent(url.hash)
+            remark: tryDecode(url.hash)
         };
         return vlessLink;
     } catch (error: any) {
-        throw new Error(error);
+        throw new Error(`error on parseVlessLink: ${error.message || error} -> ${link}`);
     }
 }
 
-export function parseTrojanLink(link: string): TrojanLink {
+export function parseTrojanLink(url: URL, link: string): TrojanLink {
     try {
-        const url = new URL(link);
         const trojanLink: TrojanLink = {
             type: 'trojan',
             host: url.hostname,
             port: Number.parseInt(url.port),
             id: url.username,
-            remark: decodeURIComponent(url.hash)
+            remark: tryDecode(url.hash)
         };
         return trojanLink;
     } catch (error: any) {
-        throw new Error(error);
+        throw new Error(`error on parseTrojanLink: ${error.message || error} -> ${link}`);
     }
 }
 
@@ -82,9 +81,9 @@ export function parseVmessLink(link: string): VmessLink {
             host: content.add,
             port: Number.parseInt(content.port),
             id: content.id,
-            remark: decodeURIComponent(content.ps)
+            remark: tryDecode(content.ps)
         };
     } catch (error: any) {
-        throw new Error(error);
+        throw new Error(`error on parseVmessLink: ${error.message || error} -> ${link}`);
     }
 }

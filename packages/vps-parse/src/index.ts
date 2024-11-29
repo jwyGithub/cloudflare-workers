@@ -32,7 +32,7 @@ async function getVps(links: string[]): Promise<{ trojan: string[]; vless: strin
             await sendMessage(
                 JSON.stringify({
                     type: 'info',
-                    content: `正在获取链接: ${link}`
+                    content: `正在获取订阅信息: ${link}`
                 })
             );
 
@@ -74,11 +74,11 @@ async function getVps(links: string[]): Promise<{ trojan: string[]; vless: strin
                 })
             );
 
-            if (item.startsWith('trojan://')) {
+            if (item.trim().startsWith('trojan://')) {
                 trojanVps.push(item);
-            } else if (item.startsWith('vless://')) {
+            } else if (item.trim().startsWith('vless://')) {
                 vlessVps.push(item);
-            } else if (item.startsWith('vmess://')) {
+            } else if (item.trim().startsWith('vmess://')) {
                 vmessVps.push(item);
             }
         }
@@ -300,6 +300,27 @@ async function init(env: Env): Promise<Response> {
         const vlessVps = getVless(vless.filter(Boolean));
         const trojanVps = getTrojan(trojan.filter(Boolean));
         const vmessVps = getVmess(vmess.filter(Boolean));
+
+        await sendMessage(
+            JSON.stringify({
+                type: 'info',
+                content: `vless count: ${vlessVps.length}`
+            })
+        );
+
+        await sendMessage(
+            JSON.stringify({
+                type: 'info',
+                content: `trojan count: ${trojanVps.length}`
+            })
+        );
+
+        await sendMessage(
+            JSON.stringify({
+                type: 'info',
+                content: `vmess count: ${vmessVps.length}`
+            })
+        );
 
         await sendMessage(
             JSON.stringify({

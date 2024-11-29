@@ -34,7 +34,8 @@
     "dependencies": {
         "@jiangweiye/cloudflare-service": "^0.0.7",
         "@jiangweiye/cloudflare-shared": "^0.0.8",
-        "js-yaml": "^4.1.0"
+        "js-yaml": "^4.1.0",
+        "undici": "^7.0.0"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20241112.0",
