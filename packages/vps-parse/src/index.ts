@@ -297,9 +297,9 @@ async function init(env: Env): Promise<Response> {
             })
         );
 
-        const vlessVps = getVless(vless);
-        const trojanVps = getTrojan(trojan);
-        const vmessVps = getVmess(vmess);
+        const vlessVps = getVless(vless.filter(Boolean));
+        const trojanVps = getTrojan(trojan.filter(Boolean));
+        const vmessVps = getVmess(vmess.filter(Boolean));
 
         await sendMessage(
             JSON.stringify({
