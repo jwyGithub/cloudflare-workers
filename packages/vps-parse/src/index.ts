@@ -1,7 +1,7 @@
-import { toServerError, toStream, toSuccess } from '@jiangweiye/cloudflare-service';
-import { tryBase64Decode, tryBase64Encode } from '@jiangweiye/cloudflare-shared';
+import { toHTML, toServerError, toSuccess } from '@jiangweiye/worker-service';
+import { tryBase64Decode, tryBase64Encode, tryUrlDecode } from '@jiangweiye/worker-shared';
 import { HTML_PAGE } from './page';
-import { getClashConfig, getConvertUrl, getTime, getTrojan, getVless, getVmess, sleep } from './shared';
+import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
 
 let ws: WebSocket | null = null;
 
@@ -70,7 +70,7 @@ async function getVps(links: string[]): Promise<{ trojan: string[]; vless: strin
             await sendMessage(
                 JSON.stringify({
                     type: 'info',
-                    content: `${decodeURIComponent(item)}`
+                    content: `${tryUrlDecode(item, item => item)}`
                 })
             );
 
@@ -214,71 +214,6 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
     }
 }
 
-async function syncClashConfig(env: Env): Promise<{ convertUrl: string; result: string }> {
-    try {
-        await sendMessage(
-            JSON.stringify({
-                type: 'info',
-                content: '开始同步Clash配置...'
-            })
-        );
-
-        const clashConfigUrl = getClashConfig(env.SUBS, env.REMOTE_CONFIG);
-        const convertUrl = getConvertUrl(clashConfigUrl, env);
-
-        await sendMessage(
-            JSON.stringify({
-                type: 'info',
-                content: '获取Clash配置...'
-            })
-        );
-
-        const clashConfigRes = await fetch(convertUrl);
-        const clashConfig = await clashConfigRes.blob();
-
-        await sendMessage(JSON.stringify({ type: 'info', content: '获取Clash配置成功...' }));
-
-        const formData = new FormData();
-        formData.append('file', clashConfig, 'sub.yml');
-
-        await sendMessage(
-            JSON.stringify({
-                type: 'info',
-                content: `上传配置文件... 上传地址：${env.UPLOAD_URL}`
-            })
-        );
-
-        const response = await fetch(env.UPLOAD_URL, {
-            method: 'POST',
-            body: formData,
-            headers: new Headers({
-                ...clashConfigRes.headers
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to upload config: ${response.status} ${response.statusText}`);
-        }
-
-        await sendMessage(
-            JSON.stringify({
-                type: 'success',
-                content: 'Clash配置同步完成'
-            })
-        );
-
-        return { convertUrl, result: JSON.stringify(response.json()) };
-    } catch (error: any) {
-        await sendMessage(
-            JSON.stringify({
-                type: 'error',
-                content: `Clash配置同步失败: ${error.message || error}`
-            })
-        );
-        throw new Error(`cache on sync => reason: ${error.message || error}`);
-    }
-}
-
 async function init(env: Env): Promise<Response> {
     try {
         await sendMessage(
@@ -355,8 +290,6 @@ async function init(env: Env): Promise<Response> {
             );
         }
 
-        const { convertUrl, result } = await syncClashConfig(env);
-
         await sendMessage(
             JSON.stringify({
                 type: 'success',
@@ -367,8 +300,7 @@ async function init(env: Env): Promise<Response> {
         return toSuccess({
             vless: { status: 'fulfilled', value: results.vless },
             trojan: { status: 'fulfilled', value: results.trojan },
-            vmess: { status: 'fulfilled', value: results.vmess },
-            sync: { result, convertUrl }
+            vmess: { status: 'fulfilled', value: results.vmess }
         });
     } catch (error: any) {
         await sendMessage(
@@ -445,12 +377,7 @@ export default {
                 });
             }
 
-            return toStream(
-                HTML_PAGE,
-                new Headers({
-                    'Content-Type': 'text/html'
-                })
-            );
+            return toHTML(HTML_PAGE);
         } catch (error: any) {
             await sendMessage(
                 JSON.stringify({

@@ -7,9 +7,4 @@ interface Env {
     REPO_NAME?: string;
     REPO_BRANCH?: string;
     LINKS: string;
-
-    SUBS: string;
-    UPLOAD_URL: string;
-    REMOTE_CONFIG?: string;
-    SUB_CONVERT?: string;
 }

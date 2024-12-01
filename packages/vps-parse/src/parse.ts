@@ -1,5 +1,4 @@
-import { tryBase64Decode } from '@jiangweiye/cloudflare-shared';
-import { tryDecode } from './shared';
+import { tryBase64Decode, tryUrlDecode } from '@jiangweiye/worker-shared';
 
 export interface VlessLink {
     type: 'vless';
@@ -50,7 +49,7 @@ export function parseVlessLink(url: URL, link: string): VlessLink {
             host: url.hostname,
             port: Number.parseInt(url.port),
             id: url.username,
-            remark: tryDecode(url.hash)
+            remark: tryUrlDecode(url.hash)
         };
         return vlessLink;
     } catch (error: any) {
@@ -65,7 +64,7 @@ export function parseTrojanLink(url: URL, link: string): TrojanLink {
             host: url.hostname,
             port: Number.parseInt(url.port),
             id: url.username,
-            remark: tryDecode(url.hash)
+            remark: tryUrlDecode(url.hash)
         };
         return trojanLink;
     } catch (error: any) {
@@ -81,7 +80,7 @@ export function parseVmessLink(link: string): VmessLink {
             host: content.add,
             port: Number.parseInt(content.port),
             id: content.id,
-            remark: tryDecode(content.ps)
+            remark: tryUrlDecode(content.ps)
         };
     } catch (error: any) {
         throw new Error(`error on parseVmessLink: ${error.message || error} -> ${link}`);

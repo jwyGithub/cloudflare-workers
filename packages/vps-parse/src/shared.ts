@@ -10,6 +10,14 @@ export function hasHost(ip: string, links: Array<{ host: string; port: number; r
     });
 }
 
+export function tryParseUrl(url: string): URL | null {
+    try {
+        return new URL(url);
+    } catch {
+        return null;
+    }
+}
+
 export function getVless(links: string[]): string[] {
     try {
         const vlessLinks: Array<{ host: string; port: number; remark: string }> = [];
@@ -59,57 +67,8 @@ export function getVmess(links: string[]): string[] {
     }
 }
 
-export function getClashConfig(subs: string, config?: string): Record<string, string> {
-    return {
-        target: 'clash',
-        new_name: 'true',
-        url: subs.split(',').join('|'),
-        insert: 'false',
-        config: config ?? 'https://main.08050611.xyz/appStatic/clashConfig/ACL4SSR_Online_Full.ini',
-        emoji: 'true',
-        list: 'false',
-        tfo: 'false',
-        scv: 'false',
-        fdn: 'false',
-        sort: 'false'
-    };
-}
-
-export function getConvertUrl(config: ReturnType<typeof getClashConfig>, env: Env): string {
-    const _url = env.SUB_CONVERT ?? 'https://sub.looby.us.kg/sub';
-    const url = new URL(_url);
-    for (const [key, value] of Object.entries(config)) {
-        url.searchParams.set(key, value);
-    }
-    return url.toString();
-}
-
 export function sleep(ms: number = 1000): Promise<void> {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
-}
-
-export function tryDecode(s: string): string {
-    try {
-        return decodeURIComponent(s.trim());
-    } catch {
-        return s;
-    }
-}
-
-export function tryEncode(s: string): string {
-    try {
-        return encodeURIComponent(s.trim());
-    } catch {
-        return s;
-    }
-}
-
-export function tryParseUrl(url: string): URL | null {
-    try {
-        return new URL(url);
-    } catch {
-        return null;
-    }
 }
