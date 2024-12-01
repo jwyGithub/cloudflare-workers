@@ -1,4 +1,4 @@
-import { toServerError, toStream } from '@jiangweiye/cloudflare-service';
+import { toServerError, toStream } from '@jiangweiye/worker-service';
 import { dump } from 'js-yaml';
 import { getConfuseUrl } from './confuse';
 import { getOriginConfig } from './confuse/restore';

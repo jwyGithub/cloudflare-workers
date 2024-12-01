@@ -1,4 +1,4 @@
-import { toServerError, toStream } from '@jiangweiye/cloudflare-service';
+import { toHTML, toServerError } from '@jiangweiye/worker-service';
 
 interface IPageOption {
     url: string;
@@ -53,13 +53,7 @@ export async function showPage(pageOptions: IPageOption): Promise<Response> {
         // 替换是否锁定后端
         originPage = replaceDisabled(originPage, lockBackend);
 
-        return toStream(
-            originPage,
-            new Headers({
-                ...response.headers,
-                'Content-Type': 'text/html; charset=utf-8'
-            })
-        );
+        return toHTML(originPage, new Headers({ ...response.headers, 'Content-Type': 'text/html; charset=utf-8' }));
     } catch (error: any) {
         return toServerError(error.message || error);
     }

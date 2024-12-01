@@ -1,4 +1,4 @@
-import { base64Decode, base64Encode } from '@jiangweiye/cloudflare-shared';
+import { base64Decode, base64Encode } from '@jiangweiye/worker-shared';
 import { PsUtil, Store } from '../shared';
 
 interface IParseConfig {
