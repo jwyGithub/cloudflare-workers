@@ -418,7 +418,7 @@ class $ {
   }
 }
 async function j(t, e, r = {}) {
-  const { retries: s = 3, backoff: o = 300, timeout: a = 1e4 } = r;
+  const { retries: s = 3, backoff: o = 300, timeout: a = 3e4 } = r;
   let n = new Error("Failed to fetch");
   for (let c = 0; c < s; c++)
     try {
