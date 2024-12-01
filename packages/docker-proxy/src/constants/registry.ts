@@ -3,7 +3,7 @@ import type { RegistryConfig } from '../types';
 export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
     docker: {
         baseUrl: 'https://registry-1.docker.io',
-        authRequired: true,
+        authRequired: false,
         needLibrary: true,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
@@ -24,7 +24,7 @@ export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
     },
     ghcr: {
         baseUrl: 'https://ghcr.io',
-        authRequired: true,
+        authRequired: false,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
@@ -37,7 +37,7 @@ export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
     },
     gcr: {
         baseUrl: 'https://gcr.io',
-        authRequired: true,
+        authRequired: false,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
@@ -49,7 +49,7 @@ export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
     },
     'k8s-gcr': {
         baseUrl: 'https://k8s.gcr.io',
-        authRequired: true,
+        authRequired: false,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
@@ -73,7 +73,7 @@ export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
     },
     quay: {
         baseUrl: 'https://quay.io',
-        authRequired: true,
+        authRequired: false,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
@@ -85,7 +85,7 @@ export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
     },
     cloudsmith: {
         baseUrl: 'https://docker.cloudsmith.io',
-        authRequired: true,
+        authRequired: false,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
