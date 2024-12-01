@@ -16,9 +16,8 @@ compatibility_flags = ["nodejs_compat"]
 # - https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 # Note: Use secrets to store sensitive data.
 # - https://developers.cloudflare.com/workers/configuration/secrets/
-[vars]
+# [vars]
 # MY_VARIABLE = "production_value"
-LINKS = "https://VLESS.fxxk.dedyn.io/auto,https://VMESS.fxxk.dedyn.io/auto,https://TROJAN.fxxk.dedyn.io/auto,https://ovo.o00o.ooo/ooo,https://sub.tgzdyz2.xyz/sub"
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai
