@@ -1,5 +1,5 @@
 export class Confuse {
-    readonly #hostnames = ['localhost', '127.0.0.1', 'example.com'];
+    readonly #hostnames = ['localhost', '127.0.0.1', 'abc.cba.com'];
     readonly #encryptionProtocol = ['AES_256_GCM', 'CHACHA20_POLY1305', 'AES_128_GCM', 'CHACHA20_IETF'];
     readonly #minPort = 1024;
     readonly #maxPort = 65535;
