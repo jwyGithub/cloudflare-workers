@@ -247,21 +247,21 @@ async function init(env: Env): Promise<Response> {
 
         await sendMessage(
             JSON.stringify({
-                type: 'info',
+                type: 'success',
                 content: `vless count: ${vlessVps.length}`
             })
         );
 
         await sendMessage(
             JSON.stringify({
-                type: 'info',
+                type: 'success',
                 content: `trojan count: ${trojanVps.length}`
             })
         );
 
         await sendMessage(
             JSON.stringify({
-                type: 'info',
+                type: 'success',
                 content: `vmess count: ${vmessVps.length}`
             })
         );

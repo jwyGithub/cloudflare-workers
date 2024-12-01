@@ -76,7 +76,13 @@ export function sleep(ms: number = 1000): Promise<void> {
 export async function fetchWithRetry(request: Request, retries: number = 3, onError?: (count: number) => void): Promise<Response> {
     const _onError = onError || (() => {});
     try {
-        return await fetch(request);
+        const res = await fetch(request);
+        if (!res.ok && retries > 0) {
+            await Promise.resolve(_onError(retries));
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return fetchWithRetry(request, retries - 1);
+        }
+        return res;
     } catch (error) {
         if (retries > 0) {
             await Promise.resolve(_onError(retries));
