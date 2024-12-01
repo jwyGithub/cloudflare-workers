@@ -46,7 +46,14 @@ async function getVps(links: string[], retry: string): Promise<{ trojan: string[
                 redirect: 'manual'
             });
 
-            const linkRes = await fetchWithRetry(proxyRequest, Number(retry));
+            const linkRes = await fetchWithRetry(proxyRequest, Number(retry), async (count: number) => {
+                await sendMessage(
+                    JSON.stringify({
+                        type: 'info',
+                        content: `正在尝试第 ${count} 次请求...`
+                    })
+                );
+            });
             const linkStr = await linkRes.text();
             if (linkRes.ok) {
                 await sendMessage(
