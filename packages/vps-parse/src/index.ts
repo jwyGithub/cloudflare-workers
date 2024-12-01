@@ -14,7 +14,7 @@ const getPath = (filePath: string): string => {
     return `packages/vps-parse/address/${filePath}`;
 };
 
-async function getVps(links: string[], retry: string): Promise<{ trojan: string[]; vless: string[]; vmess: string[] }> {
+async function getVps(links: string[], retry: number): Promise<{ trojan: string[]; vless: string[]; vmess: string[] }> {
     try {
         const result: string[] = [];
         const trojanVps: string[] = [];
@@ -46,14 +46,18 @@ async function getVps(links: string[], retry: string): Promise<{ trojan: string[
                 redirect: 'manual'
             });
 
-            const linkRes = await fetchWithRetry(proxyRequest, Number(retry), async (count: number) => {
-                await sendMessage(
-                    JSON.stringify({
-                        type: 'info',
-                        content: `正在尝试第 ${count} 次请求...`
-                    })
-                );
+            const linkRes = await fetchWithRetry(proxyRequest, {
+                retries: retry,
+                onError: async (reason, attempt) => {
+                    await sendMessage(
+                        JSON.stringify({
+                            type: 'error',
+                            content: `正在尝试第 ${attempt} 次请求... ${reason.message || reason}`
+                        })
+                    );
+                }
             });
+
             const linkStr = await linkRes.text();
             if (linkRes.ok) {
                 await sendMessage(
@@ -232,7 +236,7 @@ async function init(env: Env): Promise<Response> {
             })
         );
 
-        const { trojan, vless, vmess } = await getVps(env.LINKS.split(','), env.RETRY ?? '3');
+        const { trojan, vless, vmess } = await getVps(env.LINKS.split(','), Number(env.RETRY ?? '3'));
 
         await sendMessage(
             JSON.stringify({

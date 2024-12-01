@@ -73,22 +73,49 @@ export function sleep(ms: number = 1000): Promise<void> {
     });
 }
 
-export async function fetchWithRetry(request: Request, retries: number = 3, onError?: (count: number) => void): Promise<Response> {
-    const _onError = onError || (() => {});
-    try {
-        const res = await fetch(request);
-        if (!res.ok && retries > 0) {
-            await Promise.resolve(_onError(retries));
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return fetchWithRetry(request, retries - 1);
+interface FetchWithRetryOptions {
+    retries?: number;
+    onError?: (error: Error, attempt: number) => void | Promise<void>;
+}
+
+export async function fetchWithRetry(request: Request | string, options: FetchWithRetryOptions = {}): Promise<Response> {
+    const { retries = 3, onError } = options;
+    let lastError: Error;
+
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const response = await fetch(request);
+
+            // 检查响应状态是否成功
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return response;
+        } catch (error) {
+            lastError = error as Error;
+
+            // 处理错误回调
+            if (onError) {
+                const errorResult = onError(lastError, attempt + 1);
+                // 如果 onError 返回 Promise，等待它完成
+                if (errorResult instanceof Promise) {
+                    await errorResult;
+                }
+            }
+
+            // 如果是最后一次尝试，抛出错误
+            if (attempt === retries - 1) {
+                throw new Error(`Failed after ${retries} attempts: ${lastError.message}`);
+            }
+
+            // 可以在这里添加延迟重试的逻辑
+            await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 1000));
         }
-        return res;
-    } catch (error) {
-        if (retries > 0) {
-            await Promise.resolve(_onError(retries));
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return fetchWithRetry(request, retries - 1);
-        }
-        throw error;
     }
+
+    // 这行代码实际上永远不会执行，但为了 TypeScript 类型检查需要
+    // eslint-disable-next-line ts/ban-ts-comment
+    // @ts-expect-error
+    throw lastError;
 }
