@@ -1,4 +1,4 @@
-const $ = "success", C = "internal server error", v = new Headers({
+const $ = "success", C = "internal server error", k = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -9,7 +9,7 @@ new Headers({
 });
 const N = new Headers({
   "Content-type": "text/html"
-}), j = (e, t = $, n = v) => Response.json(
+}), E = (e, t = $, r = k) => Response.json(
   {
     status: 200,
     message: t,
@@ -18,11 +18,11 @@ const N = new Headers({
   {
     status: 200,
     statusText: t,
-    headers: n
+    headers: r
   }
-), E = (e, t = N) => new Response(e, {
+), j = (e, t = N) => new Response(e, {
   headers: t
-}), O = (e = C, t = 500, n = v) => Response.json(
+}), T = (e = C, t = 500, r = k) => Response.json(
   {
     status: t,
     message: e
@@ -30,46 +30,46 @@ const N = new Headers({
   {
     status: t,
     statusText: e,
-    headers: n
+    headers: r
   }
 );
-function T(e) {
+function O(e) {
   if (!e) return e;
-  const t = atob(e), n = new Uint8Array(t.length);
-  for (let r = 0; r < t.length; r++)
-    n[r] = t.charCodeAt(r);
-  return new TextDecoder().decode(n);
+  const t = atob(e), r = new Uint8Array(t.length);
+  for (let n = 0; n < t.length; n++)
+    r[n] = t.charCodeAt(n);
+  return new TextDecoder().decode(r);
 }
-function S(e, t) {
-  const n = (r) => r;
+function v(e, t) {
+  const r = (n) => n;
   try {
-    return e ? T(e.toString()) : n(e);
+    return e ? O(e.toString()) : r(e);
   } catch {
-    return n(e);
+    return r(e);
   }
 }
 function J(e) {
   if (!e) return e;
   const t = new TextEncoder().encode(e.trim());
-  let n = "";
-  for (let r = 0; r < t.length; r += 1)
-    n += String.fromCharCode(t[r]);
-  return btoa(n);
+  let r = "";
+  for (let n = 0; n < t.length; n += 1)
+    r += String.fromCharCode(t[n]);
+  return btoa(r);
 }
 function L(e, t) {
-  const n = (r) => r;
+  const r = (n) => n;
   try {
-    return e ? J(e.toString()) : n(e);
+    return e ? J(e.toString()) : r(e);
   } catch {
-    return n(e);
+    return r(e);
   }
 }
-function p(e, t) {
-  const n = t || ((r) => r);
+function m(e, t) {
+  const r = t || ((n) => n);
   try {
-    return e ? decodeURIComponent(e) : n(e);
+    return e ? decodeURIComponent(e) : r(e);
   } catch {
-    return n(e);
+    return r(e);
   }
 }
 const H = `<!doctype html>
@@ -506,69 +506,69 @@ const H = `<!doctype html>
     </body>
 </html>
 `;
-function P(e, t) {
+function V(e, t) {
   try {
     return {
       type: "vless",
       host: e.hostname,
       port: Number.parseInt(e.port),
       id: e.username,
-      remark: p(e.hash)
+      remark: m(e.hash)
     };
-  } catch (n) {
-    throw new Error(`error on parseVlessLink: ${n.message || n} -> ${t}`);
+  } catch (r) {
+    throw new Error(`error on parseVlessLink: ${r.message || r} -> ${t}`);
   }
 }
-function V(e, t) {
+function P(e, t) {
   try {
     return {
       type: "trojan",
       host: e.hostname,
       port: Number.parseInt(e.port),
       id: e.username,
-      remark: p(e.hash)
+      remark: m(e.hash)
     };
-  } catch (n) {
-    throw new Error(`error on parseTrojanLink: ${n.message || n} -> ${t}`);
+  } catch (r) {
+    throw new Error(`error on parseTrojanLink: ${r.message || r} -> ${t}`);
   }
 }
-function A(e) {
+function R(e) {
   try {
-    const t = JSON.parse(S(e));
+    const t = JSON.parse(v(e));
     return {
       type: "vmess",
       host: t.add,
       port: Number.parseInt(t.port),
       id: t.id,
-      remark: p(t.ps)
+      remark: m(t.ps)
     };
   } catch (t) {
     throw new Error(`error on parseVmessLink: ${t.message || t} -> ${e}`);
   }
 }
-function I() {
+function A() {
   return (/* @__PURE__ */ new Date()).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
 }
-function b(e, t) {
-  return t.some((n) => n.host === e);
+function w(e, t) {
+  return t.some((r) => r.host === e);
 }
-function x(e) {
+function S(e) {
   try {
     return new URL(e);
   } catch {
     return null;
   }
 }
-function R(e) {
+function I(e) {
   try {
     const t = [];
-    for (const n of e) {
-      const r = x(n);
-      if (r === null) continue;
-      const { host: a, port: c, remark: l } = P(r, n);
-      !a.startsWith("127") && !/^[a-z]/i.test(a) && !b(a, t) && t.push({ host: a, port: c, remark: l });
+    for (const r of e) {
+      const n = S(r);
+      if (n === null) continue;
+      const { host: a, port: c, remark: l } = V(n, r);
+      !a.startsWith("127") && !/^[a-z]/i.test(a) && !w(a, t) && t.push({ host: a, port: c, remark: l });
     }
-    return t.map((n) => `${n.host}:${n.port}${n.remark}`);
+    return t.map((r) => `${r.host}:${r.port}${r.remark}`);
   } catch (t) {
     throw new Error(`catch on getVless : ${t.message || t}`);
   }
@@ -576,13 +576,13 @@ function R(e) {
 function B(e) {
   try {
     const t = [];
-    for (const n of e) {
-      const r = x(n);
-      if (r === null) continue;
-      const { host: a, port: c, remark: l } = V(r, n);
-      !a.startsWith("127") && !/^[a-z]/i.test(a) && !b(a, t) && t.push({ host: a, port: c, remark: l });
+    for (const r of e) {
+      const n = S(r);
+      if (n === null) continue;
+      const { host: a, port: c, remark: l } = P(n, r);
+      !a.startsWith("127") && !/^[a-z]/i.test(a) && !w(a, t) && t.push({ host: a, port: c, remark: l });
     }
-    return t.map((n) => `${n.host}:${n.port}${n.remark}`);
+    return t.map((r) => `${r.host}:${r.port}${r.remark}`);
   } catch (t) {
     throw new Error(`catch on getTrojan : ${t.message || t}`);
   }
@@ -590,40 +590,48 @@ function B(e) {
 function D(e) {
   try {
     const t = [];
-    for (const n of e) {
-      const { host: r, port: a, remark: c } = A(n.replace("vmess://", ""));
-      !r.startsWith("127") && !/^[a-z]/i.test(r) && !b(r, t) && t.push({ host: r, port: a, remark: c });
+    for (const r of e) {
+      const { host: n, port: a, remark: c } = R(r.replace("vmess://", ""));
+      !n.startsWith("127") && !/^[a-z]/i.test(n) && !w(n, t) && t.push({ host: n, port: a, remark: c });
     }
-    return t.map((n) => `${n.host}:${n.port}${n.remark}`);
+    return t.map((r) => `${r.host}:${r.port}${r.remark}`);
   } catch (t) {
     throw new Error(`catch on getVmess : ${t.message || t}`);
   }
 }
-function h(e = 1e3) {
+function g(e = 1e3) {
   return new Promise((t) => {
     setTimeout(t, e);
   });
 }
-async function w(e, t = 3, n) {
-  const r = n || (() => {
-  });
-  try {
-    const a = await fetch(e);
-    return !a.ok && t > 0 ? (await Promise.resolve(r(t)), await new Promise((c) => setTimeout(c, 1e3)), w(e, t - 1)) : a;
-  } catch (a) {
-    if (t > 0)
-      return await Promise.resolve(r(t)), await new Promise((c) => setTimeout(c, 1e3)), w(e, t - 1);
-    throw a;
-  }
+async function U(e, t = {}) {
+  const { retries: r = 3, onError: n } = t;
+  let a;
+  for (let c = 0; c < r; c++)
+    try {
+      const l = await fetch(e);
+      if (!l.ok)
+        throw new Error(`HTTP error! status: ${l.status}`);
+      return l;
+    } catch (l) {
+      if (a = l, n) {
+        const o = n(a, c + 1);
+        o instanceof Promise && await o;
+      }
+      if (c === r - 1)
+        throw new Error(`Failed after ${r} attempts: ${a.message}`);
+      await new Promise((o) => setTimeout(o, 2 ** c * 1e3));
+    }
+  throw a;
 }
-let g = null;
+let p = null;
 async function s(e) {
-  await h(100), g == null || g.send(e);
+  await g(100), p == null || p.send(e);
 }
 const f = (e) => `packages/vps-parse/address/${e}`;
-async function U(e, t) {
+async function W(e, t) {
   try {
-    const n = [], r = [], a = [], c = [];
+    const r = [], n = [], a = [], c = [];
     await s(
       JSON.stringify({
         type: "info",
@@ -646,58 +654,61 @@ async function U(e, t) {
           Connection: "keep-alive"
         }),
         redirect: "manual"
-      }), d = await w(i, Number(t), async (m) => {
-        await s(
-          JSON.stringify({
-            type: "info",
-            content: `正在尝试第 ${m} 次请求...`
-          })
-        );
+      }), d = await U(i, {
+        retries: t,
+        onError: async (h, x) => {
+          await s(
+            JSON.stringify({
+              type: "error",
+              content: `正在尝试第 ${x} 次请求... ${h.message || h}`
+            })
+          );
+        }
       }), u = await d.text();
       d.ok ? (await s(
         JSON.stringify({
           type: "success",
           content: `成功获取链接数据: ${o}`
         })
-      ), n.push(S(u))) : await s(
+      ), r.push(v(u))) : await s(
         JSON.stringify({
           type: "error",
           content: `获取链接数据失败: ${d.status} - ${d.statusText}`
         })
       );
     }
-    const l = n.map((o) => o.split(`
+    const l = r.map((o) => o.split(`
 `)).flat();
     for await (const o of l)
       await s(
         JSON.stringify({
           type: "info",
-          content: `${p(o, (i) => i)}`
+          content: `${m(o, (i) => i)}`
         })
-      ), o.trim().startsWith("trojan://") ? r.push(o) : o.trim().startsWith("vless://") ? a.push(o) : o.trim().startsWith("vmess://") && c.push(o);
+      ), o.trim().startsWith("trojan://") ? n.push(o) : o.trim().startsWith("vless://") ? a.push(o) : o.trim().startsWith("vmess://") && c.push(o);
     return await s(
       JSON.stringify({
         type: "success",
         content: `数据分类完成：
-trojan: ${r.length}条
+trojan: ${n.length}条
 vless: ${a.length}条
 vmess: ${c.length}条`
       })
     ), {
-      trojan: r,
+      trojan: n,
       vless: a,
       vmess: c
     };
-  } catch (n) {
+  } catch (r) {
     throw await s(
       JSON.stringify({
         type: "error",
-        content: `获取VPS数据失败: ${n.message || n}`
+        content: `获取VPS数据失败: ${r.message || r}`
       })
-    ), new Error(`catch on getVps => reason: ${n.message || n}`);
+    ), new Error(`catch on getVps => reason: ${r.message || r}`);
   }
 }
-async function y(e, t, n) {
+async function y(e, t, r) {
   try {
     await s(
       JSON.stringify({
@@ -705,9 +716,9 @@ async function y(e, t, n) {
         content: `开始推送到 GitHub: ${t}`
       })
     );
-    const r = L(e.join(`
-`)), a = `https://api.github.com/repos/${n.GITHUB_USERNAME}/${n.REPO_NAME}/contents/${t}`, c = {
-      Authorization: `Bearer ${n.GITHUB_TOKEN}`,
+    const n = L(e.join(`
+`)), a = `https://api.github.com/repos/${r.GITHUB_USERNAME}/${r.REPO_NAME}/contents/${t}`, c = {
+      Authorization: `Bearer ${r.GITHUB_TOKEN}`,
       Accept: "application/vnd.github.v3+json",
       "User-Agent": "Cloudflare-Worker"
     }, l = async () => {
@@ -716,9 +727,9 @@ async function y(e, t, n) {
         return (await i.json()).sha;
     }, o = async (i) => {
       const d = {
-        message: `scheduled: update ${t} by ${I()}`,
-        content: r,
-        branch: n.REPO_BRANCH
+        message: `scheduled: update ${t} by ${A()}`,
+        content: n,
+        branch: r.REPO_BRANCH
       };
       i && (d.sha = i);
       const u = await fetch(a, {
@@ -730,8 +741,8 @@ async function y(e, t, n) {
         body: JSON.stringify(d)
       });
       if (!u.ok) {
-        const m = await u.text();
-        throw new Error(`GitHub API responded with ${u.status}: ${m}`);
+        const h = await u.text();
+        throw new Error(`GitHub API responded with ${u.status}: ${h}`);
       }
       return u.json();
     };
@@ -768,16 +779,16 @@ async function y(e, t, n) {
       }
       throw i;
     }
-  } catch (r) {
+  } catch (n) {
     throw await s(
       JSON.stringify({
         type: "error",
-        content: `GitHub推送失败: ${r.message || r}`
+        content: `GitHub推送失败: ${n.message || n}`
       })
-    ), new Error(`catch on pushGithub => reason: ${r.message || r}`);
+    ), new Error(`catch on pushGithub => reason: ${n.message || n}`);
   }
 }
-async function k(e) {
+async function b(e) {
   try {
     await s(
       JSON.stringify({
@@ -785,14 +796,14 @@ async function k(e) {
         content: "开始初始化同步流程..."
       })
     );
-    const { trojan: t, vless: n, vmess: r } = await U(e.LINKS.split(","), e.RETRY ?? "3");
+    const { trojan: t, vless: r, vmess: n } = await W(e.LINKS.split(","), Number(e.RETRY ?? "3"));
     await s(
       JSON.stringify({
         type: "info",
         content: "处理VPS数据..."
       })
     );
-    const a = R(n.filter(Boolean)), c = B(t.filter(Boolean)), l = D(r.filter(Boolean));
+    const a = I(r.filter(Boolean)), c = B(t.filter(Boolean)), l = D(n.filter(Boolean));
     await s(
       JSON.stringify({
         type: "success",
@@ -820,7 +831,7 @@ async function k(e) {
       vmess: ""
     };
     try {
-      o.vless = await y(a, f("vless_api.txt"), e), await h(2e3), o.trojan = await y(c, f("trojan_api.txt"), e), await h(2e3), o.vmess = await y(l, f("vmess_api.txt"), e), await h(2e3);
+      o.vless = await y(a, f("vless_api.txt"), e), await g(2e3), o.trojan = await y(c, f("trojan_api.txt"), e), await g(2e3), o.vmess = await y(l, f("vmess_api.txt"), e), await g(2e3);
     } catch (i) {
       await s(
         JSON.stringify({
@@ -834,7 +845,7 @@ async function k(e) {
         type: "success",
         content: "所有操作已完成！"
       })
-    ), j({
+    ), E({
       vless: { status: "fulfilled", value: o.vless },
       trojan: { status: "fulfilled", value: o.trojan },
       vmess: { status: "fulfilled", value: o.vmess }
@@ -848,12 +859,12 @@ async function k(e) {
     ), new Error(`cache on init => reason: ${t.message || t}`);
   }
 }
-const W = {
-  async fetch(e, t, n) {
+const M = {
+  async fetch(e, t, r) {
     try {
       if (e.headers.get("Upgrade") === "websocket") {
-        const r = new WebSocketPair(), [a, c] = Object.values(r);
-        return c.accept(), g = c, await s(
+        const n = new WebSocketPair(), [a, c] = Object.values(n);
+        return c.accept(), p = c, await s(
           JSON.stringify({
             type: "success",
             content: "WebSocket连接已建立"
@@ -869,7 +880,7 @@ const W = {
                 })
               );
               try {
-                await k(t), await s(
+                await b(t), await s(
                   JSON.stringify({
                     type: "success",
                     content: "同步操作完成"
@@ -897,20 +908,20 @@ const W = {
           webSocket: a
         });
       }
-      return E(H);
-    } catch (r) {
+      return j(H);
+    } catch (n) {
       return await s(
         JSON.stringify({
           type: "error",
-          content: `服务器错误: ${r.message || r}`
+          content: `服务器错误: ${n.message || n}`
         })
-      ), O(r.message || r);
+      ), T(n.message || n);
     }
   },
-  async scheduled(e, t, n) {
-    n.waitUntil(k(t));
+  async scheduled(e, t, r) {
+    r.waitUntil(b(t));
   }
 };
 export {
-  W as default
+  M as default
 };
