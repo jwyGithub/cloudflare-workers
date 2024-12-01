@@ -7,4 +7,5 @@ interface Env {
     REPO_NAME?: string;
     REPO_BRANCH?: string;
     LINKS: string;
+    RETRY?: string;
 }

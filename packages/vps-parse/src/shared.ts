@@ -72,3 +72,15 @@ export function sleep(ms: number = 1000): Promise<void> {
         setTimeout(resolve, ms);
     });
 }
+
+export async function fetchWithRetry(request: Request, retries: number = 3): Promise<Response> {
+    try {
+        return await fetch(request);
+    } catch (error) {
+        if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return fetchWithRetry(request, retries - 1);
+        }
+        throw error;
+    }
+}

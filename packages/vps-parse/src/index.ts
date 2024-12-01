@@ -1,7 +1,7 @@
 import { toHTML, toServerError, toSuccess } from '@jiangweiye/worker-service';
 import { tryBase64Decode, tryBase64Encode, tryUrlDecode } from '@jiangweiye/worker-shared';
 import { HTML_PAGE } from './page';
-import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
+import { fetchWithRetry, getTime, getTrojan, getVless, getVmess, sleep } from './shared';
 
 let ws: WebSocket | null = null;
 
@@ -14,7 +14,7 @@ const getPath = (filePath: string): string => {
     return `packages/vps-parse/address/${filePath}`;
 };
 
-async function getVps(links: string[]): Promise<{ trojan: string[]; vless: string[]; vmess: string[] }> {
+async function getVps(links: string[], retry: string): Promise<{ trojan: string[]; vless: string[]; vmess: string[] }> {
     try {
         const result: string[] = [];
         const trojanVps: string[] = [];
@@ -36,7 +36,7 @@ async function getVps(links: string[]): Promise<{ trojan: string[]; vless: strin
                 })
             );
 
-            const linkRes = await fetch(link, {
+            const proxyRequest = new Request(link, {
                 headers: new Headers({
                     'User-Agent': 'PostmanRuntime/7.43.0',
                     Accept: '*/*',
@@ -45,6 +45,8 @@ async function getVps(links: string[]): Promise<{ trojan: string[]; vless: strin
                 }),
                 redirect: 'manual'
             });
+
+            const linkRes = await fetchWithRetry(proxyRequest, Number(retry));
             const linkStr = await linkRes.text();
             if (linkRes.ok) {
                 await sendMessage(
@@ -223,7 +225,7 @@ async function init(env: Env): Promise<Response> {
             })
         );
 
-        const { trojan, vless, vmess } = await getVps(env.LINKS.split(','));
+        const { trojan, vless, vmess } = await getVps(env.LINKS.split(','), env.RETRY ?? '3');
 
         await sendMessage(
             JSON.stringify({
