@@ -6,7 +6,7 @@ export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
         authRequired: false,
         needLibrary: true,
         headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
+            Accept: 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.oci.image.manifest.v1+json'
         },
         scopeFormat: (imagePath: string) => {
             const parts = imagePath.split('/');

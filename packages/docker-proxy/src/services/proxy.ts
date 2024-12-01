@@ -1,4 +1,5 @@
-import type { RegistryConfig } from '../types';
+import type { AuthResponse } from '../types';
+import type { CachedResponse } from '../types/cache';
 import { toClientError, toServerError } from '@jiangweiye/worker-service';
 import { CACHE_CONFIGS } from '../constants/cache';
 import { REGISTRY_CONFIGS } from '../constants/registry';
@@ -28,30 +29,63 @@ export class RegistryProxy {
         try {
             const normalizedPath = normalizeImagePath(registryType, imagePath);
 
-            // 检查请求类型，确定是否可以使用缓存
+            // 检查是否可以使用缓存
             const canUseCache = this.canUseCache(request, normalizedPath);
             if (canUseCache) {
-                const cachedResponse = await this.getCachedResponse(request, registryType, normalizedPath);
+                const cachedResponse = await this.getCachedResponse(registryType, normalizedPath, request.method);
                 if (cachedResponse) {
                     return cachedResponse;
                 }
             }
 
-            // 处理认证
-            if (config.authRequired) {
-                const token = await this.handleAuthentication(request, registryType, normalizedPath);
-                if (!token) {
-                    return new Response('Authentication failed', { status: 401 });
-                }
-                request.headers.set('Authorization', `Bearer ${token}`);
+            // 构建请求头
+            const headers = new Headers(request.headers);
+            if (config.headers) {
+                Object.entries(config.headers).forEach(([key, value]) => {
+                    headers.set(key, value);
+                });
             }
 
-            // 发送请求
-            const response = await this.fetchFromRegistry(request, config, normalizedPath);
+            // 构建目标 URL
+            const targetUrl = new URL(`${config.baseUrl}/v2/${normalizedPath}`, config.baseUrl);
 
-            // 缓存响应
+            // 发送请求
+            const response = await fetchWithRetry(targetUrl.toString(), {
+                method: request.method,
+                headers,
+                redirect: 'follow',
+                body: request.method === 'GET' ? null : request.body
+            });
+
+            // 处理 401 响应
+            if (response.status === 401) {
+                const wwwAuthenticate = response.headers.get('Www-Authenticate');
+                if (wwwAuthenticate && config.authRequired) {
+                    const authInfo = this.parseAuthInfo(wwwAuthenticate);
+                    const token = await this.authService.getToken(registryType, authInfo, request.headers.get('Authorization'));
+
+                    if (token) {
+                        headers.set('Authorization', `Bearer ${token}`);
+                        const authenticatedResponse = await fetchWithRetry(targetUrl.toString(), {
+                            method: request.method,
+                            headers,
+                            redirect: 'follow',
+                            body: request.method === 'GET' ? null : request.body
+                        });
+
+                        // 缓存认证后的响应
+                        if (canUseCache && authenticatedResponse.ok) {
+                            await this.cacheResponse(registryType, normalizedPath, authenticatedResponse.clone(), request.method);
+                        }
+
+                        return authenticatedResponse;
+                    }
+                }
+            }
+
+            // 缓存成功的响应
             if (canUseCache && response.ok) {
-                await this.cacheResponse(request, response.clone(), registryType, normalizedPath);
+                await this.cacheResponse(registryType, normalizedPath, response.clone(), request.method);
             }
 
             return response;
@@ -62,40 +96,42 @@ export class RegistryProxy {
     }
 
     private canUseCache(request: Request, path: string): boolean {
-        // 只缓存 GET 请求
         if (request.method !== 'GET') {
             return false;
         }
 
-        // 确定请求类型（manifest 或 layer）
         const isManifest = path.includes('/manifests/');
         const isLayer = path.includes('/blobs/');
 
         return isManifest ? CACHE_CONFIGS.manifest.enabled : isLayer ? CACHE_CONFIGS.layer.enabled : false;
     }
 
-    private async getCachedResponse(request: Request, registryType: string, path: string): Promise<Response | null> {
-        const cacheKey = `${registryType}:${path}:${request.method}`;
-        const cachedData = await this.cacheManager.get<{
-            body: any;
-            headers: Record<string, string>;
-        }>(cacheKey);
+    private async getCachedResponse(registryType: string, path: string, method: string): Promise<Response | null> {
+        const cacheKey = this.generateCacheKey(registryType, path, method);
+        const cachedData = await this.cacheManager.get<CachedResponse>(cacheKey);
 
         if (cachedData) {
-            return new Response(JSON.stringify(cachedData.body), {
-                headers: new Headers(cachedData.headers)
-            });
+            // 检查缓存是否过期
+            const isManifest = path.includes('/manifests/');
+            const isLayer = path.includes('/blobs/');
+            const ttl = isManifest ? CACHE_CONFIGS.manifest.ttl : isLayer ? CACHE_CONFIGS.layer.ttl : 3600;
+
+            if (Date.now() - cachedData.timestamp < ttl * 1000) {
+                return new Response(JSON.stringify(cachedData.body), {
+                    headers: new Headers(cachedData.headers)
+                });
+            }
         }
 
         return null;
     }
 
-    private async cacheResponse(request: Request, response: Response, registryType: string, path: string): Promise<void> {
+    private async cacheResponse(registryType: string, path: string, response: Response, method: string): Promise<void> {
         const isManifest = path.includes('/manifests/');
         const isLayer = path.includes('/blobs/');
         const ttl = isManifest ? CACHE_CONFIGS.manifest.ttl : isLayer ? CACHE_CONFIGS.layer.ttl : 3600;
 
-        const cacheKey = `${registryType}:${path}:${request.method}`;
+        const cacheKey = this.generateCacheKey(registryType, path, method);
         const responseData = await response.clone().json();
         const headers = Object.fromEntries(response.headers.entries());
 
@@ -106,33 +142,26 @@ export class RegistryProxy {
             },
             {
                 body: responseData,
-                headers
+                headers,
+                timestamp: Date.now()
             }
         );
     }
 
-    private async handleAuthentication(request: Request, registryType: string, path: string): Promise<string | null> {
-        const { hostname } = new URL(request.url);
-        const authHeader = request.headers.get('Authorization');
-        const scope = registryType === 'docker' && !path.includes('/') ? `repository:library/${path}:pull` : `repository:${path}:pull`;
-
-        const authInfo = {
-            realm: `https://${hostname}/v2/auth`,
-            service: 'registry.docker.io',
-            scope
-        };
-
-        return await this.authService.getToken(registryType, authInfo, authHeader);
+    private generateCacheKey(registryType: string, path: string, method: string): string {
+        return `${registryType}:${path}:${method}`;
     }
 
-    private async fetchFromRegistry(request: Request, config: RegistryConfig, path: string): Promise<Response> {
-        const targetUrl = new URL(path.startsWith('/') ? path : `/${path}`, config.baseUrl);
+    private parseAuthInfo(wwwAuthenticate: string): AuthResponse {
+        const matches = wwwAuthenticate.match(/Bearer realm="([^"]+)",service="([^"]+)"(?:,scope="([^"]+)")?/);
+        if (!matches) {
+            throw new Error('Invalid WWW-Authenticate header');
+        }
 
-        return await fetchWithRetry(targetUrl.toString(), {
-            method: request.method,
-            headers: request.headers,
-            body: request.method === 'GET' ? null : request.body,
-            redirect: 'follow'
-        });
+        return {
+            realm: matches[1],
+            service: matches[2],
+            scope: matches[3]
+        };
     }
 }

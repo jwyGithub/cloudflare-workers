@@ -17,15 +17,43 @@ export function parseRegistryInfo(pathname: string): {
         const registryType = parts.shift() || 'docker';
         return {
             registryType,
-            imagePath: `/${parts.join('/')}`
+            // 移除开头的斜杠，因为 baseUrl 会包含完整路径
+            imagePath: parts.join('/')
         };
     }
 
     return {
         registryType: 'docker',
-        imagePath: pathname
+        // 移除开头的斜杠
+        imagePath: pathname.startsWith('/') ? pathname.slice(1) : pathname
     };
 }
+
+// export function parseRegistryInfo(pathname: string): {
+//     registryType: string;
+//     imagePath: string;
+// } {
+//     const parts = pathname.split('/').filter(Boolean);
+
+//     // 默认为 docker hub
+//     if (parts.length === 0) {
+//         return { registryType: 'docker', imagePath: '/' };
+//     }
+
+//     // 检查第一个部分是否是支持的注册表类型
+//     if (parts[0] in REGISTRY_CONFIGS) {
+//         const registryType = parts.shift() || 'docker';
+//         return {
+//             registryType,
+//             imagePath: `/${parts.join('/')}`
+//         };
+//     }
+
+//     return {
+//         registryType: 'docker',
+//         imagePath: pathname
+//     };
+// }
 
 export function configureRegistryHeaders(registryType: string, authorization?: string | null): Headers {
     const headers = new Headers();
@@ -66,8 +94,7 @@ export function normalizeImagePath(registryType: string, imagePath: string): str
             // 移除可能的前导斜杠
             return imagePath.replace(/^\//, '');
 
-        case 'cloudsmith': // Cloudsmith 需要确保路径格式为 org/repo/image
-        {
+        case 'cloudsmith': { // Cloudsmith 需要确保路径格式为 org/repo/image
             const parts = imagePath.split('/').filter(Boolean);
             if (parts.length < 3) {
                 throw new Error('Invalid Cloudsmith image path format. Expected: organization/repository/image');
