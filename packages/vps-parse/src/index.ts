@@ -42,11 +42,10 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                     Accept: '*/*',
                     'Accept-Encoding': 'gzip, deflate, br',
                     Connection: 'keep-alive'
-                }),
-                redirect: 'manual'
+                })
             });
 
-            const linkRes = await fetchWithRetry(proxyRequest, {
+            const { response, success, error } = await fetchWithRetry(proxyRequest, {
                 retries: retry,
                 onError: async (reason, attempt) => {
                     await sendMessage(
@@ -58,8 +57,8 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 }
             });
 
-            const linkStr = await linkRes.text();
-            if (linkRes.ok) {
+            const linkStr = await response?.text();
+            if (success && linkStr) {
                 await sendMessage(
                     JSON.stringify({
                         type: 'success',
@@ -71,7 +70,7 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 await sendMessage(
                     JSON.stringify({
                         type: 'error',
-                        content: `获取链接数据失败: ${linkRes.status} - ${linkRes.statusText}`
+                        content: `获取链接数据失败: ${error?.message || error}`
                     })
                 );
             }

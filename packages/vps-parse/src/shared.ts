@@ -72,15 +72,20 @@ export function sleep(ms: number = 1000): Promise<void> {
         setTimeout(resolve, ms);
     });
 }
-
 interface FetchWithRetryOptions {
     retries?: number;
     onError?: (error: Error, attempt: number) => void | Promise<void>;
 }
 
-export async function fetchWithRetry(request: Request | string, options: FetchWithRetryOptions = {}): Promise<Response> {
+interface RetryResponse {
+    success: boolean;
+    error?: Error;
+    response?: Response;
+}
+
+export async function fetchWithRetry(request: Request | string, options: FetchWithRetryOptions = {}): Promise<RetryResponse> {
     const { retries = 3, onError } = options;
-    let lastError: Error;
+    let lastError: Error = new Error('Unknown error');
 
     for (let attempt = 0; attempt < retries; attempt++) {
         try {
@@ -91,31 +96,33 @@ export async function fetchWithRetry(request: Request | string, options: FetchWi
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return response;
+            // 成功情况下返回
+            return {
+                success: true,
+                response
+            };
         } catch (error) {
             lastError = error as Error;
 
             // 处理错误回调
             if (onError) {
                 const errorResult = onError(lastError, attempt + 1);
-                // 如果 onError 返回 Promise，等待它完成
                 if (errorResult instanceof Promise) {
                     await errorResult;
                 }
             }
 
-            // 如果是最后一次尝试，抛出错误
-            if (attempt === retries - 1) {
-                throw new Error(`Failed after ${retries} attempts: ${lastError.message}`);
+            // 如果还有重试机会，继续重试
+            if (attempt < retries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 1000));
+                continue;
             }
-
-            // 可以在这里添加延迟重试的逻辑
-            await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 1000));
         }
     }
 
-    // 这行代码实际上永远不会执行，但为了 TypeScript 类型检查需要
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error
-    throw lastError;
+    // 所有重试都失败后，返回错误响应而不是抛出异常
+    return {
+        success: false,
+        error: lastError
+    };
 }
