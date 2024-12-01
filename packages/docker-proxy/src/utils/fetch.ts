@@ -1,7 +1,7 @@
 import type { RetryOptions } from '../types';
 
 export async function fetchWithRetry(input: RequestInfo, init?: RequestInit, options: RetryOptions = {}): Promise<Response> {
-    const { retries = 3, backoff = 300, timeout = 10000 } = options;
+    const { retries = 3, backoff = 300, timeout = 30000 } = options;
 
     let lastError: Error = new Error('Failed to fetch');
 
