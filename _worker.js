@@ -1,11 +1,11 @@
-var S = Object.defineProperty;
-var R = (t) => {
+var A = Object.defineProperty;
+var v = (t) => {
   throw TypeError(t);
 };
-var I = (t, e, r) => e in t ? S(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
-var f = (t, e, r) => I(t, typeof e != "symbol" ? e + "" : e, r), j = (t, e, r) => e.has(t) || R("Cannot " + r);
-var h = (t, e, r) => (j(t, e, "read from private field"), r ? r.call(t) : e.get(t)), C = (t, e, r) => e.has(t) ? R("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, r), y = (t, e, r, s) => (j(t, e, "write to private field"), s ? s.call(t, r) : e.set(t, r), r);
-const U = "bad request", H = "unauthorized", F = "internal server error", v = new Headers({
+var U = (t, e, r) => e in t ? A(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
+var g = (t, e, r) => U(t, typeof e != "symbol" ? e + "" : e, r), x = (t, e, r) => e.has(t) || v("Cannot " + r);
+var h = (t, e, r) => (x(t, e, "read from private field"), r ? r.call(t) : e.get(t)), C = (t, e, r) => e.has(t) ? v("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, r), y = (t, e, r, s) => (x(t, e, "write to private field"), s ? s.call(t, r) : e.set(t, r), r);
+const S = "bad request", F = "unauthorized", I = "internal server error", k = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -14,11 +14,11 @@ new Headers({
 new Headers({
   "Content-type": "text/plain"
 });
-const M = new Headers({
+const H = new Headers({
   "Content-type": "text/html"
-}), L = (t, e = M) => new Response(t, {
+}), M = (t, e = H) => new Response(t, {
   headers: e
-}), K = (t = U, e = 400, r = v) => Response.json(
+}), L = (t = S, e = 400, r = k) => Response.json(
   {
     status: e,
     message: t
@@ -28,7 +28,7 @@ const M = new Headers({
     statusText: t,
     headers: r
   }
-), E = (t = H, e = 401, r = v) => Response.json(
+), j = (t = F, e = 401, r = k) => Response.json(
   {
     status: e,
     message: t
@@ -38,7 +38,7 @@ const M = new Headers({
     statusText: t,
     headers: r
   }
-), A = (t = F, e = 500, r = v) => Response.json(
+), $ = (t = I, e = 500, r = k) => Response.json(
   {
     status: e,
     message: t
@@ -48,11 +48,14 @@ const M = new Headers({
     statusText: t,
     headers: r
   }
-), g = {
+), f = {
   docker: {
     baseUrl: "https://registry-1.docker.io",
-    authRequired: !1,
+    authRequired: !0,
+    // 改为 true，因为 Docker Hub 需要认证
     needLibrary: !0,
+    authUrl: "https://auth.docker.io/token",
+    // 添加认证 URL
     headers: {
       Accept: "application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.oci.image.manifest.v1+json"
     },
@@ -136,11 +139,11 @@ const M = new Headers({
       bash: [`docker pull ${t}/cloudsmith/organization/repository/image:tag`]
     })
   }
-}, z = (t) => Object.keys(g).reduce((e, r) => {
-  var n;
-  const s = g[r], { title: a, bash: o } = (n = s.useExample) == null ? void 0 : n.call(s, t);
-  return e[a] = o, e;
-}, {}), G = (t) => `<!DOCTYPE html>
+}, K = (t) => Object.keys(f).reduce((e, r) => {
+  var a;
+  const s = f[r], { title: n, bash: o } = (a = s.useExample) == null ? void 0 : a.call(s, t);
+  return e[n] = o, e;
+}, {}), z = (t) => `<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -307,7 +310,7 @@ const M = new Headers({
 
     <script>
         // 配置数据
-        const CONFIG = ${JSON.stringify(z(t))}
+        const CONFIG = ${JSON.stringify(K(t))}
 
         // 生成代码块HTML
         function generateCodeBlock(title, commands) {
@@ -362,7 +365,7 @@ const M = new Headers({
         });
     <\/script>
 </body>
-</html>`, m = {
+</html>`, u = {
   manifest: {
     enabled: !0,
     ttl: 3600
@@ -379,9 +382,9 @@ const M = new Headers({
     // 5 minutes
   }
 };
-class T {
+class E {
   constructor(e = "docker-proxy") {
-    f(this, "namespace");
+    g(this, "namespace");
     this.namespace = e;
   }
   generateCacheKey(e) {
@@ -389,21 +392,21 @@ class T {
   }
   async get(e) {
     try {
-      const r = this.generateCacheKey(e), a = await caches.default.match(r);
-      return a ? await a.json() : null;
+      const r = this.generateCacheKey(e), n = await caches.default.match(r);
+      return n ? await n.json() : null;
     } catch (r) {
       return console.error("Cache get error:", r), null;
     }
   }
   async set(e, r) {
     try {
-      const s = this.generateCacheKey(e.key), a = caches.default, o = new Response(JSON.stringify(r), {
+      const s = this.generateCacheKey(e.key), n = caches.default, o = new Response(JSON.stringify(r), {
         headers: {
           "Cache-Control": e.cacheControl || `public, max-age=${e.ttl || 3600}`,
           "Content-Type": "application/json"
         }
       });
-      await a.put(s, o);
+      await n.put(s, o);
     } catch (s) {
       console.error("Cache set error:", s);
     }
@@ -417,28 +420,28 @@ class T {
     }
   }
 }
-async function w(t, e, r = {}) {
-  const { retries: s = 3, backoff: a = 300, timeout: o = 3e4 } = r;
-  let n = new Error("Failed to fetch");
+async function T(t, e, r = {}) {
+  const { retries: s = 3, backoff: n = 300, timeout: o = 3e4 } = r;
+  let a = new Error("Failed to fetch");
   for (let i = 0; i < s; i++)
     try {
-      const l = new AbortController(), u = setTimeout(() => l.abort(), o), d = await fetch(t, {
+      const c = new AbortController(), p = setTimeout(() => c.abort(), o), d = await fetch(t, {
         ...e,
-        signal: l.signal
+        signal: c.signal
       });
-      if (clearTimeout(u), !d.ok && d.status !== 401)
+      if (clearTimeout(p), !d.ok && d.status !== 401)
         throw new Error(`HTTP Error: ${d.status}`);
       return d;
-    } catch (l) {
-      if (n = l, i === s - 1)
+    } catch (c) {
+      if (a = c, i === s - 1)
         break;
-      await new Promise((u) => setTimeout(u, a * 2 ** i));
+      await new Promise((p) => setTimeout(p, n * 2 ** i));
     }
-  throw n;
+  throw a;
 }
-function O(t) {
+function G(t) {
   const e = t.split("/").filter(Boolean);
-  return e.length === 0 ? { registryType: "docker", imagePath: "/" } : e[0] in g ? {
+  return e.length === 0 ? { registryType: "docker", imagePath: "/" } : e[0] in f ? {
     registryType: e.shift() || "docker",
     // 移除开头的斜杠，因为 baseUrl 会包含完整路径
     imagePath: e.join("/")
@@ -448,13 +451,7 @@ function O(t) {
     imagePath: t.startsWith("/") ? t.slice(1) : t
   };
 }
-function B(t, e) {
-  const r = new Headers(), s = g[t];
-  return e && r.set("Authorization", e), s != null && s.headers && Object.entries(s.headers).forEach(([a, o]) => {
-    r.set(a, o);
-  }), r;
-}
-function D(t, e) {
+function O(t, e) {
   switch (t) {
     case "k8s-gcr":
     case "k8s":
@@ -469,115 +466,104 @@ function D(t, e) {
       return e.replace(/^\//, "");
   }
 }
-async function P(t, e, r) {
-  const s = new URL(e.realm);
-  s.searchParams.set("service", e.service), e.scope && s.searchParams.set("scope", e.scope);
-  const a = B(t, r);
-  try {
-    return await w(s.toString(), {
-      method: "GET",
-      headers: a
-    });
-  } catch (o) {
-    return console.error(`Authentication failed for ${t}:`, o), E("Authentication failed");
-  }
-}
-class W {
+class D {
   constructor() {
-    f(this, "cacheManager");
-    this.cacheManager = new T();
+    g(this, "cacheManager");
+    this.cacheManager = new E();
   }
   async getToken(e, r, s) {
-    const a = `token:${e}:${r.service}:${r.scope}:${s || ""}`, o = await this.cacheManager.get(a);
+    const n = `token:${e}:${r.service}:${r.scope}`, o = await this.cacheManager.get(n);
     if (o)
       return o.token;
-    const n = await P(e, r, s);
-    if (!n.ok)
-      return null;
-    const i = await n.json();
-    return i.token && await this.cacheManager.set(
-      {
-        key: a,
-        ttl: m.token.ttl
-      },
-      i
-    ), i.token;
+    const a = new URL(r.realm);
+    a.searchParams.set("service", r.service), r.scope && a.searchParams.set("scope", r.scope);
+    try {
+      const i = await T(a.toString(), {
+        method: "GET",
+        headers: s ? { Authorization: s } : void 0
+      });
+      if (!i.ok)
+        return console.error("Auth failed:", await i.text()), null;
+      const c = await i.json();
+      return u.token.enabled && c.token && await this.cacheManager.set(
+        {
+          key: n,
+          ttl: u.token.ttl
+        },
+        c
+      ), c.token;
+    } catch (i) {
+      return console.error("Error getting token:", i), null;
+    }
   }
 }
-class Y {
+class B {
   constructor() {
-    f(this, "cacheManager");
-    f(this, "authService");
-    this.cacheManager = new T(), this.authService = new W();
+    g(this, "cacheManager");
+    g(this, "authService");
+    this.cacheManager = new E(), this.authService = new D();
   }
   async handleRequest(e) {
-    const r = new URL(e.url), { registryType: s, imagePath: a } = O(r.pathname), o = g[s];
+    const r = new URL(e.url), { registryType: s, imagePath: n } = G(r.pathname), o = f[s];
     if (!o)
-      return K("Unsupported registry type");
+      return L("Unsupported registry type");
     try {
-      const n = D(s, a), i = this.canUseCache(e, n);
+      const a = O(s, n), i = this.canUseCache(e, a);
       if (i) {
-        const p = await this.getCachedResponse(s, n, e.method);
-        if (p)
-          return p;
+        const m = await this.getCachedResponse(s, a, e.method);
+        if (m)
+          return m;
       }
-      const l = new Headers(e.headers);
-      o.headers && Object.entries(o.headers).forEach(([p, b]) => {
-        l.set(p, b);
-      });
-      const u = new URL(`${o.baseUrl}/v2/${n}`, o.baseUrl), d = await w(u.toString(), {
+      const c = new Headers(e.headers);
+      if (o.headers && Object.entries(o.headers).forEach(([m, b]) => {
+        c.set(m, b);
+      }), o.authRequired) {
+        const m = o.scopeFormat ? o.scopeFormat(a) : `repository:${a}:pull`, b = {
+          realm: o.authUrl || "https://auth.docker.io/token",
+          service: "registry.docker.io",
+          scope: m
+        }, w = await this.authService.getToken(s, b, e.headers.get("Authorization"));
+        if (!w)
+          return j("Failed to obtain authentication token");
+        c.set("Authorization", `Bearer ${w}`);
+      }
+      const p = new URL(`${o.baseUrl}/v2/${a}`, o.baseUrl), d = await T(p.toString(), {
         method: e.method,
-        headers: l,
+        headers: c,
         redirect: "follow",
         body: e.method === "GET" ? null : e.body
       });
-      if (d.status === 401) {
-        const p = d.headers.get("Www-Authenticate");
-        if (p && o.authRequired) {
-          const b = this.parseAuthInfo(p), x = await this.authService.getToken(s, b, e.headers.get("Authorization"));
-          if (x) {
-            l.set("Authorization", `Bearer ${x}`);
-            const k = await w(u.toString(), {
-              method: e.method,
-              headers: l,
-              redirect: "follow",
-              body: e.method === "GET" ? null : e.body
-            });
-            return i && k.ok && await this.cacheResponse(s, n, k.clone(), e.method), k;
-          }
-        }
-      }
-      return i && d.ok && await this.cacheResponse(s, n, d.clone(), e.method), d;
-    } catch (n) {
-      return console.error("Registry proxy error:", n), A(`Registry error: ${n.message || n}`);
+      return i && d.ok && await this.cacheResponse(s, a, d.clone(), e.method), d;
+    } catch (a) {
+      return console.error("Registry proxy error:", a), $(`Registry error: ${a.message || a}`);
     }
   }
   canUseCache(e, r) {
     if (e.method !== "GET")
       return !1;
-    const s = r.includes("/manifests/"), a = r.includes("/blobs/");
-    return s ? m.manifest.enabled : a ? m.layer.enabled : !1;
+    const s = r.includes("/manifests/"), n = r.includes("/blobs/");
+    return s ? u.manifest.enabled : n ? u.layer.enabled : !1;
   }
   async getCachedResponse(e, r, s) {
-    const a = this.generateCacheKey(e, r, s), o = await this.cacheManager.get(a);
+    const n = this.generateCacheKey(e, r, s), o = await this.cacheManager.get(n);
     if (o) {
-      const n = r.includes("/manifests/"), i = r.includes("/blobs/"), l = n ? m.manifest.ttl : i ? m.layer.ttl : 3600;
-      if (Date.now() - o.timestamp < l * 1e3)
+      const a = r.includes("/manifests/"), i = r.includes("/blobs/"), c = a ? u.manifest.ttl : i ? u.layer.ttl : 3600;
+      if (Date.now() - o.timestamp < c * 1e3)
         return new Response(JSON.stringify(o.body), {
           headers: new Headers(o.headers)
         });
     }
     return null;
   }
-  async cacheResponse(e, r, s, a) {
-    const o = r.includes("/manifests/"), n = r.includes("/blobs/"), i = o ? m.manifest.ttl : n ? m.layer.ttl : 3600, l = this.generateCacheKey(e, r, a), u = await s.clone().json(), d = Object.fromEntries(s.headers.entries());
+  async cacheResponse(e, r, s, n) {
+    const o = r.includes("/manifests/"), a = r.includes("/blobs/"), i = o ? u.manifest.ttl : a ? u.layer.ttl : 3600, c = this.generateCacheKey(e, r, n), p = await s.clone().json(), d = Object.fromEntries(s.headers.entries());
     await this.cacheManager.set(
       {
-        key: l,
+        key: c,
         ttl: i
       },
       {
-        body: u,
+        body: p,
         headers: d,
         timestamp: Date.now()
       }
@@ -586,51 +572,41 @@ class Y {
   generateCacheKey(e, r, s) {
     return `${e}:${r}:${s}`;
   }
-  parseAuthInfo(e) {
-    const r = e.match(/Bearer realm="([^"]+)",service="([^"]+)"(?:,scope="([^"]+)")?/);
-    if (!r)
-      throw new Error("Invalid WWW-Authenticate header");
-    return {
-      realm: r[1],
-      service: r[2],
-      scope: r[3]
-    };
-  }
 }
-function N(t, e) {
+function P(t, e) {
   if (!t || !e) return !1;
   for (let r = 0; r < e.length; r++)
     if (new RegExp(e[r].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(t))
       return !0;
   return !1;
 }
-var c;
-class _ {
+var l;
+class q {
   constructor() {
-    C(this, c, []);
-    y(this, c, []);
+    C(this, l, []);
+    y(this, l, []);
   }
   setEnv(e) {
-    if (h(this, c).length || h(this, c) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
+    if (h(this, l).length || h(this, l) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
     const r = Reflect.get(e, "IP_WHITELIST") ?? "*";
-    r === "*" ? y(this, c, "*") : y(this, c, r.split(",").map((s) => s.trim()));
+    r === "*" ? y(this, l, "*") : y(this, l, r.split(",").map((s) => s.trim()));
   }
   checkIpIsWhitelisted(e) {
     const r = e.headers.get("x-real-ip") || "";
-    return (typeof h(this, c) == "string" && h(this, c)) === "*" || Array.isArray(h(this, c)) && h(this, c).length === 0 ? !0 : Array.isArray(h(this, c)) && h(this, c).length > 0 ? N(r, h(this, c)) : !1;
+    return (typeof h(this, l) == "string" && h(this, l)) === "*" || Array.isArray(h(this, l)) && h(this, l).length === 0 ? !0 : Array.isArray(h(this, l)) && h(this, l).length > 0 ? P(r, h(this, l)) : !1;
   }
 }
-c = new WeakMap();
-const q = new Y(), $ = new _(), Q = {
+l = new WeakMap();
+const Y = new B(), R = new q(), _ = {
   async fetch(t, e) {
     try {
       const { pathname: r, host: s } = new URL(t.url);
-      return $.setEnv(e), $.checkIpIsWhitelisted(t) ? r === "/" ? L(G(s)) : await q.handleRequest(t) : E();
+      return R.setEnv(e), R.checkIpIsWhitelisted(t) ? r === "/" ? M(z(s)) : await Y.handleRequest(t) : j();
     } catch (r) {
-      return A(r.message || r);
+      return $(r.message || r);
     }
   }
 };
 export {
-  Q as default
+  _ as default
 };
