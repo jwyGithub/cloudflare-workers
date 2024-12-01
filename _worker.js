@@ -4,8 +4,8 @@ var b = (t) => {
 };
 var E = (t, e, r) => e in t ? C(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
 var p = (t, e, r) => E(t, typeof e != "symbol" ? e + "" : e, r), k = (t, e, r) => e.has(t) || b("Cannot " + r);
-var h = (t, e, r) => (k(t, e, "read from private field"), r ? r.call(t) : e.get(t)), w = (t, e, r) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, r), y = (t, e, r, s) => (k(t, e, "write to private field"), s ? s.call(t, r) : e.set(t, r), r);
-const A = "bad request", T = "unauthorized", S = "internal server error", f = new Headers({
+var h = (t, e, r) => (k(t, e, "read from private field"), r ? r.call(t) : e.get(t)), w = (t, e, r) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, r), f = (t, e, r, s) => (k(t, e, "write to private field"), s ? s.call(t, r) : e.set(t, r), r);
+const A = "bad request", T = "unauthorized", S = "internal server error", y = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -18,7 +18,7 @@ const U = new Headers({
   "Content-type": "text/html"
 }), F = (t, e = U) => new Response(t, {
   headers: e
-}), H = (t = A, e = 400, r = f) => Response.json(
+}), H = (t = A, e = 400, r = y) => Response.json(
   {
     status: e,
     message: t
@@ -28,7 +28,7 @@ const U = new Headers({
     statusText: t,
     headers: r
   }
-), x = (t = T, e = 401, r = f) => Response.json(
+), x = (t = T, e = 401, r = y) => Response.json(
   {
     status: e,
     message: t
@@ -38,7 +38,7 @@ const U = new Headers({
     statusText: t,
     headers: r
   }
-), R = (t = S, e = 500, r = f) => Response.json(
+), R = (t = S, e = 500, r = y) => Response.json(
   {
     status: e,
     message: t
@@ -51,7 +51,7 @@ const U = new Headers({
 ), g = {
   docker: {
     baseUrl: "https://registry-1.docker.io",
-    authRequired: !0,
+    authRequired: !1,
     needLibrary: !0,
     headers: {
       Accept: "application/vnd.docker.distribution.manifest.v2+json"
@@ -64,7 +64,7 @@ const U = new Headers({
   },
   ghcr: {
     baseUrl: "https://ghcr.io",
-    authRequired: !0,
+    authRequired: !1,
     headers: {
       Accept: "application/vnd.docker.distribution.manifest.v2+json"
     },
@@ -77,7 +77,7 @@ const U = new Headers({
   },
   gcr: {
     baseUrl: "https://gcr.io",
-    authRequired: !0,
+    authRequired: !1,
     headers: {
       Accept: "application/vnd.docker.distribution.manifest.v2+json"
     },
@@ -89,7 +89,7 @@ const U = new Headers({
   },
   "k8s-gcr": {
     baseUrl: "https://k8s.gcr.io",
-    authRequired: !0,
+    authRequired: !1,
     headers: {
       Accept: "application/vnd.docker.distribution.manifest.v2+json"
     },
@@ -114,7 +114,7 @@ const U = new Headers({
   },
   quay: {
     baseUrl: "https://quay.io",
-    authRequired: !0,
+    authRequired: !1,
     headers: {
       Accept: "application/vnd.docker.distribution.manifest.v2+json"
     },
@@ -126,7 +126,7 @@ const U = new Headers({
   },
   cloudsmith: {
     baseUrl: "https://docker.cloudsmith.io",
-    authRequired: !0,
+    authRequired: !1,
     headers: {
       Accept: "application/vnd.docker.distribution.manifest.v2+json"
     },
@@ -585,12 +585,12 @@ var i;
 class D {
   constructor() {
     w(this, i, []);
-    y(this, i, []);
+    f(this, i, []);
   }
   setEnv(e) {
     if (h(this, i).length || h(this, i) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
     const r = Reflect.get(e, "IP_WHITELIST") ?? "*";
-    r === "*" ? y(this, i, "*") : y(this, i, r.split(",").map((s) => s.trim()));
+    r === "*" ? f(this, i, "*") : f(this, i, r.split(",").map((s) => s.trim()));
   }
   checkIpIsWhitelisted(e) {
     const r = e.headers.get("x-real-ip") || "";
