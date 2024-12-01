@@ -1,4 +1,4 @@
-import { checkIp } from '@jiangweiye/cloudflare-shared';
+import { checkIp } from '@jiangweiye/worker-shared';
 
 export class ValidateIp {
     #ip_rules: string[] | string = [];
@@ -19,13 +19,14 @@ export class ValidateIp {
         }
     }
 
-    public checkIpIsWhitelisted(ip: string): boolean {
+    public checkIpIsWhitelisted(request: Request): boolean {
+        const real_ip = request.headers.get('x-real-ip') || '';
         if ((typeof this.#ip_rules === 'string' && this.#ip_rules) === '*') {
             return true;
         } else if (Array.isArray(this.#ip_rules) && this.#ip_rules.length === 0) {
             return true;
         } else if (Array.isArray(this.#ip_rules) && this.#ip_rules.length > 0) {
-            return checkIp(ip, this.#ip_rules);
+            return checkIp(real_ip, this.#ip_rules);
         } else {
             return false;
         }
