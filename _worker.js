@@ -1,4 +1,4 @@
-const $ = "success", C = "internal server error", k = new Headers({
+const $ = "success", C = "internal server error", v = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -9,7 +9,7 @@ new Headers({
 });
 const N = new Headers({
   "Content-type": "text/html"
-}), j = (e, t = $, n = k) => Response.json(
+}), j = (e, t = $, n = v) => Response.json(
   {
     status: 200,
     message: t,
@@ -22,7 +22,7 @@ const N = new Headers({
   }
 ), E = (e, t = N) => new Response(e, {
   headers: t
-}), O = (e = C, t = 500, n = k) => Response.json(
+}), O = (e = C, t = 500, n = v) => Response.json(
   {
     status: t,
     message: e
@@ -40,7 +40,7 @@ function T(e) {
     n[r] = t.charCodeAt(r);
   return new TextDecoder().decode(n);
 }
-function v(e, t) {
+function S(e, t) {
   const n = (r) => r;
   try {
     return e ? T(e.toString()) : n(e);
@@ -506,7 +506,7 @@ const H = `<!doctype html>
     </body>
 </html>
 `;
-function V(e, t) {
+function P(e, t) {
   try {
     return {
       type: "vless",
@@ -519,7 +519,7 @@ function V(e, t) {
     throw new Error(`error on parseVlessLink: ${n.message || n} -> ${t}`);
   }
 }
-function A(e, t) {
+function V(e, t) {
   try {
     return {
       type: "trojan",
@@ -532,9 +532,9 @@ function A(e, t) {
     throw new Error(`error on parseTrojanLink: ${n.message || n} -> ${t}`);
   }
 }
-function I(e) {
+function A(e) {
   try {
-    const t = JSON.parse(v(e));
+    const t = JSON.parse(S(e));
     return {
       type: "vmess",
       host: t.add,
@@ -546,13 +546,13 @@ function I(e) {
     throw new Error(`error on parseVmessLink: ${t.message || t} -> ${e}`);
   }
 }
-function P() {
+function I() {
   return (/* @__PURE__ */ new Date()).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
 }
-function w(e, t) {
+function b(e, t) {
   return t.some((n) => n.host === e);
 }
-function S(e) {
+function x(e) {
   try {
     return new URL(e);
   } catch {
@@ -563,10 +563,10 @@ function R(e) {
   try {
     const t = [];
     for (const n of e) {
-      const r = S(n);
+      const r = x(n);
       if (r === null) continue;
-      const { host: a, port: c, remark: l } = V(r, n);
-      !a.startsWith("127") && !/^[a-z]/i.test(a) && !w(a, t) && t.push({ host: a, port: c, remark: l });
+      const { host: a, port: c, remark: l } = P(r, n);
+      !a.startsWith("127") && !/^[a-z]/i.test(a) && !b(a, t) && t.push({ host: a, port: c, remark: l });
     }
     return t.map((n) => `${n.host}:${n.port}${n.remark}`);
   } catch (t) {
@@ -577,10 +577,10 @@ function B(e) {
   try {
     const t = [];
     for (const n of e) {
-      const r = S(n);
+      const r = x(n);
       if (r === null) continue;
-      const { host: a, port: c, remark: l } = A(r, n);
-      !a.startsWith("127") && !/^[a-z]/i.test(a) && !w(a, t) && t.push({ host: a, port: c, remark: l });
+      const { host: a, port: c, remark: l } = V(r, n);
+      !a.startsWith("127") && !/^[a-z]/i.test(a) && !b(a, t) && t.push({ host: a, port: c, remark: l });
     }
     return t.map((n) => `${n.host}:${n.port}${n.remark}`);
   } catch (t) {
@@ -591,33 +591,34 @@ function D(e) {
   try {
     const t = [];
     for (const n of e) {
-      const { host: r, port: a, remark: c } = I(n.replace("vmess://", ""));
-      !r.startsWith("127") && !/^[a-z]/i.test(r) && !w(r, t) && t.push({ host: r, port: a, remark: c });
+      const { host: r, port: a, remark: c } = A(n.replace("vmess://", ""));
+      !r.startsWith("127") && !/^[a-z]/i.test(r) && !b(r, t) && t.push({ host: r, port: a, remark: c });
     }
     return t.map((n) => `${n.host}:${n.port}${n.remark}`);
   } catch (t) {
     throw new Error(`catch on getVmess : ${t.message || t}`);
   }
 }
-function u(e = 1e3) {
+function h(e = 1e3) {
   return new Promise((t) => {
     setTimeout(t, e);
   });
 }
-async function x(e, t = 3, n) {
+async function w(e, t = 3, n) {
   const r = n || (() => {
   });
   try {
-    return await fetch(e);
+    const a = await fetch(e);
+    return !a.ok && t > 0 ? (await Promise.resolve(r(t)), await new Promise((c) => setTimeout(c, 1e3)), w(e, t - 1)) : a;
   } catch (a) {
     if (t > 0)
-      return await Promise.resolve(r(t)), await new Promise((c) => setTimeout(c, 1e3)), x(e, t - 1);
+      return await Promise.resolve(r(t)), await new Promise((c) => setTimeout(c, 1e3)), w(e, t - 1);
     throw a;
   }
 }
 let g = null;
 async function s(e) {
-  await u(100), g == null || g.send(e);
+  await h(100), g == null || g.send(e);
 }
 const f = (e) => `packages/vps-parse/address/${e}`;
 async function U(e, t) {
@@ -645,20 +646,20 @@ async function U(e, t) {
           Connection: "keep-alive"
         }),
         redirect: "manual"
-      }), d = await x(i, Number(t), async (m) => {
+      }), d = await w(i, Number(t), async (m) => {
         await s(
           JSON.stringify({
             type: "info",
             content: `正在尝试第 ${m} 次请求...`
           })
         );
-      }), h = await d.text();
+      }), u = await d.text();
       d.ok ? (await s(
         JSON.stringify({
           type: "success",
           content: `成功获取链接数据: ${o}`
         })
-      ), n.push(v(h))) : await s(
+      ), n.push(S(u))) : await s(
         JSON.stringify({
           type: "error",
           content: `获取链接数据失败: ${d.status} - ${d.statusText}`
@@ -715,12 +716,12 @@ async function y(e, t, n) {
         return (await i.json()).sha;
     }, o = async (i) => {
       const d = {
-        message: `scheduled: update ${t} by ${P()}`,
+        message: `scheduled: update ${t} by ${I()}`,
         content: r,
         branch: n.REPO_BRANCH
       };
       i && (d.sha = i);
-      const h = await fetch(a, {
+      const u = await fetch(a, {
         method: "PUT",
         headers: {
           ...c,
@@ -728,11 +729,11 @@ async function y(e, t, n) {
         },
         body: JSON.stringify(d)
       });
-      if (!h.ok) {
-        const m = await h.text();
-        throw new Error(`GitHub API responded with ${h.status}: ${m}`);
+      if (!u.ok) {
+        const m = await u.text();
+        throw new Error(`GitHub API responded with ${u.status}: ${m}`);
       }
-      return h.json();
+      return u.json();
     };
     try {
       const i = await l();
@@ -757,13 +758,13 @@ async function y(e, t, n) {
             content: "检测到文件冲突，正在重试..."
           })
         );
-        const d = await l(), h = await o(d);
+        const d = await l(), u = await o(d);
         return await s(
           JSON.stringify({
             type: "success",
             content: `重试成功，已推送到GitHub: ${t}`
           })
-        ), h;
+        ), u;
       }
       throw i;
     }
@@ -776,7 +777,7 @@ async function y(e, t, n) {
     ), new Error(`catch on pushGithub => reason: ${r.message || r}`);
   }
 }
-async function b(e) {
+async function k(e) {
   try {
     await s(
       JSON.stringify({
@@ -794,17 +795,17 @@ async function b(e) {
     const a = R(n.filter(Boolean)), c = B(t.filter(Boolean)), l = D(r.filter(Boolean));
     await s(
       JSON.stringify({
-        type: "info",
+        type: "success",
         content: `vless count: ${a.length}`
       })
     ), await s(
       JSON.stringify({
-        type: "info",
+        type: "success",
         content: `trojan count: ${c.length}`
       })
     ), await s(
       JSON.stringify({
-        type: "info",
+        type: "success",
         content: `vmess count: ${l.length}`
       })
     ), await s(
@@ -819,7 +820,7 @@ async function b(e) {
       vmess: ""
     };
     try {
-      o.vless = await y(a, f("vless_api.txt"), e), await u(2e3), o.trojan = await y(c, f("trojan_api.txt"), e), await u(2e3), o.vmess = await y(l, f("vmess_api.txt"), e), await u(2e3);
+      o.vless = await y(a, f("vless_api.txt"), e), await h(2e3), o.trojan = await y(c, f("trojan_api.txt"), e), await h(2e3), o.vmess = await y(l, f("vmess_api.txt"), e), await h(2e3);
     } catch (i) {
       await s(
         JSON.stringify({
@@ -868,7 +869,7 @@ const W = {
                 })
               );
               try {
-                await b(t), await s(
+                await k(t), await s(
                   JSON.stringify({
                     type: "success",
                     content: "同步操作完成"
@@ -907,7 +908,7 @@ const W = {
     }
   },
   async scheduled(e, t, n) {
-    n.waitUntil(b(t));
+    n.waitUntil(k(t));
   }
 };
 export {
