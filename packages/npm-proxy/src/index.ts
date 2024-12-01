@@ -1,4 +1,5 @@
 import { toServerError, toStream, toUnauthorized } from '@jiangweiye/worker-service';
+import { ProgressTransformer } from './ProgressTransformer';
 import { compressResponse, decompressRequest } from './shared';
 import { smartRateLimiter } from './SmartRateLimiter';
 import { ValidateIp } from './validate';
@@ -55,10 +56,52 @@ async function performSecurityChecks(request: Request): Promise<Response | null>
     return null;
 }
 
+// 修改 handleProgressResponse 函数
+async function handleProgressResponse(response: Response): Promise<Response> {
+    const contentType = response.headers.get('content-type') || '';
+    const contentEncoding = response.headers.get('content-encoding');
+
+    // 检查是否是 npm 进度信息
+    if (contentType.includes('application/json') && (response.headers.get('npm-notice') || response.headers.get('npm-in-progress'))) {
+        const headers = new Headers(response.headers);
+
+        // 确保这些头信息被正确转发
+        const progressHeaders = ['npm-notice', 'npm-in-progress', 'npm-progress', 'npm-json', 'npm-in-progress-details'];
+
+        for (const header of progressHeaders) {
+            const value = response.headers.get(header);
+            if (value) {
+                headers.set(header, value);
+            }
+        }
+
+        // 处理响应体
+        let body = response.body;
+        if (contentEncoding === 'gzip' && body) {
+            const decompressStream = new DecompressionStream('gzip');
+            body = body?.pipeThrough(decompressStream);
+        }
+
+        // 使用 ProgressTransformer 处理进度信息
+        const progressTransform = new TransformStream(new ProgressTransformer());
+        const transformedBody = body?.pipeThrough(progressTransform);
+
+        return new Response(transformedBody, {
+            status: response.status,
+            statusText: response.statusText,
+            headers
+        });
+    }
+
+    return response;
+}
+
 // 添加辅助函数来检测 npm install 请求
 function isNpmInstallRequest(request: Request): boolean {
     const userAgent = request.headers.get('user-agent') || '';
-    return userAgent.includes('npm/') && request.method === 'GET';
+    const accept = request.headers.get('accept') || '';
+
+    return (userAgent.includes('npm/') || userAgent.includes('Node')) && request.method === 'GET' && accept.includes('application/json');
 }
 
 interface LogEntry {
@@ -153,6 +196,13 @@ async function handleRequest(req: Request): Promise<Response> {
     const method = req.method;
     const headers = new Headers(req.headers);
 
+    // 添加 npm 进度相关的头信息
+    headers.set('accept', 'application/json');
+    if (isNpmInstallRequest(req)) {
+        headers.set('npm-in-progress', '1');
+        headers.set('npm-progress', 'true');
+    }
+
     // 处理认证
     const authHeader = req.headers.get('authorization');
     if (authHeader) {
@@ -188,6 +238,11 @@ async function handleRequest(req: Request): Promise<Response> {
     } catch (e) {
         console.error('Failed to send request to npm registry', e);
         return toServerError();
+    }
+
+    // 处理进度信息
+    if (isNpmInstallRequest(req)) {
+        return handleProgressResponse(resp);
     }
 
     // 处理特殊路径
