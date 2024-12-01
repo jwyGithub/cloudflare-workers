@@ -36,7 +36,7 @@ export class AuthService {
 
     async getToken(registryType: string, authInfo: AuthResponse, authorization: string | null): Promise<string | null> {
         // 生成缓存键
-        const cacheKey = `token:${registryType}:${authInfo.service}:${authInfo.scope}:${authorization || ''}`;
+        const cacheKey = `token:${registryType}:${authInfo.service}:${authInfo.scope}`;
 
         // 尝试从缓存获取令牌
         const cachedToken = await this.cacheManager.get<{ token: string }>(cacheKey);
@@ -44,25 +44,41 @@ export class AuthService {
             return cachedToken.token;
         }
 
-        // 获取新令牌
-        const response = await authenticateRegistry(registryType, authInfo, authorization);
-        if (!response.ok) {
+        // 构建认证 URL
+        const url = new URL(authInfo.realm);
+        url.searchParams.set('service', authInfo.service);
+        if (authInfo.scope) {
+            url.searchParams.set('scope', authInfo.scope);
+        }
+
+        try {
+            const response = await fetchWithRetry(url.toString(), {
+                method: 'GET',
+                headers: authorization ? { Authorization: authorization } : undefined
+            });
+
+            if (!response.ok) {
+                console.error('Auth failed:', await response.text());
+                return null;
+            }
+
+            const tokenData = (await response.json()) as { token: string };
+
+            // 缓存令牌
+            if (CACHE_CONFIGS.token.enabled && tokenData.token) {
+                await this.cacheManager.set(
+                    {
+                        key: cacheKey,
+                        ttl: CACHE_CONFIGS.token.ttl
+                    },
+                    tokenData
+                );
+            }
+
+            return tokenData.token;
+        } catch (error) {
+            console.error('Error getting token:', error);
             return null;
         }
-
-        const tokenData = (await response.json()) as { token: string };
-
-        // 缓存令牌
-        if (CACHE_CONFIGS.token.enabled && tokenData.token) {
-            await this.cacheManager.set(
-                {
-                    key: cacheKey,
-                    ttl: CACHE_CONFIGS.token.ttl
-                },
-                tokenData
-            );
-        }
-
-        return tokenData.token;
     }
 }

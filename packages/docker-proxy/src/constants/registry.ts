@@ -3,8 +3,9 @@ import type { RegistryConfig } from '../types';
 export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
     docker: {
         baseUrl: 'https://registry-1.docker.io',
-        authRequired: false,
+        authRequired: true, // 改为 true，因为 Docker Hub 需要认证
         needLibrary: true,
+        authUrl: 'https://auth.docker.io/token', // 添加认证 URL
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.oci.image.manifest.v1+json'
         },
@@ -15,12 +16,10 @@ export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
             }
             return `repository:${imagePath}:pull`;
         },
-        useExample: (host: string) => {
-            return {
-                title: 'Docker Hub 官方镜像',
-                bash: [`docker pull ${host}/nginx:latest`]
-            };
-        }
+        useExample: (host: string) => ({
+            title: 'Docker Hub 官方镜像',
+            bash: [`docker pull ${host}/nginx:latest`]
+        })
     },
     ghcr: {
         baseUrl: 'https://ghcr.io',

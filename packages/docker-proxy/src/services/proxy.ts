@@ -1,6 +1,6 @@
 import type { AuthResponse } from '../types';
 import type { CachedResponse } from '../types/cache';
-import { toClientError, toServerError } from '@jiangweiye/worker-service';
+import { toClientError, toServerError, toUnauthorized } from '@jiangweiye/worker-service';
 import { CACHE_CONFIGS } from '../constants/cache';
 import { REGISTRY_CONFIGS } from '../constants/registry';
 import { CacheManager } from '../utils/cache';
@@ -46,6 +46,24 @@ export class RegistryProxy {
                 });
             }
 
+            // 如果需要认证，先获取 token
+            if (config.authRequired) {
+                const scope = config.scopeFormat ? config.scopeFormat(normalizedPath) : `repository:${normalizedPath}:pull`;
+                const authInfo: AuthResponse = {
+                    realm: config.authUrl || 'https://auth.docker.io/token',
+                    service: 'registry.docker.io',
+                    scope
+                };
+
+                const token = await this.authService.getToken(registryType, authInfo, request.headers.get('Authorization'));
+
+                if (!token) {
+                    return toUnauthorized('Failed to obtain authentication token');
+                }
+
+                headers.set('Authorization', `Bearer ${token}`);
+            }
+
             // 构建目标 URL
             const targetUrl = new URL(`${config.baseUrl}/v2/${normalizedPath}`, config.baseUrl);
 
@@ -56,32 +74,6 @@ export class RegistryProxy {
                 redirect: 'follow',
                 body: request.method === 'GET' ? null : request.body
             });
-
-            // 处理 401 响应
-            if (response.status === 401) {
-                const wwwAuthenticate = response.headers.get('Www-Authenticate');
-                if (wwwAuthenticate && config.authRequired) {
-                    const authInfo = this.parseAuthInfo(wwwAuthenticate);
-                    const token = await this.authService.getToken(registryType, authInfo, request.headers.get('Authorization'));
-
-                    if (token) {
-                        headers.set('Authorization', `Bearer ${token}`);
-                        const authenticatedResponse = await fetchWithRetry(targetUrl.toString(), {
-                            method: request.method,
-                            headers,
-                            redirect: 'follow',
-                            body: request.method === 'GET' ? null : request.body
-                        });
-
-                        // 缓存认证后的响应
-                        if (canUseCache && authenticatedResponse.ok) {
-                            await this.cacheResponse(registryType, normalizedPath, authenticatedResponse.clone(), request.method);
-                        }
-
-                        return authenticatedResponse;
-                    }
-                }
-            }
 
             // 缓存成功的响应
             if (canUseCache && response.ok) {
@@ -150,18 +142,5 @@ export class RegistryProxy {
 
     private generateCacheKey(registryType: string, path: string, method: string): string {
         return `${registryType}:${path}:${method}`;
-    }
-
-    private parseAuthInfo(wwwAuthenticate: string): AuthResponse {
-        const matches = wwwAuthenticate.match(/Bearer realm="([^"]+)",service="([^"]+)"(?:,scope="([^"]+)")?/);
-        if (!matches) {
-            throw new Error('Invalid WWW-Authenticate header');
-        }
-
-        return {
-            realm: matches[1],
-            service: matches[2],
-            scope: matches[3]
-        };
     }
 }

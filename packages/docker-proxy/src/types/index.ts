@@ -2,8 +2,8 @@ export interface RegistryConfig {
     baseUrl: string;
     authRequired: boolean;
     needLibrary?: boolean;
+    authUrl?: string; // 添加认证 URL
     headers?: Record<string, string>;
-    // 添加 scopeFormat 用于自定义 scope 格式
     scopeFormat?: (imagePath: string) => string;
     useExample: (host: string) => {
         title: string;
