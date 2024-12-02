@@ -1,9 +1,9 @@
-var k = (e) => {
+var g = (e) => {
   throw TypeError(e);
 };
-var w = (e, t, r) => t.has(e) || k("Cannot " + r);
-var c = (e, t, r) => (w(e, t, "read from private field"), r ? r.call(e) : t.get(e)), v = (e, t, r) => t.has(e) ? k("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), f = (e, t, r, s) => (w(e, t, "write to private field"), s ? s.call(e, r) : t.set(e, r), r);
-const U = "unauthorized", $ = "internal server error", x = new Headers({
+var y = (e, t, r) => t.has(e) || g("Cannot " + r);
+var c = (e, t, r) => (y(e, t, "read from private field"), r ? r.call(e) : t.get(e)), b = (e, t, r) => t.has(e) ? g("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), m = (e, t, r, o) => (y(e, t, "write to private field"), o ? o.call(e, r) : t.set(e, r), r);
+const x = "unauthorized", U = "internal server error", v = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -12,11 +12,11 @@ new Headers({
 new Headers({
   "Content-type": "text/plain"
 });
-const j = new Headers({
+const $ = new Headers({
   "Content-type": "text/html"
-}), C = (e, t = j) => new Response(e, {
+}), T = (e, t = $) => new Response(e, {
   headers: t
-}), R = (e = U, t = 401, r = x) => Response.json(
+}), R = (e = x, t = 401, r = v) => Response.json(
   {
     status: t,
     message: e
@@ -26,7 +26,7 @@ const j = new Headers({
     statusText: e,
     headers: r
   }
-), S = (e = $, t = 500, r = x) => Response.json(
+), j = (e = U, t = 500, r = v) => Response.json(
   {
     status: t,
     message: e
@@ -36,9 +36,9 @@ const j = new Headers({
     statusText: e,
     headers: r
   }
-), I = () => ({
+), C = () => ({
   docker: ["1"]
-}), E = (e) => `<!DOCTYPE html>
+}), H = (e) => `<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -205,7 +205,7 @@ const j = new Headers({
 
     <script>
         // 配置数据
-        const CONFIG = ${JSON.stringify(I())}
+        const CONFIG = ${JSON.stringify(C())}
 
         // 生成代码块HTML
         function generateCodeBlock(title, commands) {
@@ -261,28 +261,27 @@ const j = new Headers({
     <\/script>
 </body>
 </html>`;
-async function T(e, t, r = 3) {
-  let s = new Error("Unknown error");
-  for (let i = 0; i < r; i++)
+async function A(e, t, r = 3) {
+  let o = new Error("Unknown error");
+  for (let s = 0; s < r; s++)
     try {
-      const o = await fetch(e, t);
-      if (o.ok || o.status === 401)
-        return o;
-      throw new Error(`HTTP Error: ${o.status}`);
-    } catch (o) {
-      if (s = o, i === r - 1) break;
-      await new Promise((a) => setTimeout(a, 2 ** i * 1e3));
+      const n = await fetch(e, t);
+      if (n.ok || n.status === 401)
+        return n;
+      throw new Error(`HTTP Error: ${n.status}`);
+    } catch (n) {
+      if (o = n, s === r - 1) break;
+      await new Promise((i) => setTimeout(i, 2 ** s * 1e3));
     }
-  throw s;
+  throw o;
 }
-const p = {
+const u = {
   docker: {
     baseUrl: "https://registry-1.docker.io",
     authUrl: "https://auth.docker.io/token",
     needAuth: !0,
     headers: {
-      "Docker-Distribution-Api-Version": "registry/2.0",
-      Accept: "application/vnd.docker.distribution.manifest.v2+json"
+      "Docker-Distribution-Api-Version": "registry/2.0"
     },
     formatTargetUrl: (e, t) => t.startsWith("library/") ? `${e}/v2/${t}` : `${e}/v2/${t.includes("/") ? t : `library/${t}`}`,
     auth: {
@@ -338,7 +337,7 @@ const p = {
     formatTargetUrl: (e, t) => `${e}/v2/${t}`
   }
 };
-function H(e) {
+function E(e) {
   const t = e.startsWith("/") ? e.slice(1) : e;
   if (t === "v2" || t === "v2/")
     return {
@@ -346,7 +345,7 @@ function H(e) {
       registry: "docker",
       // 默认使用 docker registry
       repository: "",
-      config: p.docker
+      config: u.docker
     };
   const r = t.startsWith("v2/") ? t.slice(3).split("/") : t.split("/");
   if (r[0] === "library")
@@ -355,148 +354,173 @@ function H(e) {
       registry: "docker",
       repository: r.join("/"),
       // 保持完整路径，包括 library
-      config: p.docker
+      config: u.docker
     };
-  const s = r[0];
-  return p[s] ? {
+  const o = r[0];
+  return u[o] ? {
     isV2Check: !1,
-    registry: s,
+    registry: o,
     repository: r.slice(1).join("/"),
-    config: p[s]
+    config: u[o]
   } : {
     isV2Check: !1,
     registry: "docker",
     repository: r.join("/"),
-    config: p.docker
+    config: u.docker
   };
 }
-async function L(e, t) {
-  var h, d, u;
+async function I(e, t) {
+  var l, d, p;
   if (!e.authUrl)
     throw new Error("Auth URL not configured");
-  const r = ((h = e.auth) == null ? void 0 : h.service) || new URL(e.baseUrl).hostname, s = ((u = (d = e.auth) == null ? void 0 : d.formatScope) == null ? void 0 : u.call(d, t)) || `repository:${t}:pull`, i = new URL(e.authUrl);
-  i.searchParams.set("service", r), i.searchParams.set("scope", s);
-  const o = await T(i.toString(), {
+  const r = ((l = e.auth) == null ? void 0 : l.service) || new URL(e.baseUrl).hostname, o = ((p = (d = e.auth) == null ? void 0 : d.formatScope) == null ? void 0 : p.call(d, t)) || `repository:${t}:pull`, s = new URL(e.authUrl);
+  s.searchParams.set("service", r), s.searchParams.set("scope", o);
+  const n = await A(s.toString(), {
     headers: {
       Accept: "application/json"
     }
   });
-  if (!o.ok)
-    throw new Error(`Failed to get auth token: ${o.statusText}`);
-  return (await o.json()).token;
+  if (!n.ok)
+    throw new Error(`Failed to get auth token: ${n.statusText}`);
+  return (await n.json()).token;
 }
-function g(e = new Headers()) {
-  return e.set("Access-Control-Allow-Origin", "*"), e.set("Access-Control-Allow-Methods", "GET, HEAD, POST, OPTIONS"), e.set("Access-Control-Allow-Headers", "Authorization, Content-Type"), e.set("Access-Control-Max-Age", "86400"), e;
+function h(e = new Headers()) {
+  return e.set("Access-Control-Allow-Origin", "*"), e.set("Access-Control-Allow-Methods", "GET, HEAD, POST, OPTIONS"), e.set("Access-Control-Allow-Headers", "Authorization, Content-Type, Docker-Distribution-Api-Version"), e.set("Access-Control-Max-Age", "86400"), e;
 }
-async function O(e) {
-  try {
-    if (e.method === "OPTIONS")
-      return new Response(null, {
-        headers: g()
-      });
-    const t = new URL(e.url), r = H(t.pathname);
-    if (r.isV2Check)
-      return new Response(null, {
-        status: 200,
-        headers: g(new Headers({ "Docker-Distribution-Api-Version": "registry/2.0" }))
-      });
-    if (!r.config)
-      return new Response("Registry configuration not found", {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
-    const s = caches.default, i = new Request(t.toString(), e);
-    let o = await s.match(i);
-    if (o)
-      return o;
-    let a = "";
-    if (r.config.needAuth)
-      try {
-        if (a = await L(r.config, r.repository), !a)
-          return y(r.config, r.repository);
-      } catch (l) {
-        return console.error("Auth error:", l), y(r.config, r.repository);
-      }
-    const h = r.config.formatTargetUrl(r.config.baseUrl, r.repository), d = new Headers(e.headers);
-    if (a && d.set("Authorization", `Bearer ${a}`), r.config.headers)
-      for (const [l, m] of Object.entries(r.config.headers))
-        d.set(l, m);
-    if (o = await T(h, {
-      method: e.method,
-      headers: d,
-      body: e.body,
-      redirect: "follow"
-    }), o.status === 401)
-      return y(r.config, r.repository);
-    const u = g();
-    for (const [l, m] of o.headers.entries())
-      l.toLowerCase().startsWith("access-control-") || u.set(l, m);
-    const b = new Response(o.body, {
-      status: o.status,
-      statusText: o.statusText,
-      headers: u
-    });
-    if (o.ok && e.method === "GET") {
-      const l = o.headers.get("Cache-Control");
-      l && !l.includes("no-store") && await s.put(i, b.clone());
-    }
-    return b;
-  } catch (t) {
-    return new Response(`Proxy error: ${t.message}`, {
-      status: 502,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "text/plain"
-      }
-    });
-  }
-}
-function y(e, t) {
-  var o, a, h;
-  const r = e.authUrl, s = ((o = e.auth) == null ? void 0 : o.service) || new URL(e.baseUrl).hostname, i = ((h = (a = e.auth) == null ? void 0 : a.formatScope) == null ? void 0 : h.call(a, t)) || `repository:${t}:pull`;
+function k(e, t) {
+  var n, i, l;
+  const r = e.authUrl, o = ((n = e.auth) == null ? void 0 : n.service) || new URL(e.baseUrl).hostname, s = ((l = (i = e.auth) == null ? void 0 : i.formatScope) == null ? void 0 : l.call(i, t)) || `repository:${t}:pull`;
   return new Response("Authentication required", {
     status: 401,
     headers: {
-      "WWW-Authenticate": `Bearer realm="${r}",service="${s}",scope="${i}"`,
+      "WWW-Authenticate": `Bearer realm="${r}",service="${o}",scope="${s}"`,
       "Docker-Distribution-Api-Version": "registry/2.0",
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json"
     }
   });
 }
-function D(e, t) {
+async function S(e, t) {
+  const r = {
+    headers: new Headers({
+      Host: "auth.docker.io",
+      "User-Agent": e.headers.get("User-Agent") || "",
+      Accept: e.headers.get("Accept") || "",
+      "Accept-Language": e.headers.get("Accept-Language") || "",
+      "Accept-Encoding": e.headers.get("Accept-Encoding") || "",
+      Connection: "keep-alive",
+      "Cache-Control": "max-age=0"
+    })
+  }, o = `https://auth.docker.io${t.pathname}${t.search}`, s = await fetch(
+    new Request(o, {
+      method: e.method,
+      headers: r.headers
+    })
+  ), n = new Headers(s.headers);
+  return h(n), new Response(s.body, {
+    status: s.status,
+    headers: n
+  });
+}
+function f(e, t) {
+  const r = new Headers(e.headers);
+  if (h(r), r.has("Www-Authenticate")) {
+    const o = r.get("Www-Authenticate"), s = /https:\/\/auth.docker.io/g;
+    r.set("Www-Authenticate", (o == null ? void 0 : o.replace(s, t)) || "");
+  }
+  return r.set("Cache-Control", "public, max-age=3600"), new Response(e.body, {
+    status: e.status,
+    headers: r
+  });
+}
+function L(e) {
+  return !e.startsWith("/v2/library/") && /^\/v2\/[^/]+\/[^/]+/.test(e) ? e.replace("/v2/", "/v2/library/") : e;
+}
+async function D(e) {
+  try {
+    if (e.method === "OPTIONS")
+      return new Response(null, {
+        headers: h()
+      });
+    const t = new URL(e.url), r = `https://${t.hostname}`;
+    if (t.pathname.includes("/token"))
+      return S(e, t);
+    const o = E(t.pathname);
+    if (o.isV2Check)
+      return new Response(null, {
+        status: 200,
+        headers: h(
+          new Headers({
+            "Docker-Distribution-Api-Version": "registry/2.0"
+          })
+        )
+      });
+    if (!o.config)
+      return new Response("Registry configuration not found", {
+        status: 500,
+        headers: h()
+      });
+    o.registry === "docker" && (t.pathname = L(t.pathname));
+    let s = "";
+    if (o.config.needAuth)
+      try {
+        s = await I(o.config, o.repository);
+      } catch (d) {
+        return console.error("Auth Error:", d), f(k(o.config, o.repository), r);
+      }
+    const n = o.config.formatTargetUrl(o.config.baseUrl, o.repository), i = new Headers(e.headers);
+    if (i.set("Host", new URL(o.config.baseUrl).hostname), s && i.set("Authorization", `Bearer ${s}`), o.config.headers)
+      for (const [d, p] of Object.entries(o.config.headers))
+        i.set(d, p);
+    const l = await A(n, {
+      method: e.method,
+      headers: i,
+      body: e.body,
+      redirect: "follow"
+    });
+    return l.status === 401 ? f(k(o.config, o.repository), r) : f(l, r);
+  } catch (t) {
+    return console.error("Proxy Error:", t), new Response(`Proxy error: ${t.message}`, {
+      status: 502,
+      headers: h(
+        new Headers({
+          "Content-Type": "text/plain"
+        })
+      )
+    });
+  }
+}
+function P(e, t) {
   if (!e || !t) return !1;
   for (let r = 0; r < t.length; r++)
     if (new RegExp(t[r].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(e))
       return !0;
   return !1;
 }
-var n;
-class P {
+var a;
+class W {
   constructor() {
-    v(this, n, []);
-    f(this, n, []);
+    b(this, a, []);
+    m(this, a, []);
   }
   setEnv(t) {
-    if (c(this, n).length || c(this, n) === "*" || !Reflect.has(t, "IP_WHITELIST")) return;
+    if (c(this, a).length || c(this, a) === "*" || !Reflect.has(t, "IP_WHITELIST")) return;
     const r = Reflect.get(t, "IP_WHITELIST") ?? "*";
-    r === "*" ? f(this, n, "*") : f(this, n, r.split(",").map((s) => s.trim()));
+    r === "*" ? m(this, a, "*") : m(this, a, r.split(",").map((o) => o.trim()));
   }
   checkIpIsWhitelisted(t) {
     const r = t.headers.get("x-real-ip") || "";
-    return (typeof c(this, n) == "string" && c(this, n)) === "*" || Array.isArray(c(this, n)) && c(this, n).length === 0 ? !0 : Array.isArray(c(this, n)) && c(this, n).length > 0 ? D(r, c(this, n)) : !1;
+    return (typeof c(this, a) == "string" && c(this, a)) === "*" || Array.isArray(c(this, a)) && c(this, a).length === 0 ? !0 : Array.isArray(c(this, a)) && c(this, a).length > 0 ? P(r, c(this, a)) : !1;
   }
 }
-n = new WeakMap();
-const A = new P(), F = {
+a = new WeakMap();
+const w = new W(), F = {
   async fetch(e, t) {
     try {
-      const { pathname: r, host: s } = new URL(e.url);
-      return A.setEnv(t), A.checkIpIsWhitelisted(e) ? r === "/" ? C(E(s)) : await O(e) : R();
+      const { pathname: r, host: o } = new URL(e.url);
+      return w.setEnv(t), w.checkIpIsWhitelisted(e) ? r === "/" ? T(H(o)) : await D(e) : R();
     } catch (r) {
-      return S(r.message || r);
+      return j(r.message || r);
     }
   }
 };
