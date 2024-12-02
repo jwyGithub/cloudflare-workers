@@ -1,9 +1,9 @@
 var m = (e) => {
   throw TypeError(e);
 };
-var f = (e, t, r) => t.has(e) || m("Cannot " + r);
-var i = (e, t, r) => (f(e, t, "read from private field"), r ? r.call(e) : t.get(e)), g = (e, t, r) => t.has(e) ? m("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), p = (e, t, r, o) => (f(e, t, "write to private field"), o ? o.call(e, r) : t.set(e, r), r);
-const x = "unauthorized", T = "internal server error", w = new Headers({
+var g = (e, t, r) => t.has(e) || m("Cannot " + r);
+var i = (e, t, r) => (g(e, t, "read from private field"), r ? r.call(e) : t.get(e)), y = (e, t, r) => t.has(e) ? m("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), p = (e, t, r, o) => (g(e, t, "write to private field"), o ? o.call(e, r) : t.set(e, r), r);
+const x = "unauthorized", T = "internal server error", k = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -16,7 +16,7 @@ const C = new Headers({
   "Content-type": "text/html"
 }), $ = (e, t = C) => new Response(e, {
   headers: t
-}), U = (e = x, t = 401, r = w) => Response.json(
+}), j = (e = x, t = 401, r = k) => Response.json(
   {
     status: t,
     message: e
@@ -26,7 +26,7 @@ const C = new Headers({
     statusText: e,
     headers: r
   }
-), S = (e = T, t = 500, r = w) => Response.json(
+), S = (e = T, t = 500, r = k) => Response.json(
   {
     status: t,
     message: e
@@ -36,9 +36,9 @@ const C = new Headers({
     statusText: e,
     headers: r
   }
-), j = () => ({
+), U = () => ({
   docker: ["1"]
-}), E = (e) => `<!DOCTYPE html>
+}), I = (e) => `<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -205,7 +205,7 @@ const C = new Headers({
 
     <script>
         // 配置数据
-        const CONFIG = ${JSON.stringify(j())}
+        const CONFIG = ${JSON.stringify(U())}
 
         // 生成代码块HTML
         function generateCodeBlock(title, commands) {
@@ -261,7 +261,7 @@ const C = new Headers({
     <\/script>
 </body>
 </html>`;
-async function k(e, t, r = 3) {
+async function w(e, t, r = 3) {
   let o = new Error("Unknown error");
   for (let a = 0; a < r; a++)
     try {
@@ -275,7 +275,7 @@ async function k(e, t, r = 3) {
     }
   throw o;
 }
-const y = {
+const h = {
   docker: {
     baseUrl: "https://registry-1.docker.io",
     authUrl: "https://auth.docker.io/token",
@@ -283,16 +283,10 @@ const y = {
     headers: {
       "Docker-Distribution-Api-Version": "registry/2.0"
     },
-    formatTargetUrl: (e, t) => {
-      const [r, ...o] = t.split("/");
-      return o.length === 0 ? `${e}/v2/library/${r}` : `${e}/v2/${t}`;
-    },
+    formatTargetUrl: (e, t) => t.startsWith("library/") ? `${e}/v2/${t}` : t.includes("/") ? `${e}/v2/${t}` : `${e}/v2/library/${t}`,
     auth: {
       service: "registry.docker.io",
-      formatScope: (e) => {
-        const [t, ...r] = e.split("/");
-        return `repository:${r.length === 0 ? `library/${t}` : e}:pull`;
-      }
+      formatScope: (e) => e.startsWith("library/") ? `repository:${e}:pull` : e.includes("/") ? `repository:${e}:pull` : `repository:library/${e}:pull`
     }
   },
   ghcr: {
@@ -343,29 +337,36 @@ const y = {
     formatTargetUrl: (e, t) => `${e}/v2/${t}`
   }
 };
-function I(e) {
+function E(e) {
   const t = e.startsWith("/") ? e.slice(1) : e;
   if (t === "v2" || t === "v2/")
     return {
       isV2Check: !0,
-      registry: "",
+      registry: "docker",
+      // 默认使用 docker registry
       repository: "",
-      config: null
+      config: h.docker
     };
   const r = t.startsWith("v2/") ? t.slice(3).split("/") : t.split("/");
-  if (r.length < 1)
-    throw new Error("Invalid path: registry not specified");
+  if (r[0] === "library")
+    return {
+      isV2Check: !1,
+      registry: "docker",
+      repository: r.join("/"),
+      // 保持完整路径，包括 library
+      config: h.docker
+    };
   const o = r[0];
-  if (!y[o])
-    throw new Error(`Unsupported registry: ${o}`);
-  const a = r.slice(1).join("/");
-  if (!a)
-    throw new Error("Invalid path: repository not specified");
-  return {
+  return h[o] ? {
     isV2Check: !1,
     registry: o,
-    repository: a,
-    config: y[o]
+    repository: r.slice(1).join("/"),
+    config: h[o]
+  } : {
+    isV2Check: !1,
+    registry: "docker",
+    repository: r.join("/"),
+    config: h.docker
   };
 }
 async function O(e, t) {
@@ -374,7 +375,7 @@ async function O(e, t) {
     return "";
   const r = new URLSearchParams();
   (s = e.auth) != null && s.service && r.set("service", e.auth.service), (c = e.auth) != null && c.formatScope ? r.set("scope", e.auth.formatScope(t)) : r.set("scope", `repository:${t}:pull`);
-  const o = await k(`${e.authUrl}?${r.toString()}`, {
+  const o = await w(`${e.authUrl}?${r.toString()}`, {
     headers: {
       Accept: "application/json",
       ...e.headers || {}
@@ -394,7 +395,7 @@ async function R(e) {
         "Access-Control-Max-Age": "86400"
       }
     });
-  const t = new URL(e.url), r = I(t.pathname);
+  const t = new URL(e.url), r = E(t.pathname);
   if (r.isV2Check)
     return new Response(null, {
       status: 200,
@@ -430,14 +431,14 @@ async function R(e) {
         }
       });
     }
-  const A = r.config.formatTargetUrl(r.config.baseUrl, r.repository), u = new Headers(e.headers);
-  if (c && u.set("Authorization", `Bearer ${c}`), r.config.headers)
-    for (const [l, h] of Object.entries(r.config.headers))
-      u.set(l, h);
+  const A = r.config.formatTargetUrl(r.config.baseUrl, r.repository), f = new Headers(e.headers);
+  if (c && f.set("Authorization", `Bearer ${c}`), r.config.headers)
+    for (const [l, u] of Object.entries(r.config.headers))
+      f.set(l, u);
   try {
-    s = await k(A, {
+    s = await w(A, {
       method: e.method,
-      headers: u,
+      headers: f,
       body: e.body,
       redirect: "follow"
     });
@@ -448,16 +449,16 @@ async function R(e) {
     });
     for (const [d, v] of s.headers.entries())
       d.toLowerCase().startsWith("access-control-") || l.set(d, v);
-    const h = new Response(s.body, {
+    const u = new Response(s.body, {
       status: s.status,
       statusText: s.statusText,
       headers: l
     });
     if (s.ok && e.method === "GET") {
       const d = s.headers.get("Cache-Control");
-      d && !d.includes("no-store") && await o.put(a, h.clone());
+      d && !d.includes("no-store") && await o.put(a, u.clone());
     }
-    return h;
+    return u;
   } catch (l) {
     return new Response(`Proxy error: ${l.message}`, {
       status: 502,
@@ -478,7 +479,7 @@ function H(e, t) {
 var n;
 class P {
   constructor() {
-    g(this, n, []);
+    y(this, n, []);
     p(this, n, []);
   }
   setEnv(t) {
@@ -496,7 +497,7 @@ const b = new P(), D = {
   async fetch(e, t) {
     try {
       const { pathname: r, host: o } = new URL(e.url);
-      return b.setEnv(t), b.checkIpIsWhitelisted(e) ? r === "/" ? $(E(o)) : await R(e) : U();
+      return b.setEnv(t), b.checkIpIsWhitelisted(e) ? r === "/" ? $(I(o)) : await R(e) : j();
     } catch (r) {
       return S(r.message || r);
     }
