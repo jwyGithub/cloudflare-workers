@@ -47,3 +47,11 @@ export function parseRegistryInfo(path: string): RegistryInfo {
         config: REGISTRIES.docker
     };
 }
+
+export function formatDockerPath(path: string): string {
+    // 如果不是以 /v2/library/ 开头，且符合 /v2/xxx/xxx 格式
+    if (!path.startsWith('/v2/library/') && /^\/v2\/[^/]+\/[^/]+/.test(path)) {
+        return path.replace('/v2/', '/v2/library/');
+    }
+    return path;
+}
