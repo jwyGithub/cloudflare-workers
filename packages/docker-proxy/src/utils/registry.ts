@@ -1,57 +1,81 @@
-import type { RegistryInfo } from '../types';
-import { REGISTRIES } from '../constants/registry';
+import type { AuthResponse } from '../types';
+import { REGISTRY_CONFIGS } from '../constants/registry';
 
-export function parseRegistryInfo(path: string): RegistryInfo {
-    // 移除开头的斜杠
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+export function parseRegistryInfo(pathname: string): {
+    registryType: string;
+    imagePath: string;
+} {
+    const parts = pathname.split('/').filter(Boolean);
 
-    // 处理 /v2/ 和 /v2 的情况
-    if (cleanPath === 'v2' || cleanPath === 'v2/') {
+    // 默认为 docker hub
+    if (parts.length === 0) {
+        return { registryType: 'docker', imagePath: '/' };
+    }
+
+    // 检查第一个部分是否是支持的注册表类型
+    if (parts[0] in REGISTRY_CONFIGS) {
+        const registryType = parts.shift() || 'docker';
         return {
-            isV2Check: true,
-            registry: 'docker', // 默认使用 docker registry
-            repository: '',
-            config: REGISTRIES.docker
+            registryType,
+            imagePath: `/${parts.join('/')}`
         };
     }
 
-    // 如果路径以 'v2/' 开头，移除它
-    const parts = cleanPath.startsWith('v2/') ? cleanPath.slice(3).split('/') : cleanPath.split('/');
-
-    // 特殊处理 library/ 开头的路径
-    if (parts[0] === 'library') {
-        return {
-            isV2Check: false,
-            registry: 'docker',
-            repository: parts.join('/'), // 保持完整路径，包括 library
-            config: REGISTRIES.docker
-        };
-    }
-
-    // 处理正常的 registry 路径
-    const registry = parts[0];
-    if (REGISTRIES[registry]) {
-        return {
-            isV2Check: false,
-            registry,
-            repository: parts.slice(1).join('/'),
-            config: REGISTRIES[registry]
-        };
-    }
-
-    // 如果没有匹配的 registry，假设是 Docker Hub 路径
     return {
-        isV2Check: false,
-        registry: 'docker',
-        repository: parts.join('/'),
-        config: REGISTRIES.docker
+        registryType: 'docker',
+        imagePath: pathname
     };
 }
 
-export function formatDockerPath(path: string): string {
-    // 如果不是以 /v2/library/ 开头，且符合 /v2/xxx/xxx 格式
-    if (!path.startsWith('/v2/library/') && /^\/v2\/[^/]+\/[^/]+/.test(path)) {
-        return path.replace('/v2/', '/v2/library/');
+export function configureRegistryHeaders(registryType: string, authorization?: string | null): Headers {
+    const headers = new Headers();
+    const config = REGISTRY_CONFIGS[registryType];
+
+    if (authorization) {
+        headers.set('Authorization', authorization);
     }
-    return path;
+
+    if (config?.headers) {
+        Object.entries(config.headers).forEach(([key, value]) => {
+            headers.set(key, value);
+        });
+    }
+
+    return headers;
+}
+
+export function parseAuthenticateHeader(authenticateStr: string): AuthResponse {
+    const regex = /Bearer realm="([^"]+)",service="([^"]+)"(?:,scope="([^"]+)")?/;
+    const matches = authenticateStr.match(regex);
+
+    if (!matches) {
+        throw new Error(`Invalid WWW-Authenticate header: ${authenticateStr}`);
+    }
+
+    return {
+        realm: matches[1],
+        service: matches[2],
+        scope: matches[3]
+    };
+}
+
+export function normalizeImagePath(registryType: string, imagePath: string): string {
+    switch (registryType) {
+        case 'k8s-gcr':
+        case 'k8s':
+            // 移除可能的前导斜杠
+            return imagePath.replace(/^\//, '');
+
+        case 'cloudsmith': // Cloudsmith 需要确保路径格式为 org/repo/image
+        {
+            const parts = imagePath.split('/').filter(Boolean);
+            if (parts.length < 3) {
+                throw new Error('Invalid Cloudsmith image path format. Expected: organization/repository/image');
+            }
+            return parts.join('/');
+        }
+
+        default:
+            return imagePath.replace(/^\//, '');
+    }
 }

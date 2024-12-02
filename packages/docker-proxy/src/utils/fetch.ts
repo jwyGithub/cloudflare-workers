@@ -1,17 +1,35 @@
-export async function fetchWithRetry(url: string, options: RequestInit, maxRetries: number = 3): Promise<Response> {
-    let lastError: Error = new Error('Unknown error');
+import type { RetryOptions } from '../types';
 
-    for (let i = 0; i < maxRetries; i++) {
+export async function fetchWithRetry(input: RequestInfo, init?: RequestInit, options: RetryOptions = {}): Promise<Response> {
+    const { retries = 3, backoff = 300, timeout = 10000 } = options;
+
+    let lastError: Error = new Error('No retries left');
+
+    for (let i = 0; i < retries; i++) {
         try {
-            const response = await fetch(url, options);
-            if (response.ok || response.status === 401) {
-                return response;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            const response = await fetch(input, {
+                ...init,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok && response.status !== 401) {
+                throw new Error(`HTTP Error: ${response.status}`);
             }
-            throw new Error(`HTTP Error: ${response.status}`);
+
+            return response;
         } catch (error) {
             lastError = error as Error;
-            if (i === maxRetries - 1) break;
-            await new Promise(resolve => setTimeout(resolve, 2 ** i * 1000));
+
+            if (i === retries - 1) {
+                break;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, backoff * 2 ** i));
         }
     }
 

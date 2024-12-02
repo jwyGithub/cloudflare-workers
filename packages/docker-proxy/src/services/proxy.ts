@@ -1,194 +1,137 @@
 import type { RegistryConfig } from '../types';
+import { CACHE_CONFIGS } from '../constants/cache';
+import { REGISTRY_CONFIGS } from '../constants/registry';
+import { CacheManager } from '../utils/cache';
 import { fetchWithRetry } from '../utils/fetch';
-import { parseRegistryInfo } from '../utils/registry';
-import { getAuthToken } from './auth';
+import { normalizeImagePath, parseRegistryInfo } from '../utils/registry';
+import { AuthService } from './auth';
 
-// 处理CORS请求头
-function handleCors(headers: Headers = new Headers()): Headers {
-    headers.set('Access-Control-Allow-Origin', '*');
-    headers.set('Access-Control-Allow-Methods', 'GET, HEAD, POST, OPTIONS');
-    headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type, Docker-Distribution-Api-Version');
-    headers.set('Access-Control-Max-Age', '86400');
-    return headers;
-}
+export class RegistryProxy {
+    private cacheManager: CacheManager;
+    private authService: AuthService;
 
-// 处理Docker认证响应
-function createAuthRequiredResponse(config: RegistryConfig, repository: string): Response {
-    const realm = config.authUrl;
-    const service = config.auth?.service || new URL(config.baseUrl).hostname;
-    const scope = config.auth?.formatScope?.(repository) || `repository:${repository}:pull`;
-
-    return new Response('Authentication required', {
-        status: 401,
-        headers: {
-            'WWW-Authenticate': `Bearer realm="${realm}",service="${service}",scope="${scope}"`,
-            'Docker-Distribution-Api-Version': 'registry/2.0',
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-        }
-    });
-}
-
-// 处理token请求
-async function handleTokenRequest(request: Request, url: URL): Promise<Response> {
-    const tokenParameter = {
-        headers: new Headers({
-            Host: 'auth.docker.io',
-            'User-Agent': request.headers.get('User-Agent') || '',
-            Accept: request.headers.get('Accept') || '',
-            'Accept-Language': request.headers.get('Accept-Language') || '',
-            'Accept-Encoding': request.headers.get('Accept-Encoding') || '',
-            Connection: 'keep-alive',
-            'Cache-Control': 'max-age=0'
-        })
-    };
-
-    const tokenUrl = `https://auth.docker.io${url.pathname}${url.search}`;
-
-    const response = await fetch(
-        new Request(tokenUrl, {
-            method: request.method,
-            headers: tokenParameter.headers
-        })
-    );
-
-    // 复制响应头并处理CORS
-    const headers = new Headers(response.headers);
-    handleCors(headers);
-
-    return new Response(response.body, {
-        status: response.status,
-        headers
-    });
-}
-
-// 处理响应头
-function handleResponse(response: Response, workerUrl: string): Response {
-    const newHeaders = new Headers(response.headers);
-    handleCors(newHeaders);
-
-    // 修改 Www-Authenticate 头
-    if (newHeaders.has('Www-Authenticate')) {
-        const auth = newHeaders.get('Www-Authenticate');
-        const authUrlRegex = /https:\/\/auth.docker.io/g;
-        newHeaders.set('Www-Authenticate', auth?.replace(authUrlRegex, workerUrl) || '');
+    constructor() {
+        this.cacheManager = new CacheManager();
+        this.authService = new AuthService();
     }
 
-    // 设置缓存控制
-    newHeaders.set('Cache-Control', 'public, max-age=3600');
-
-    return new Response(response.body, {
-        status: response.status,
-        headers: newHeaders
-    });
-}
-
-// 格式化Docker路径
-function formatDockerPath(path: string): string {
-    if (!path.startsWith('/v2/library/') && /^\/v2\/[^/]+\/[^/]+/.test(path)) {
-        return path.replace('/v2/', '/v2/library/');
-    }
-    return path;
-}
-
-// 主要的代理请求处理函数
-export async function proxyRequest(request: Request): Promise<Response> {
-    try {
-        // 处理CORS预检请求
-        if (request.method === 'OPTIONS') {
-            return new Response(null, {
-                headers: handleCors()
-            });
-        }
-
+    async handleRequest(request: Request): Promise<Response> {
         const url = new URL(request.url);
-        const workerUrl = `https://${url.hostname}`;
+        const { registryType, imagePath } = parseRegistryInfo(url.pathname);
+        const config = REGISTRY_CONFIGS[registryType];
 
-        // 处理token请求
-        if (url.pathname.includes('/token')) {
-            return handleTokenRequest(request, url);
+        if (!config) {
+            return new Response('Unsupported registry type', { status: 400 });
         }
 
-        const registryInfo = parseRegistryInfo(url.pathname);
+        try {
+            const normalizedPath = normalizeImagePath(registryType, imagePath);
 
-        // 处理 v2 API 版本检查请求
-        if (registryInfo.isV2Check) {
-            return new Response(null, {
-                status: 200,
-                headers: handleCors(
-                    new Headers({
-                        'Docker-Distribution-Api-Version': 'registry/2.0'
-                    })
-                )
+            // 检查请求类型，确定是否可以使用缓存
+            const canUseCache = this.canUseCache(request, normalizedPath);
+            if (canUseCache) {
+                const cachedResponse = await this.getCachedResponse(request, registryType, normalizedPath);
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+            }
+
+            // 处理认证
+            if (config.authRequired) {
+                const token = await this.handleAuthentication(request, registryType, normalizedPath);
+                if (!token) {
+                    return new Response('Authentication failed', { status: 401 });
+                }
+                request.headers.set('Authorization', `Bearer ${token}`);
+            }
+
+            // 发送请求
+            const response = await this.fetchFromRegistry(request, config, normalizedPath);
+
+            // 缓存响应
+            if (canUseCache && response.ok) {
+                await this.cacheResponse(request, response.clone(), registryType, normalizedPath);
+            }
+
+            return response;
+        } catch (error: any) {
+            console.error(`Registry proxy error:`, error);
+            return new Response(`Registry error: ${error.message}`, { status: 500 });
+        }
+    }
+
+    private canUseCache(request: Request, path: string): boolean {
+        // 只缓存 GET 请求
+        if (request.method !== 'GET') {
+            return false;
+        }
+
+        // 确定请求类型（manifest 或 layer）
+        const isManifest = path.includes('/manifests/');
+        const isLayer = path.includes('/blobs/');
+
+        return isManifest ? CACHE_CONFIGS.manifest.enabled : isLayer ? CACHE_CONFIGS.layer.enabled : false;
+    }
+
+    private async getCachedResponse(request: Request, registryType: string, path: string): Promise<Response | null> {
+        const cacheKey = `${registryType}:${path}:${request.method}`;
+        const cachedData = await this.cacheManager.get<{
+            body: any;
+            headers: Record<string, string>;
+        }>(cacheKey);
+
+        if (cachedData) {
+            return new Response(JSON.stringify(cachedData.body), {
+                headers: new Headers(cachedData.headers)
             });
         }
 
-        // 确保配置存在
-        if (!registryInfo.config) {
-            return new Response('Registry configuration not found', {
-                status: 500,
-                headers: handleCors()
-            });
-        }
+        return null;
+    }
 
-        // 处理Docker路径
-        if (registryInfo.registry === 'docker') {
-            url.pathname = formatDockerPath(url.pathname);
-        }
+    private async cacheResponse(request: Request, response: Response, registryType: string, path: string): Promise<void> {
+        const isManifest = path.includes('/manifests/');
+        const isLayer = path.includes('/blobs/');
+        const ttl = isManifest ? CACHE_CONFIGS.manifest.ttl : isLayer ? CACHE_CONFIGS.layer.ttl : 3600;
 
-        // 获取认证token
-        let token = '';
-        if (registryInfo.config.needAuth) {
-            try {
-                token = await getAuthToken(registryInfo.config, registryInfo.repository);
-            } catch (error) {
-                console.error('Auth Error:', error);
-                return handleResponse(createAuthRequiredResponse(registryInfo.config, registryInfo.repository), workerUrl);
+        const cacheKey = `${registryType}:${path}:${request.method}`;
+        const responseData = await response.clone().json();
+        const headers = Object.fromEntries(response.headers.entries());
+
+        await this.cacheManager.set(
+            {
+                key: cacheKey,
+                ttl
+            },
+            {
+                body: responseData,
+                headers
             }
-        }
+        );
+    }
 
-        // 构建目标URL
-        const targetUrl = registryInfo.config.formatTargetUrl(registryInfo.config.baseUrl, registryInfo.repository);
+    private async handleAuthentication(request: Request, registryType: string, path: string): Promise<string | null> {
+        const { hostname } = new URL(request.url);
+        const authHeader = request.headers.get('Authorization');
+        const scope = registryType === 'docker' && !path.includes('/') ? `repository:library/${path}:pull` : `repository:${path}:pull`;
 
-        // 构建请求头
-        const headers = new Headers(request.headers);
-        headers.set('Host', new URL(registryInfo.config.baseUrl).hostname);
+        const authInfo = {
+            realm: `https://${hostname}/v2/auth`,
+            service: 'registry.docker.io',
+            scope
+        };
 
-        if (token) {
-            headers.set('Authorization', `Bearer ${token}`);
-        }
+        return await this.authService.getToken(registryType, authInfo, authHeader);
+    }
 
-        // 添加registry配置中定义的特殊请求头
-        if (registryInfo.config.headers) {
-            for (const [key, value] of Object.entries(registryInfo.config.headers)) {
-                headers.set(key, value);
-            }
-        }
+    private async fetchFromRegistry(request: Request, config: RegistryConfig, path: string): Promise<Response> {
+        const targetUrl = new URL(path.startsWith('/') ? path : `/${path}`, config.baseUrl);
 
-        // 发送代理请求
-        const response = await fetchWithRetry(targetUrl, {
+        return await fetchWithRetry(targetUrl.toString(), {
             method: request.method,
-            headers,
-            body: request.body,
+            headers: request.headers,
+            body: request.method === 'GET' ? null : request.body,
             redirect: 'follow'
-        });
-
-        // 如果返回401，返回认证要求
-        if (response.status === 401) {
-            return handleResponse(createAuthRequiredResponse(registryInfo.config, registryInfo.repository), workerUrl);
-        }
-
-        // 处理响应
-        return handleResponse(response, workerUrl);
-    } catch (error: any) {
-        console.error('Proxy Error:', error);
-        return new Response(`Proxy error: ${error.message}`, {
-            status: 502,
-            headers: handleCors(
-                new Headers({
-                    'Content-Type': 'text/plain'
-                })
-            )
         });
     }
 }

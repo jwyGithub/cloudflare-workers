@@ -1,30 +1,61 @@
-import type { AuthResponse, RegistryConfig } from '../types';
+import type { AuthResponse } from '../types';
+import { CACHE_CONFIGS } from '../constants/cache';
+import { CacheManager } from '../utils/cache';
 import { fetchWithRetry } from '../utils/fetch';
+import { configureRegistryHeaders } from '../utils/registry';
 
-export async function getAuthToken(config: RegistryConfig, repository: string): Promise<string> {
-    if (!config.authUrl) {
-        throw new Error('Auth URL not configured');
+export async function authenticateRegistry(registryType: string, authInfo: AuthResponse, authorization: string | null): Promise<Response> {
+    const url = new URL(authInfo.realm);
+    url.searchParams.set('service', authInfo.service);
+
+    if (authInfo.scope) {
+        url.searchParams.set('scope', authInfo.scope);
     }
 
-    const service = config.auth?.service || new URL(config.baseUrl).hostname;
-    const scope = config.auth?.formatScope?.(repository) || `repository:${repository}:pull`;
+    const headers = configureRegistryHeaders(registryType, authorization);
 
-    // 构建认证URL
-    const authUrl = new URL(config.authUrl);
-    authUrl.searchParams.set('service', service);
-    authUrl.searchParams.set('scope', scope);
-
-    // 发送认证请求
-    const response = await fetchWithRetry(authUrl.toString(), {
-        headers: {
-            Accept: 'application/json'
-        }
+    return await fetchWithRetry(url.toString(), {
+        method: 'GET',
+        headers
     });
+}
 
-    if (!response.ok) {
-        throw new Error(`Failed to get auth token: ${response.statusText}`);
+export class AuthService {
+    private cacheManager: CacheManager;
+
+    constructor() {
+        this.cacheManager = new CacheManager();
     }
 
-    const auth: AuthResponse = await response.json();
-    return auth.token;
+    async getToken(registryType: string, authInfo: AuthResponse, authorization: string | null): Promise<string | null> {
+        // 生成缓存键
+        const cacheKey = `token:${registryType}:${authInfo.service}:${authInfo.scope}:${authorization || ''}`;
+
+        // 尝试从缓存获取令牌
+        const cachedToken = await this.cacheManager.get<{ token: string }>(cacheKey);
+        if (cachedToken) {
+            return cachedToken.token;
+        }
+
+        // 获取新令牌
+        const response = await authenticateRegistry(registryType, authInfo, authorization);
+        if (!response.ok) {
+            return null;
+        }
+
+        const tokenData = (await response.json()) as { token: string };
+
+        // 缓存令牌
+        if (CACHE_CONFIGS.token.enabled && tokenData.token) {
+            await this.cacheManager.set(
+                {
+                    key: cacheKey,
+                    ttl: CACHE_CONFIGS.token.ttl
+                },
+                tokenData
+            );
+        }
+
+        return tokenData.token;
+    }
 }
