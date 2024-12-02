@@ -1,4 +1,4 @@
-import { checkIp } from '@jiangweiye/cloudflare-shared';
+import { checkIp } from '@jiangweiye/worker-shared';
 
 export class ValidateIp {
     #ip_rules: string[] | string = [];

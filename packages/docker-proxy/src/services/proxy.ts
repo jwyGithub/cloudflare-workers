@@ -1,146 +1,103 @@
-import type { AuthResponse } from '../types';
-import type { CachedResponse } from '../types/cache';
-import { toClientError, toServerError, toUnauthorized } from '@jiangweiye/worker-service';
-import { CACHE_CONFIGS } from '../constants/cache';
-import { REGISTRY_CONFIGS } from '../constants/registry';
-import { CacheManager } from '../utils/cache';
 import { fetchWithRetry } from '../utils/fetch';
-import { normalizeImagePath, parseRegistryInfo } from '../utils/registry';
-import { AuthService } from './auth';
+import { parseRegistryInfo } from '../utils/registry';
+import { getAuthToken } from './auth';
 
-export class RegistryProxy {
-    private cacheManager: CacheManager;
-    private authService: AuthService;
-
-    constructor() {
-        this.cacheManager = new CacheManager();
-        this.authService = new AuthService();
+export async function proxyRequest(request: Request): Promise<Response> {
+    // 处理CORS预检请求
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400'
+            }
+        });
     }
 
-    async handleRequest(request: Request): Promise<Response> {
-        const url = new URL(request.url);
-        const { registryType, imagePath } = parseRegistryInfo(url.pathname);
-        const config = REGISTRY_CONFIGS[registryType];
+    const url = new URL(request.url);
+    const { registry, repository, config } = parseRegistryInfo(url.pathname);
 
-        if (!config) {
-            return toClientError('Unsupported registry type');
-        }
+    // 检查缓存
+    const cache = caches.default;
+    const cacheKey = new Request(url.toString(), request);
+    let response = await cache.match(cacheKey);
 
-        try {
-            const normalizedPath = normalizeImagePath(registryType, imagePath);
+    if (response) {
+        return response;
+    }
 
-            // 检查是否可以使用缓存
-            const canUseCache = this.canUseCache(request, normalizedPath);
-            if (canUseCache) {
-                const cachedResponse = await this.getCachedResponse(registryType, normalizedPath, request.method);
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-            }
+    // 获取认证token
+    let token = '';
+    if (config.needAuth) {
+        token = await getAuthToken(config, repository);
+    }
 
-            // 构建请求头
-            const headers = new Headers(request.headers);
-            if (config.headers) {
-                Object.entries(config.headers).forEach(([key, value]) => {
-                    headers.set(key, value);
-                });
-            }
+    const targetUrl = config.formatTargetUrl(config.baseUrl, repository);
 
-            // 如果需要认证，先获取 token
-            if (config.authRequired) {
-                const scope = config.scopeFormat ? config.scopeFormat(normalizedPath) : `repository:${normalizedPath}:pull`;
-                const authInfo: AuthResponse = {
-                    realm: config.authUrl || 'https://auth.docker.io/token',
-                    service: 'registry.docker.io',
-                    scope
-                };
+    // 处理请求头
+    const headers = new Headers(request.headers);
 
-                const token = await this.authService.getToken(registryType, authInfo, request.headers.get('Authorization'));
-
-                if (!token) {
-                    return toUnauthorized('Failed to obtain authentication token');
-                }
-
-                headers.set('Authorization', `Bearer ${token}`);
-            }
-
-            // 构建目标 URL
-            const targetUrl = new URL(`${config.baseUrl}/v2/${normalizedPath}`, config.baseUrl);
-
-            // 发送请求
-            const response = await fetchWithRetry(targetUrl.toString(), {
-                method: request.method,
-                headers,
-                redirect: 'follow',
-                body: request.method === 'GET' ? null : request.body
-            });
-
-            // 缓存成功的响应
-            if (canUseCache && response.ok) {
-                await this.cacheResponse(registryType, normalizedPath, response.clone(), request.method);
-            }
-
-            return response;
-        } catch (error: any) {
-            console.error(`Registry proxy error:`, error);
-            return toServerError(`Registry error: ${error.message || error}`);
+    if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+    }
+    // 添加registry配置中定义的特殊请求头
+    if (config.headers) {
+        for (const [key, value] of Object.entries(config.headers)) {
+            headers.set(key, value);
         }
     }
 
-    private canUseCache(request: Request, path: string): boolean {
-        if (request.method !== 'GET') {
-            return false;
-        }
+    // 发送代理请求
+    try {
+        response = await fetchWithRetry(targetUrl, {
+            method: request.method,
+            headers,
+            body: request.body,
+            redirect: 'follow'
+        });
 
-        const isManifest = path.includes('/manifests/');
-        const isLayer = path.includes('/blobs/');
+        // 处理响应
+        const responseHeaders = new Headers({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Authorization, Content-Type'
+        });
 
-        return isManifest ? CACHE_CONFIGS.manifest.enabled : isLayer ? CACHE_CONFIGS.layer.enabled : false;
-    }
-
-    private async getCachedResponse(registryType: string, path: string, method: string): Promise<Response | null> {
-        const cacheKey = this.generateCacheKey(registryType, path, method);
-        const cachedData = await this.cacheManager.get<CachedResponse>(cacheKey);
-
-        if (cachedData) {
-            // 检查缓存是否过期
-            const isManifest = path.includes('/manifests/');
-            const isLayer = path.includes('/blobs/');
-            const ttl = isManifest ? CACHE_CONFIGS.manifest.ttl : isLayer ? CACHE_CONFIGS.layer.ttl : 3600;
-
-            if (Date.now() - cachedData.timestamp < ttl * 1000) {
-                return new Response(JSON.stringify(cachedData.body), {
-                    headers: new Headers(cachedData.headers)
-                });
+        // 复制原始响应的headers
+        for (const [key, value] of response.headers.entries()) {
+            if (!key.toLowerCase().startsWith('access-control-')) {
+                responseHeaders.set(key, value);
             }
         }
 
-        return null;
-    }
+        // 根据不同的registry处理特定的响应头
+        if (registry === 'docker') {
+            responseHeaders.set('Docker-Distribution-Api-Version', 'registry/2.0');
+        }
 
-    private async cacheResponse(registryType: string, path: string, response: Response, method: string): Promise<void> {
-        const isManifest = path.includes('/manifests/');
-        const isLayer = path.includes('/blobs/');
-        const ttl = isManifest ? CACHE_CONFIGS.manifest.ttl : isLayer ? CACHE_CONFIGS.layer.ttl : 3600;
+        const newResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: responseHeaders
+        });
 
-        const cacheKey = this.generateCacheKey(registryType, path, method);
-        const responseData = await response.clone().json();
-        const headers = Object.fromEntries(response.headers.entries());
-
-        await this.cacheManager.set(
-            {
-                key: cacheKey,
-                ttl
-            },
-            {
-                body: responseData,
-                headers,
-                timestamp: Date.now()
+        // 缓存响应
+        if (response.ok && request.method === 'GET') {
+            const cacheControl = response.headers.get('Cache-Control');
+            if (cacheControl && !cacheControl.includes('no-store')) {
+                await cache.put(cacheKey, newResponse.clone());
             }
-        );
-    }
+        }
 
-    private generateCacheKey(registryType: string, path: string, method: string): string {
-        return `${registryType}:${path}:${method}`;
+        return newResponse;
+    } catch (error: any) {
+        return new Response(`Proxy error: ${error.message}`, {
+            status: 502,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'text/plain'
+            }
+        });
     }
 }

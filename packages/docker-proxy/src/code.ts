@@ -1,15 +1,12 @@
-import { REGISTRY_CONFIGS } from './constants/registry';
+// import { REGISTRY_CONFIGS } from './constants/registry';
 
-const useExample = (server: string): Record<string, string[]> => {
-    return Object.keys(REGISTRY_CONFIGS).reduce<Record<string, string[]>>((res, key) => {
-        const registry = REGISTRY_CONFIGS[key];
-        const { title, bash } = registry.useExample?.(server);
-        res[title] = bash;
-        return res;
-    }, {});
+const useExample = (): Record<string, string[]> => {
+    return {
+        docker: ['1']
+    };
 };
 
-export const page = (server: string): string => {
+export const page = (_: string): string => {
     return `<!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -177,7 +174,7 @@ export const page = (server: string): string => {
 
     <script>
         // 配置数据
-        const CONFIG = ${JSON.stringify(useExample(server))}
+        const CONFIG = ${JSON.stringify(useExample())}
 
         // 生成代码块HTML
         function generateCodeBlock(title, commands) {

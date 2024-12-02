@@ -1,100 +1,74 @@
 import type { RegistryConfig } from '../types';
 
-export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
+export const REGISTRIES: Record<string, RegistryConfig> = {
     docker: {
         baseUrl: 'https://registry-1.docker.io',
-        authRequired: true, // 改为 true，因为 Docker Hub 需要认证
-        needLibrary: true,
-        authUrl: 'https://auth.docker.io/token', // 添加认证 URL
+        authUrl: 'https://auth.docker.io/token',
+        needAuth: true,
         headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.oci.image.manifest.v1+json'
+            'Docker-Distribution-Api-Version': 'registry/2.0'
         },
-        scopeFormat: (imagePath: string) => {
-            const parts = imagePath.split('/');
-            if (parts.length === 1) {
-                return `repository:library/${imagePath}:pull`;
+        formatTargetUrl: (baseUrl: string, repository: string) => {
+            const [namespace, ...repoParts] = repository.split('/');
+            if (repoParts.length === 0) {
+                return `${baseUrl}/v2/library/${namespace}`;
             }
-            return `repository:${imagePath}:pull`;
+            return `${baseUrl}/v2/${repository}`;
         },
-        useExample: (host: string) => ({
-            title: 'Docker Hub 官方镜像',
-            bash: [`docker pull ${host}/nginx:latest`]
-        })
+        auth: {
+            service: 'registry.docker.io',
+            formatScope: (repository: string) => {
+                const [namespace, ...repoParts] = repository.split('/');
+                const repo = repoParts.length === 0 ? `library/${namespace}` : repository;
+                return `repository:${repo}:pull`;
+            }
+        }
     },
     ghcr: {
         baseUrl: 'https://ghcr.io',
-        authRequired: false,
+        authUrl: 'https://ghcr.io/token',
+        needAuth: true,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`,
-        // useExample: (host: string) => [`# GitHub Container Registry`, `docker pull ${host}/ghcr/owner/repo:tag`]
-        useExample: host => ({
-            title: '# GitHub Container Registry',
-            bash: [`docker pull ${host}/ghcr/owner/repo:tag`]
-        })
+        formatTargetUrl: (baseUrl: string, repository: string) => `${baseUrl}/v2/${repository}`,
+        auth: {
+            formatScope: (repository: string) => `repository:${repository}:pull`
+        }
     },
     gcr: {
         baseUrl: 'https://gcr.io',
-        authRequired: false,
+        needAuth: false,
+        formatTargetUrl: (baseUrl: string, repository: string) => `${baseUrl}/v2/${repository}`,
         headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`,
-        useExample: (host: string) => ({
-            title: '# Google Container Registry',
-            bash: [`docker pull ${host}/gcr/project/image:tag`]
-        })
+            Accept: 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json'
+        }
     },
     'k8s-gcr': {
         baseUrl: 'https://k8s.gcr.io',
-        authRequired: false,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`,
-        useExample: (host: string) => ({
-            title: `# Kubernetes GCR 镜像`,
-            bash: [`docker pull ${host}/k8s-gcr/kube-apiserver:v1.21.0`]
-        })
+        needAuth: false,
+        formatTargetUrl: (baseUrl: string, repository: string) => `${baseUrl}/v2/${repository}`
     },
     k8s: {
         baseUrl: 'https://registry.k8s.io',
-        authRequired: false, // k8s registry 通常不需要认证
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`,
-        useExample: (host: string) => ({
-            title: `# Kubernetes Registry 镜像`,
-            bash: [`docker pull ${host}/k8s/kube-apiserver:v1.25.0`]
-        })
+        needAuth: false,
+        formatTargetUrl: (baseUrl: string, repository: string) => `${baseUrl}/v2/${repository}`
     },
     quay: {
         baseUrl: 'https://quay.io',
-        authRequired: false,
+        authUrl: 'https://quay.io/v2/auth',
+        needAuth: true,
+        formatTargetUrl: (baseUrl: string, repository: string) => `${baseUrl}/v2/${repository}`,
         headers: {
             Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`,
-        useExample: host => ({
-            title: '# Quay 镜像',
-            bash: [`docker pull ${host}/quay/organization/image:tag`]
-        })
+        auth: {
+            formatScope: (repository: string) => `repository:${repository}:pull`
+        }
     },
     cloudsmith: {
         baseUrl: 'https://docker.cloudsmith.io',
-        authRequired: false,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => {
-            // Cloudsmith 格式: organization/repository/image:tag
-            return `repository:${imagePath}:pull`;
-        },
-        useExample: host => ({
-            title: '# Cloudsmith 镜像',
-            bash: [`docker pull ${host}/cloudsmith/organization/repository/image:tag`]
-        })
+        needAuth: true,
+        formatTargetUrl: (baseUrl: string, repository: string) => `${baseUrl}/v2/${repository}`
     }
 };

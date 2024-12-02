@@ -1,4 +1,4 @@
-import { toServerError, toUnauthorized } from '@jiangweiye/cloudflare-service';
+import { toServerError, toUnauthorized } from '@jiangweiye/worker-service';
 import { DownloadHandler } from './download';
 import { generateHTML } from './page';
 import { ValidateIp } from './validate';

@@ -1,9 +1,8 @@
 import { toHTML, toServerError, toUnauthorized } from '@jiangweiye/worker-service';
 import { page } from './code';
-import { RegistryProxy } from './services/proxy';
+import { proxyRequest } from './services/proxy';
 import { ValidateIp } from './validate';
 
-const proxy = new RegistryProxy();
 const validate = new ValidateIp();
 
 export default {
@@ -20,7 +19,7 @@ export default {
                 return toHTML(page(host));
             }
 
-            return await proxy.handleRequest(request);
+            return await proxyRequest(request);
         } catch (error: any) {
             return toServerError(error.message || error);
         }
