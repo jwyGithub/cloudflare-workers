@@ -1,9 +1,9 @@
-var m = (e) => {
+var y = (e) => {
   throw TypeError(e);
 };
-var g = (e, t, r) => t.has(e) || m("Cannot " + r);
-var i = (e, t, r) => (g(e, t, "read from private field"), r ? r.call(e) : t.get(e)), y = (e, t, r) => t.has(e) ? m("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), p = (e, t, r, o) => (g(e, t, "write to private field"), o ? o.call(e, r) : t.set(e, r), r);
-const x = "unauthorized", T = "internal server error", k = new Headers({
+var b = (e, t, r) => t.has(e) || y("Cannot " + r);
+var c = (e, t, r) => (b(e, t, "read from private field"), r ? r.call(e) : t.get(e)), k = (e, t, r) => t.has(e) ? y("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), m = (e, t, r, s) => (b(e, t, "write to private field"), s ? s.call(e, r) : t.set(e, r), r);
+const T = "unauthorized", $ = "internal server error", v = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -14,9 +14,9 @@ new Headers({
 });
 const C = new Headers({
   "Content-type": "text/html"
-}), $ = (e, t = C) => new Response(e, {
+}), U = (e, t = C) => new Response(e, {
   headers: t
-}), j = (e = x, t = 401, r = k) => Response.json(
+}), j = (e = T, t = 401, r = v) => Response.json(
   {
     status: t,
     message: e
@@ -26,7 +26,7 @@ const C = new Headers({
     statusText: e,
     headers: r
   }
-), S = (e = T, t = 500, r = k) => Response.json(
+), S = (e = $, t = 500, r = v) => Response.json(
   {
     status: t,
     message: e
@@ -36,7 +36,7 @@ const C = new Headers({
     statusText: e,
     headers: r
   }
-), U = () => ({
+), R = () => ({
   docker: ["1"]
 }), I = (e) => `<!DOCTYPE html>
 <html lang="zh">
@@ -205,7 +205,7 @@ const C = new Headers({
 
     <script>
         // 配置数据
-        const CONFIG = ${JSON.stringify(U())}
+        const CONFIG = ${JSON.stringify(R())}
 
         // 生成代码块HTML
         function generateCodeBlock(title, commands) {
@@ -261,21 +261,21 @@ const C = new Headers({
     <\/script>
 </body>
 </html>`;
-async function w(e, t, r = 3) {
-  let o = new Error("Unknown error");
-  for (let a = 0; a < r; a++)
+async function x(e, t, r = 3) {
+  let s = new Error("Unknown error");
+  for (let i = 0; i < r; i++)
     try {
-      const s = await fetch(e, t);
-      if (s.ok || s.status === 401)
-        return s;
-      throw new Error(`HTTP Error: ${s.status}`);
-    } catch (s) {
-      if (o = s, a === r - 1) break;
-      await new Promise((c) => setTimeout(c, 2 ** a * 1e3));
+      const o = await fetch(e, t);
+      if (o.ok || o.status === 401)
+        return o;
+      throw new Error(`HTTP Error: ${o.status}`);
+    } catch (o) {
+      if (s = o, i === r - 1) break;
+      await new Promise((n) => setTimeout(n, 2 ** i * 1e3));
     }
-  throw o;
+  throw s;
 }
-const h = {
+const f = {
   docker: {
     baseUrl: "https://registry-1.docker.io",
     authUrl: "https://auth.docker.io/token",
@@ -283,10 +283,10 @@ const h = {
     headers: {
       "Docker-Distribution-Api-Version": "registry/2.0"
     },
-    formatTargetUrl: (e, t) => t.startsWith("library/") ? `${e}/v2/${t}` : t.includes("/") ? `${e}/v2/${t}` : `${e}/v2/library/${t}`,
+    formatTargetUrl: (e, t) => t.startsWith("library/") ? `${e}/v2/${t}` : `${e}/v2/${t.includes("/") ? t : `library/${t}`}`,
     auth: {
       service: "registry.docker.io",
-      formatScope: (e) => e.startsWith("library/") ? `repository:${e}:pull` : e.includes("/") ? `repository:${e}:pull` : `repository:library/${e}:pull`
+      formatScope: (e) => e.startsWith("library/") ? `repository:${e}:pull` : `repository:${e.includes("/") ? e : `library/${e}`}:pull`
     }
   },
   ghcr: {
@@ -345,7 +345,7 @@ function E(e) {
       registry: "docker",
       // 默认使用 docker registry
       repository: "",
-      config: h.docker
+      config: f.docker
     };
   const r = t.startsWith("v2/") ? t.slice(3).split("/") : t.split("/");
   if (r[0] === "library")
@@ -354,113 +354,108 @@ function E(e) {
       registry: "docker",
       repository: r.join("/"),
       // 保持完整路径，包括 library
-      config: h.docker
+      config: f.docker
     };
-  const o = r[0];
-  return h[o] ? {
+  const s = r[0];
+  return f[s] ? {
     isV2Check: !1,
-    registry: o,
+    registry: s,
     repository: r.slice(1).join("/"),
-    config: h[o]
+    config: f[s]
   } : {
     isV2Check: !1,
     registry: "docker",
     repository: r.join("/"),
-    config: h.docker
+    config: f.docker
   };
 }
 async function O(e, t) {
-  var s, c;
+  var h, l, p;
   if (!e.needAuth || !e.authUrl)
     return "";
-  const r = new URLSearchParams();
-  (s = e.auth) != null && s.service && r.set("service", e.auth.service), (c = e.auth) != null && c.formatScope ? r.set("scope", e.auth.formatScope(t)) : r.set("scope", `repository:${t}:pull`);
-  const o = await w(`${e.authUrl}?${r.toString()}`, {
+  const r = ((h = e.auth) == null ? void 0 : h.service) || new URL(e.baseUrl).hostname, s = ((p = (l = e.auth) == null ? void 0 : l.formatScope) == null ? void 0 : p.call(l, t)) || `repository:${t}:pull`, i = new URLSearchParams({
+    service: r,
+    scope: s
+  }), o = `${e.authUrl}?${i.toString()}`, n = await x(o, {
     headers: {
       Accept: "application/json",
       ...e.headers || {}
     }
   });
-  if (!o.ok)
-    throw new Error(`Auth failed: ${o.status}`);
-  return (await o.json()).token;
+  if (!n.ok)
+    throw console.error("Auth failed:", n.status, await n.text()), new Error(`Auth failed: ${n.status}`);
+  return (await n.json()).token;
 }
-async function R(e) {
-  if (e.method === "OPTIONS")
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Authorization, Content-Type",
-        "Access-Control-Max-Age": "86400"
-      }
-    });
-  const t = new URL(e.url), r = E(t.pathname);
-  if (r.isV2Check)
-    return new Response(null, {
-      status: 200,
-      headers: {
-        "Docker-Distribution-Api-Version": "registry/2.0",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Authorization, Content-Type"
-      }
-    });
-  if (!r.config)
-    return new Response("Registry configuration not found", {
-      status: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "text/plain"
-      }
-    });
-  const o = caches.default, a = new Request(t.toString(), e);
-  let s = await o.match(a);
-  if (s)
-    return s;
-  let c = "";
-  if (r.config.needAuth)
-    try {
-      c = await O(r.config, r.repository);
-    } catch (l) {
-      return new Response(`Authentication failed: ${l.message}`, {
-        status: 401,
+async function H(e) {
+  try {
+    if (e.method === "OPTIONS")
+      return new Response(null, {
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Content-Type": "text/plain"
+          "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Authorization, Content-Type",
+          "Access-Control-Max-Age": "86400"
         }
       });
-    }
-  const A = r.config.formatTargetUrl(r.config.baseUrl, r.repository), f = new Headers(e.headers);
-  if (c && f.set("Authorization", `Bearer ${c}`), r.config.headers)
-    for (const [l, u] of Object.entries(r.config.headers))
-      f.set(l, u);
-  try {
-    s = await w(A, {
+    const t = new URL(e.url), r = E(t.pathname);
+    if (r.isV2Check)
+      return new Response(null, {
+        status: 200,
+        headers: {
+          "Docker-Distribution-Api-Version": "registry/2.0",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Authorization, Content-Type"
+        }
+      });
+    if (!r.config)
+      return new Response("Registry configuration not found", {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    const s = caches.default, i = new Request(t.toString(), e);
+    let o = await s.match(i);
+    if (o)
+      return o;
+    let n = "";
+    if (r.config.needAuth)
+      try {
+        n = await O(r.config, r.repository);
+      } catch {
+        return w(r.config, r.repository);
+      }
+    const u = r.config.formatTargetUrl(r.config.baseUrl, r.repository), h = new Headers(e.headers);
+    if (n && h.set("Authorization", `Bearer ${n}`), r.config.headers)
+      for (const [d, g] of Object.entries(r.config.headers))
+        h.set(d, g);
+    if (o = await x(u, {
       method: e.method,
-      headers: f,
+      headers: h,
       body: e.body,
       redirect: "follow"
-    });
+    }), o.status === 401)
+      return w(r.config, r.repository);
     const l = new Headers({
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Authorization, Content-Type"
     });
-    for (const [d, v] of s.headers.entries())
-      d.toLowerCase().startsWith("access-control-") || l.set(d, v);
-    const u = new Response(s.body, {
-      status: s.status,
-      statusText: s.statusText,
+    for (const [d, g] of o.headers.entries())
+      d.toLowerCase().startsWith("access-control-") || l.set(d, g);
+    const p = new Response(o.body, {
+      status: o.status,
+      statusText: o.statusText,
       headers: l
     });
-    if (s.ok && e.method === "GET") {
-      const d = s.headers.get("Cache-Control");
-      d && !d.includes("no-store") && await o.put(a, u.clone());
+    if (o.ok && e.method === "GET") {
+      const d = o.headers.get("Cache-Control");
+      d && !d.includes("no-store") && await s.put(i, p.clone());
     }
-    return u;
-  } catch (l) {
-    return new Response(`Proxy error: ${l.message}`, {
+    return p;
+  } catch (t) {
+    return new Response(`Proxy error: ${t.message}`, {
       status: 502,
       headers: {
         "Access-Control-Allow-Origin": "*",
@@ -469,40 +464,52 @@ async function R(e) {
     });
   }
 }
-function H(e, t) {
+function w(e, t) {
+  var o, n, u;
+  const r = e.authUrl, s = ((o = e.auth) == null ? void 0 : o.service) || new URL(e.baseUrl).hostname, i = ((u = (n = e.auth) == null ? void 0 : n.formatScope) == null ? void 0 : u.call(n, t)) || `repository:${t}:pull`;
+  return new Response("Authentication required", {
+    status: 401,
+    headers: {
+      "WWW-Authenticate": `Bearer realm="${r}",service="${s}",scope="${i}"`,
+      "Docker-Distribution-Api-Version": "registry/2.0",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
+}
+function L(e, t) {
   if (!e || !t) return !1;
   for (let r = 0; r < t.length; r++)
     if (new RegExp(t[r].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(e))
       return !0;
   return !1;
 }
-var n;
+var a;
 class P {
   constructor() {
-    y(this, n, []);
-    p(this, n, []);
+    k(this, a, []);
+    m(this, a, []);
   }
   setEnv(t) {
-    if (i(this, n).length || i(this, n) === "*" || !Reflect.has(t, "IP_WHITELIST")) return;
+    if (c(this, a).length || c(this, a) === "*" || !Reflect.has(t, "IP_WHITELIST")) return;
     const r = Reflect.get(t, "IP_WHITELIST") ?? "*";
-    r === "*" ? p(this, n, "*") : p(this, n, r.split(",").map((o) => o.trim()));
+    r === "*" ? m(this, a, "*") : m(this, a, r.split(",").map((s) => s.trim()));
   }
   checkIpIsWhitelisted(t) {
     const r = t.headers.get("x-real-ip") || "";
-    return (typeof i(this, n) == "string" && i(this, n)) === "*" || Array.isArray(i(this, n)) && i(this, n).length === 0 ? !0 : Array.isArray(i(this, n)) && i(this, n).length > 0 ? H(r, i(this, n)) : !1;
+    return (typeof c(this, a) == "string" && c(this, a)) === "*" || Array.isArray(c(this, a)) && c(this, a).length === 0 ? !0 : Array.isArray(c(this, a)) && c(this, a).length > 0 ? L(r, c(this, a)) : !1;
   }
 }
-n = new WeakMap();
-const b = new P(), D = {
+a = new WeakMap();
+const A = new P(), W = {
   async fetch(e, t) {
     try {
-      const { pathname: r, host: o } = new URL(e.url);
-      return b.setEnv(t), b.checkIpIsWhitelisted(e) ? r === "/" ? $(I(o)) : await R(e) : j();
+      const { pathname: r, host: s } = new URL(e.url);
+      return A.setEnv(t), A.checkIpIsWhitelisted(e) ? r === "/" ? U(I(s)) : await H(e) : j();
     } catch (r) {
       return S(r.message || r);
     }
   }
 };
 export {
-  D as default
+  W as default
 };
