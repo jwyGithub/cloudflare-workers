@@ -6,19 +6,17 @@ export async function getAuthToken(config: RegistryConfig, repository: string): 
         return '';
     }
 
-    const params = new URLSearchParams();
+    const service = config.auth?.service || new URL(config.baseUrl).hostname;
+    const scope = config.auth?.formatScope?.(repository) || `repository:${repository}:pull`;
 
-    if (config.auth?.service) {
-        params.set('service', config.auth.service);
-    }
+    const params = new URLSearchParams({
+        service,
+        scope
+    });
 
-    if (config.auth?.formatScope) {
-        params.set('scope', config.auth.formatScope(repository));
-    } else {
-        params.set('scope', `repository:${repository}:pull`);
-    }
+    const authUrl = `${config.authUrl}?${params.toString()}`;
 
-    const response = await fetchWithRetry(`${config.authUrl}?${params.toString()}`, {
+    const response = await fetchWithRetry(authUrl, {
         headers: {
             Accept: 'application/json',
             ...(config.headers || {})
@@ -26,6 +24,7 @@ export async function getAuthToken(config: RegistryConfig, repository: string): 
     });
 
     if (!response.ok) {
+        console.error('Auth failed:', response.status, await response.text()); // 添加错误日志
         throw new Error(`Auth failed: ${response.status}`);
     }
 

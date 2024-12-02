@@ -9,30 +9,18 @@ export const REGISTRIES: Record<string, RegistryConfig> = {
             'Docker-Distribution-Api-Version': 'registry/2.0'
         },
         formatTargetUrl: (baseUrl: string, repository: string) => {
-            // 如果已经包含 library/，则不需要额外处理
             if (repository.startsWith('library/')) {
                 return `${baseUrl}/v2/${repository}`;
             }
-            // 检查是否包含 /
-            if (repository.includes('/')) {
-                return `${baseUrl}/v2/${repository}`;
-            }
-            // 单个名称的镜像，添加 library/ 前缀
-            return `${baseUrl}/v2/library/${repository}`;
+            return `${baseUrl}/v2/${repository.includes('/') ? repository : `library/${repository}`}`;
         },
         auth: {
             service: 'registry.docker.io',
             formatScope: (repository: string) => {
-                // 如果已经包含 library/，则不需要额外处理
                 if (repository.startsWith('library/')) {
                     return `repository:${repository}:pull`;
                 }
-                // 检查是否包含 /
-                if (repository.includes('/')) {
-                    return `repository:${repository}:pull`;
-                }
-                // 单个名称的镜像，添加 library/ 前缀
-                return `repository:library/${repository}:pull`;
+                return `repository:${repository.includes('/') ? repository : `library/${repository}`}:pull`;
             }
         }
     },
