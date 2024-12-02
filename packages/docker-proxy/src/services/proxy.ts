@@ -16,7 +16,31 @@ export async function proxyRequest(request: Request): Promise<Response> {
     }
 
     const url = new URL(request.url);
-    const { registry, repository, config } = parseRegistryInfo(url.pathname);
+    const registryInfo = parseRegistryInfo(url.pathname);
+
+    // 处理 v2 API 版本检查请求
+    if (registryInfo.isV2Check) {
+        return new Response(null, {
+            status: 200,
+            headers: {
+                'Docker-Distribution-Api-Version': 'registry/2.0',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type'
+            }
+        });
+    }
+
+    // 确保配置存在
+    if (!registryInfo.config) {
+        return new Response('Registry configuration not found', {
+            status: 500,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'text/plain'
+            }
+        });
+    }
 
     // 检查缓存
     const cache = caches.default;
@@ -29,11 +53,22 @@ export async function proxyRequest(request: Request): Promise<Response> {
 
     // 获取认证token
     let token = '';
-    if (config.needAuth) {
-        token = await getAuthToken(config, repository);
+    if (registryInfo.config.needAuth) {
+        try {
+            token = await getAuthToken(registryInfo.config, registryInfo.repository);
+        } catch (error: any) {
+            return new Response(`Authentication failed: ${error.message}`, {
+                status: 401,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'text/plain'
+                }
+            });
+        }
     }
 
-    const targetUrl = config.formatTargetUrl(config.baseUrl, repository);
+    // 构建目标URL
+    const targetUrl = registryInfo.config.formatTargetUrl(registryInfo.config.baseUrl, registryInfo.repository);
 
     // 处理请求头
     const headers = new Headers(request.headers);
@@ -41,9 +76,10 @@ export async function proxyRequest(request: Request): Promise<Response> {
     if (token) {
         headers.set('Authorization', `Bearer ${token}`);
     }
+
     // 添加registry配置中定义的特殊请求头
-    if (config.headers) {
-        for (const [key, value] of Object.entries(config.headers)) {
+    if (registryInfo.config.headers) {
+        for (const [key, value] of Object.entries(registryInfo.config.headers)) {
             headers.set(key, value);
         }
     }
@@ -69,11 +105,6 @@ export async function proxyRequest(request: Request): Promise<Response> {
             if (!key.toLowerCase().startsWith('access-control-')) {
                 responseHeaders.set(key, value);
             }
-        }
-
-        // 根据不同的registry处理特定的响应头
-        if (registry === 'docker') {
-            responseHeaders.set('Docker-Distribution-Api-Version', 'registry/2.0');
         }
 
         const newResponse = new Response(response.body, {

@@ -16,6 +16,13 @@ export interface RegistryConfig {
     };
 }
 
+export interface RegistryInfo {
+    isV2Check: boolean;
+    registry: string;
+    repository: string;
+    config: RegistryConfig | null;
+}
+
 export interface AuthResponse {
     token: string;
     expires_in: number;
