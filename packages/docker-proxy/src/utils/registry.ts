@@ -1,8 +1,6 @@
 import type { RegistryInfo } from '../types';
 import { REGISTRIES } from '../constants/registry';
 
-// utils/registry.ts
-
 export function parseRegistryInfo(path: string): RegistryInfo {
     // 移除开头的斜杠
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;

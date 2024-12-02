@@ -3,17 +3,20 @@ import { fetchWithRetry } from '../utils/fetch';
 import { parseRegistryInfo } from '../utils/registry';
 import { getAuthToken } from './auth';
 
+function handleCors(headers: Headers = new Headers()): Headers {
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'GET, HEAD, POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    headers.set('Access-Control-Max-Age', '86400');
+    return headers;
+}
+
 export async function proxyRequest(request: Request): Promise<Response> {
     try {
         // 处理CORS预检请求
         if (request.method === 'OPTIONS') {
             return new Response(null, {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-                    'Access-Control-Max-Age': '86400'
-                }
+                headers: handleCors()
             });
         }
 
@@ -24,12 +27,7 @@ export async function proxyRequest(request: Request): Promise<Response> {
         if (registryInfo.isV2Check) {
             return new Response(null, {
                 status: 200,
-                headers: {
-                    'Docker-Distribution-Api-Version': 'registry/2.0',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Authorization, Content-Type'
-                }
+                headers: handleCors(new Headers({ 'Docker-Distribution-Api-Version': 'registry/2.0' }))
             });
         }
 
@@ -57,8 +55,11 @@ export async function proxyRequest(request: Request): Promise<Response> {
         if (registryInfo.config.needAuth) {
             try {
                 token = await getAuthToken(registryInfo.config, registryInfo.repository);
-            } catch {
-                // 返回401，包含认证信息
+                if (!token) {
+                    return createAuthRequiredResponse(registryInfo.config, registryInfo.repository);
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
                 return createAuthRequiredResponse(registryInfo.config, registryInfo.repository);
             }
         }
@@ -94,11 +95,7 @@ export async function proxyRequest(request: Request): Promise<Response> {
         }
 
         // 处理响应
-        const responseHeaders = new Headers({
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Authorization, Content-Type'
-        });
+        const responseHeaders = handleCors();
 
         // 复制原始响应的headers
         for (const [key, value] of response.headers.entries()) {
@@ -143,7 +140,8 @@ function createAuthRequiredResponse(config: RegistryConfig, repository: string):
         headers: {
             'WWW-Authenticate': `Bearer realm="${realm}",service="${service}",scope="${scope}"`,
             'Docker-Distribution-Api-Version': 'registry/2.0',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
         }
     });
 }

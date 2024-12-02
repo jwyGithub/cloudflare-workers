@@ -6,7 +6,8 @@ export const REGISTRIES: Record<string, RegistryConfig> = {
         authUrl: 'https://auth.docker.io/token',
         needAuth: true,
         headers: {
-            'Docker-Distribution-Api-Version': 'registry/2.0'
+            'Docker-Distribution-Api-Version': 'registry/2.0',
+            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
         },
         formatTargetUrl: (baseUrl: string, repository: string) => {
             if (repository.startsWith('library/')) {
@@ -17,10 +18,8 @@ export const REGISTRIES: Record<string, RegistryConfig> = {
         auth: {
             service: 'registry.docker.io',
             formatScope: (repository: string) => {
-                if (repository.startsWith('library/')) {
-                    return `repository:${repository}:pull`;
-                }
-                return `repository:${repository.includes('/') ? repository : `library/${repository}`}:pull`;
+                const repo = repository.includes('/') ? repository : `library/${repository}`;
+                return `repository:${repo}:pull`;
             }
         }
     },
