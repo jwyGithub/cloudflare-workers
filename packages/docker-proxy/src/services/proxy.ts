@@ -96,7 +96,7 @@
 
 // export { handleProxyRequest };
 
-import { cacheResponse, cacheTypes, getCacheResponse } from '../utils/cache';
+import { cacheResponse, getCacheResponse } from '../utils/cache';
 import { fetchWithRetry } from '../utils/fetch';
 import { formatScope, getRegistryConfig, parseAuthenticate } from '../utils/registry';
 import { fetchToken } from './auth';
@@ -119,23 +119,27 @@ async function handleProxyRequestWithAuth(request: Request, token: string): Prom
 }
 
 export async function handleProxyRequest(request: Request): Promise<Response> {
-    const cacheKey = `${request.method}:${request.url}`;
-    const cachedResponse = await getCacheResponse(cacheKey, cacheTypes.MANIFEST);
+    const url = new URL(request.url);
 
+    // 尝试从缓存中获取响应
+    const cachedResponse = await getCacheResponse(url.href);
     if (cachedResponse) {
-        return cachedResponse;
+        return cachedResponse; // 如果缓存中有响应，直接返回
     }
 
-    const url = new URL(request.url);
     const config = getRegistryConfig(url.hostname);
 
     if (!config) {
         return new Response('Unknown registry', { status: 404 });
     }
-
     if (config.requiresAuth) {
         const authenticateUrl = `${config.authUrl}`;
-        const authResponse = await fetch(authenticateUrl, { method: 'GET' });
+        const headers = new Headers();
+        const authorization = request.headers.get('Authorization');
+        if (authorization) {
+            headers.set('Authorization', authorization);
+        }
+        const authResponse = await fetch(authenticateUrl, { method: 'GET', headers, redirect: 'follow' });
 
         if (authResponse.status === 401) {
             const authenticateHeader = authResponse.headers.get('WWW-Authenticate');
@@ -148,15 +152,13 @@ export async function handleProxyRequest(request: Request): Promise<Response> {
 
             // 使用 wwwAuthenticate 中的 realm 和 service 构建认证请求
             const token = await fetchToken(config.authUrl, scope, `Bearer ${wwwAuthenticate.service}`);
-
             const proxiedResponse = await handleProxyRequestWithAuth(request, token);
 
-            cacheResponse(cacheKey, cacheTypes.MANIFEST, proxiedResponse.clone());
             return proxiedResponse;
         }
     }
 
-    // If no authentication required, proceed with direct proxy
+    // 执行代理请求的其他逻辑
     const upstreamUrl = new URL(`${url.protocol}//${url.hostname}${url.pathname}`);
     const proxyRequest = new Request(upstreamUrl.toString(), {
         method: request.method,
@@ -168,6 +170,7 @@ export async function handleProxyRequest(request: Request): Promise<Response> {
         headers: proxyRequest.headers
     });
 
-    cacheResponse(cacheKey, cacheTypes.MANIFEST, response.clone());
+    // 将响应缓存
+    await cacheResponse(url.href, response.clone());
     return response;
 }

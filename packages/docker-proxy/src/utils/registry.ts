@@ -22,8 +22,8 @@ export function parseAuthenticate(authenticateStr: string): { realm: string; ser
         throw new Error(`Invalid WWW-Authenticate Header: ${authenticateStr}`);
     }
     return {
-        realm: matches[0],
-        service: matches[1]
+        realm: decodeURIComponent(matches[0]),
+        service: decodeURIComponent(matches[1])
     };
 }
 
@@ -35,5 +35,5 @@ export function formatScope(scope: string, isDockerHub: boolean): string {
             return scopeParts.join(':');
         }
     }
-    return scope;
+    return decodeURIComponent(scope);
 }
