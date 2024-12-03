@@ -1,19 +1,6 @@
+// types/registry.ts - 镜像仓库配置的类型定义
 export interface RegistryConfig {
-    baseUrl: string;
-    authRequired: boolean;
-    needLibrary?: boolean;
-    headers?: Record<string, string>;
-    // 添加 scopeFormat 用于自定义 scope 格式
-    scopeFormat?: (imagePath: string) => string;
-}
-export interface RetryOptions {
-    retries?: number;
-    backoff?: number;
-    timeout?: number;
-}
-
-export interface AuthResponse {
-    realm: string;
-    service: string;
-    scope?: string;
+    baseUrl: string; // 镜像仓库的基础 URL
+    requiresAuth: boolean; // 是否需要认证
+    authUrl: string; // 认证 URL
 }

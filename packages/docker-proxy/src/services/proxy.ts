@@ -1,137 +1,97 @@
-import type { RegistryConfig } from '../types';
-import { CACHE_CONFIGS } from '../constants/cache';
-import { REGISTRY_CONFIGS } from '../constants/registry';
-import { CacheManager } from '../utils/cache';
-import { fetchWithRetry } from '../utils/fetch';
-import { normalizeImagePath, parseRegistryInfo } from '../utils/registry';
-import { AuthService } from './auth';
+// services/proxy.ts - 代理请求的核心逻辑
+import { cacheResponse, cacheTypes, getCacheResponse } from '../utils/cache'; // 缓存相关
+import { fetchWithRetry } from '../utils/fetch'; // 发起请求工具
+import { formatDockerHubPath, getRegistryConfig } from '../utils/registry'; // 镜像处理相关工具
+import { fetchToken, parseAuthenticate } from './auth'; // 认证请求相关
 
-export class RegistryProxy {
-    private cacheManager: CacheManager;
-    private authService: AuthService;
+// 代理请求的核心逻辑
+async function handleProxyRequest(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const hostname = url.hostname;
 
-    constructor() {
-        this.cacheManager = new CacheManager();
-        this.authService = new AuthService();
+    // 获取镜像仓库配置
+    const config = getRegistryConfig(hostname);
+    if (!config) {
+        return new Response('Registry not supported', { status: 400 });
     }
 
-    async handleRequest(request: Request): Promise<Response> {
-        const url = new URL(request.url);
-        const { registryType, imagePath } = parseRegistryInfo(url.pathname);
-        const config = REGISTRY_CONFIGS[registryType];
+    // 判断是否需要认证
+    if (config.requiresAuth) {
+        const authResponse = await fetchWithRetry(config.authUrl, {
+            method: 'GET'
+        });
 
-        if (!config) {
-            return new Response('Unsupported registry type', { status: 400 });
-        }
-
-        try {
-            const normalizedPath = normalizeImagePath(registryType, imagePath);
-
-            // 检查请求类型，确定是否可以使用缓存
-            const canUseCache = this.canUseCache(request, normalizedPath);
-            if (canUseCache) {
-                const cachedResponse = await this.getCachedResponse(request, registryType, normalizedPath);
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
+        if (authResponse.status === 401) {
+            const authenticateHeader = authResponse.headers.get('WWW-Authenticate');
+            if (authenticateHeader) {
+                const wwwAuthenticate = parseAuthenticate(authenticateHeader);
+                const scope = handleDockerHubScope(url.searchParams.get('scope') || wwwAuthenticate.scope);
+                const token = await fetchToken(wwwAuthenticate, scope, request.headers.get('Authorization'));
+                return await handleProxyRequestWithAuth(request, token); // 传递 token 进行代理请求
             }
-
-            // 处理认证
-            if (config.authRequired) {
-                const token = await this.handleAuthentication(request, registryType, normalizedPath);
-                if (!token) {
-                    return new Response('Authentication failed', { status: 401 });
-                }
-                request.headers.set('Authorization', `Bearer ${token}`);
-            }
-
-            // 发送请求
-            const response = await this.fetchFromRegistry(request, config, normalizedPath);
-
-            // 缓存响应
-            if (canUseCache && response.ok) {
-                await this.cacheResponse(request, response.clone(), registryType, normalizedPath);
-            }
-
-            return response;
-        } catch (error: any) {
-            console.error(`Registry proxy error:`, error);
-            return new Response(`Registry error: ${error.message}`, { status: 500 });
         }
     }
 
-    private canUseCache(request: Request, path: string): boolean {
-        // 只缓存 GET 请求
-        if (request.method !== 'GET') {
-            return false;
-        }
-
-        // 确定请求类型（manifest 或 layer）
-        const isManifest = path.includes('/manifests/');
-        const isLayer = path.includes('/blobs/');
-
-        return isManifest ? CACHE_CONFIGS.manifest.enabled : isLayer ? CACHE_CONFIGS.layer.enabled : false;
+    // 使用缓存，先检查缓存
+    const cacheResponseResult = await getCacheResponse(request.url, cacheTypes.MANIFEST);
+    if (cacheResponseResult) {
+        return cacheResponseResult; // 如果缓存中有结果，直接返回缓存的响应
     }
 
-    private async getCachedResponse(request: Request, registryType: string, path: string): Promise<Response | null> {
-        const cacheKey = `${registryType}:${path}:${request.method}`;
-        const cachedData = await this.cacheManager.get<{
-            body: any;
-            headers: Record<string, string>;
-        }>(cacheKey);
+    // 如果没有缓存，执行真实请求并缓存响应
+    return await fetchAndCache(request, cacheTypes.MANIFEST);
+}
 
-        if (cachedData) {
-            return new Response(JSON.stringify(cachedData.body), {
-                headers: new Headers(cachedData.headers)
-            });
-        }
-
-        return null;
+// 处理 Docker Hub scope 特殊情况
+function handleDockerHubScope(scope: string | null): string | null {
+    if (scope && scope.startsWith('library/')) {
+        return scope;
     }
 
-    private async cacheResponse(request: Request, response: Response, registryType: string, path: string): Promise<void> {
-        const isManifest = path.includes('/manifests/');
-        const isLayer = path.includes('/blobs/');
-        const ttl = isManifest ? CACHE_CONFIGS.manifest.ttl : isLayer ? CACHE_CONFIGS.layer.ttl : 3600;
-
-        const cacheKey = `${registryType}:${path}:${request.method}`;
-        const responseData = await response.clone().json();
-        const headers = Object.fromEntries(response.headers.entries());
-
-        await this.cacheManager.set(
-            {
-                key: cacheKey,
-                ttl
-            },
-            {
-                body: responseData,
-                headers
-            }
-        );
+    if (scope && !scope.includes('/')) {
+        return `library/${scope}`;
     }
 
-    private async handleAuthentication(request: Request, registryType: string, path: string): Promise<string | null> {
-        const { hostname } = new URL(request.url);
-        const authHeader = request.headers.get('Authorization');
-        const scope = registryType === 'docker' && !path.includes('/') ? `repository:library/${path}:pull` : `repository:${path}:pull`;
+    return scope;
+}
 
-        const authInfo = {
-            realm: `https://${hostname}/v2/auth`,
-            service: 'registry.docker.io',
-            scope
-        };
+// 发起请求并缓存响应
+async function fetchAndCache(request: Request, cacheType: string): Promise<Response> {
+    const newRequest = new Request(request);
+    const response = await fetchWithRetry(newRequest.url, {
+        method: request.method,
+        headers: request.headers
+    });
 
-        return await this.authService.getToken(registryType, authInfo, authHeader);
+    if (response.ok) {
+        await cacheResponse(request.url, cacheType, response); // 缓存请求响应
     }
 
-    private async fetchFromRegistry(request: Request, config: RegistryConfig, path: string): Promise<Response> {
-        const targetUrl = new URL(path.startsWith('/') ? path : `/${path}`, config.baseUrl);
+    return response;
+}
 
-        return await fetchWithRetry(targetUrl.toString(), {
+// 使用 token 进行代理请求
+async function handleProxyRequestWithAuth(request: Request, token: string): Promise<Response> {
+    const headers = new Headers(request.headers);
+    headers.set('Authorization', `Bearer ${token}`);
+
+    // 格式化 Docker Hub 镜像路径（如果是 Docker Hub 请求）
+    if (request.url.includes('docker.io')) {
+        const newPath = formatDockerHubPath(new URL(request.url).pathname);
+        const newUrl = new URL(request.url);
+        newUrl.pathname = newPath;
+        request = new Request(newUrl, {
             method: request.method,
-            headers: request.headers,
-            body: request.method === 'GET' ? null : request.body,
+            headers,
             redirect: 'follow'
         });
     }
+
+    const newRequest = new Request(request);
+    return await fetchWithRetry(newRequest.url, {
+        method: request.method,
+        headers
+    });
 }
+
+export { handleProxyRequest };

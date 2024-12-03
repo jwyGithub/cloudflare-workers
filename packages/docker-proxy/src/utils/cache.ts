@@ -1,58 +1,25 @@
-import type { CacheOptions } from '../types/cache';
+// cache.ts - 处理不同类型的缓存
+export const cacheTypes = {
+    MANIFEST: 'manifest',
+    LAYER: 'layer',
+    TOKEN: 'token'
+};
 
-export class CacheManager {
-    private namespace: string;
+export const getCacheKey = (url: string, type: string): string => {
+    return `${type}:${url}`;
+};
 
-    constructor(namespace: string = 'docker-proxy') {
-        this.namespace = namespace;
-    }
+// 从缓存中获取响应
+export const getCacheResponse = async (url: string, type: string): Promise<Response | null> => {
+    const cache = caches.default;
+    const cacheKey = getCacheKey(url, type);
+    const cachedResponse = await cache.match(cacheKey);
+    return cachedResponse || null;
+};
 
-    private generateCacheKey(key: string): string {
-        return `${this.namespace}:${key}`;
-    }
-
-    async get<T>(key: string): Promise<T | null> {
-        try {
-            const cacheKey = this.generateCacheKey(key);
-            const cache = caches.default;
-            const response = await cache.match(cacheKey);
-
-            if (!response) {
-                return null;
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Cache get error:', error);
-            return null;
-        }
-    }
-
-    async set(options: CacheOptions, value: any): Promise<void> {
-        try {
-            const cacheKey = this.generateCacheKey(options.key);
-            const cache = caches.default;
-
-            const response = new Response(JSON.stringify(value), {
-                headers: {
-                    'Cache-Control': options.cacheControl || `public, max-age=${options.ttl || 3600}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            await cache.put(cacheKey, response);
-        } catch (error) {
-            console.error('Cache set error:', error);
-        }
-    }
-
-    async delete(key: string): Promise<void> {
-        try {
-            const cacheKey = this.generateCacheKey(key);
-            const cache = caches.default;
-            await cache.delete(cacheKey);
-        } catch (error) {
-            console.error('Cache delete error:', error);
-        }
-    }
-}
+// 将响应保存到缓存中
+export const cacheResponse = async (url: string, type: string, response: Response): Promise<void> => {
+    const cache = caches.default;
+    const cacheKey = getCacheKey(url, type);
+    await cache.put(cacheKey, response);
+};

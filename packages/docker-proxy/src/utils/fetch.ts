@@ -1,37 +1,19 @@
-import type { RetryOptions } from '../types';
-
-export async function fetchWithRetry(input: RequestInfo, init?: RequestInit, options: RetryOptions = {}): Promise<Response> {
-    const { retries = 3, backoff = 300, timeout = 10000 } = options;
-
-    let lastError: Error = new Error('No retries left');
-
-    for (let i = 0; i < retries; i++) {
+// utils/fetch.ts - 发起请求的工具函数
+export const fetchWithRetry = async (url: string, options: RequestInit, retries: number = 3): Promise<Response> => {
+    let lastError: any;
+    for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-            const response = await fetch(input, {
-                ...init,
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok && response.status !== 401) {
-                throw new Error(`HTTP Error: ${response.status}`);
+            const response = await fetch(url, options);
+            if (response.ok) {
+                return response;
             }
-
-            return response;
+            lastError = new Error(`Attempt ${attempt} failed with status: ${response.status}`);
         } catch (error) {
-            lastError = error as Error;
-
-            if (i === retries - 1) {
-                break;
-            }
-
-            await new Promise(resolve => setTimeout(resolve, backoff * 2 ** i));
+            lastError = error;
+        }
+        if (attempt < retries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // exponential backoff
         }
     }
-
     throw lastError;
-}
+};

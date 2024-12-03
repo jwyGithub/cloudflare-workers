@@ -1,10 +1,4 @@
-export interface CacheConfig {
-    enabled: boolean;
-    ttl: number; // 缓存时间（秒）
-}
-
-export interface CacheOptions {
-    key: string;
-    ttl?: number;
-    cacheControl?: string;
+// types/cache.ts - 缓存响应类型定义
+export interface CacheResponse extends Response {
+    cached: boolean; // 标示此响应是否来自缓存
 }

@@ -1,70 +1,40 @@
 import type { RegistryConfig } from '../types';
 
-export const REGISTRY_CONFIGS: Record<string, RegistryConfig> = {
+// registry.ts - 配置镜像仓库信息
+export const registryConfigs: Record<string, RegistryConfig> = {
     docker: {
         baseUrl: 'https://registry-1.docker.io',
-        authRequired: true,
-        needLibrary: true,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => {
-            const parts = imagePath.split('/');
-            if (parts.length === 1) {
-                return `repository:library/${imagePath}:pull`;
-            }
-            return `repository:${imagePath}:pull`;
-        }
-    },
-    ghcr: {
-        baseUrl: 'https://ghcr.io',
-        authRequired: true,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`
-    },
-    gcr: {
-        baseUrl: 'https://gcr.io',
-        authRequired: true,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`
-    },
-    'k8s-gcr': {
-        baseUrl: 'https://k8s.gcr.io',
-        authRequired: true,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`
-    },
-    k8s: {
-        baseUrl: 'https://registry.k8s.io',
-        authRequired: false, // k8s registry 通常不需要认证
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`
+        requiresAuth: true,
+        authUrl: 'https://auth.docker.io/token'
     },
     quay: {
         baseUrl: 'https://quay.io',
-        authRequired: true,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => `repository:${imagePath}:pull`
+        requiresAuth: true,
+        authUrl: 'https://quay.io/v2/token'
+    },
+    gcr: {
+        baseUrl: 'https://gcr.io',
+        requiresAuth: true,
+        authUrl: 'https://gcr.io/v2/token'
+    },
+    'k8s-gcr': {
+        baseUrl: 'https://k8s.gcr.io',
+        requiresAuth: true,
+        authUrl: 'https://k8s.gcr.io/v2/token'
+    },
+    ghcr: {
+        baseUrl: 'https://ghcr.io',
+        requiresAuth: true,
+        authUrl: 'https://ghcr.io/v2/token'
     },
     cloudsmith: {
         baseUrl: 'https://docker.cloudsmith.io',
-        authRequired: true,
-        headers: {
-            Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-        },
-        scopeFormat: (imagePath: string) => {
-            // Cloudsmith 格式: organization/repository/image:tag
-            return `repository:${imagePath}:pull`;
-        }
+        requiresAuth: true,
+        authUrl: 'https://docker.cloudsmith.io/token'
+    },
+    k8s: {
+        baseUrl: 'https://registry.k8s.io',
+        requiresAuth: false,
+        authUrl: ''
     }
 };
