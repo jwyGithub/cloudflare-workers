@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 // cache.ts - 处理不同类型的缓存
 export const cacheTypes = {
     MANIFEST: 'manifest',
@@ -24,6 +26,7 @@ export const getCacheResponse = async (url: string): Promise<Response | null> =>
         return null;
     }
     const cachedResponse = await cache.match(cacheKey);
+    logger.info(`'Cache hit' for ${url}: ${cachedResponse?.status}`);
     return cachedResponse || null;
 };
 

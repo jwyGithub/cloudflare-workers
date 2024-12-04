@@ -1,176 +1,43 @@
-// // services/proxy.ts - 代理请求的核心逻辑
-// import { cacheResponse, cacheTypes, getCacheResponse } from '../utils/cache'; // 缓存相关
-// import { fetchWithRetry } from '../utils/fetch'; // 发起请求工具
-// import { formatDockerHubPath, getRegistryConfig } from '../utils/registry'; // 镜像处理相关工具
-// import { fetchToken, parseAuthenticate } from './auth'; // 认证请求相关
+import { toSuccess } from '@jiangweiye/worker-service';
+import { registryConfigs } from '../constants/registry';
 
-// // 代理请求的核心逻辑
-// async function handleProxyRequest(request: Request): Promise<Response> {
-//     const url = new URL(request.url);
-//     const hostname = url.hostname;
+import { logger } from '../utils/logger';
+import { getUpstream, isDockerHub } from '../utils/registry';
+import { RouteService } from './route';
 
-//     // 获取镜像仓库配置
-//     const config = getRegistryConfig(hostname);
-//     if (!config) {
-//         return new Response('Registry not supported', { status: 400 });
-//     }
-
-//     // 判断是否需要认证
-//     if (config.requiresAuth) {
-//         const authResponse = await fetchWithRetry(config.authUrl, {
-//             method: 'GET'
-//         });
-
-//         if (authResponse.status === 401) {
-//             const authenticateHeader = authResponse.headers.get('WWW-Authenticate');
-//             if (authenticateHeader) {
-//                 const wwwAuthenticate = parseAuthenticate(authenticateHeader);
-//                 const scope = handleDockerHubScope(url.searchParams.get('scope') || wwwAuthenticate.scope);
-//                 const token = await fetchToken(wwwAuthenticate, scope, request.headers.get('Authorization'));
-//                 return await handleProxyRequestWithAuth(request, token); // 传递 token 进行代理请求
-//             }
-//         }
-//     }
-
-//     // 使用缓存，先检查缓存
-//     const cacheResponseResult = await getCacheResponse(request.url, cacheTypes.MANIFEST);
-//     if (cacheResponseResult) {
-//         return cacheResponseResult; // 如果缓存中有结果，直接返回缓存的响应
-//     }
-
-//     // 如果没有缓存，执行真实请求并缓存响应
-//     return await fetchAndCache(request, cacheTypes.MANIFEST);
-// }
-
-// // 处理 Docker Hub scope 特殊情况
-// function handleDockerHubScope(scope: string | null): string | null {
-//     if (scope && scope.startsWith('library/')) {
-//         return scope;
-//     }
-
-//     if (scope && !scope.includes('/')) {
-//         return `library/${scope}`;
-//     }
-
-//     return scope;
-// }
-
-// // 发起请求并缓存响应
-// async function fetchAndCache(request: Request, cacheType: string): Promise<Response> {
-//     const newRequest = new Request(request);
-//     const response = await fetchWithRetry(newRequest.url, {
-//         method: request.method,
-//         headers: request.headers
-//     });
-
-//     if (response.ok) {
-//         await cacheResponse(request.url, cacheType, response); // 缓存请求响应
-//     }
-
-//     return response;
-// }
-
-// // 使用 token 进行代理请求
-// async function handleProxyRequestWithAuth(request: Request, token: string): Promise<Response> {
-//     const headers = new Headers(request.headers);
-//     headers.set('Authorization', `Bearer ${token}`);
-
-//     // 格式化 Docker Hub 镜像路径（如果是 Docker Hub 请求）
-//     if (request.url.includes('docker.io')) {
-//         const newPath = formatDockerHubPath(new URL(request.url).pathname);
-//         const newUrl = new URL(request.url);
-//         newUrl.pathname = newPath;
-//         request = new Request(newUrl, {
-//             method: request.method,
-//             headers,
-//             redirect: 'follow'
-//         });
-//     }
-
-//     const newRequest = new Request(request);
-//     return await fetchWithRetry(newRequest.url, {
-//         method: request.method,
-//         headers
-//     });
-// }
-
-// export { handleProxyRequest };
-
-import { cacheResponse, getCacheResponse } from '../utils/cache';
-import { fetchWithRetry } from '../utils/fetch';
-import { formatScope, getRegistryConfig, parseAuthenticate } from '../utils/registry';
-import { fetchToken } from './auth';
-
-async function handleProxyRequestWithAuth(request: Request, token: string): Promise<Response> {
-    const headers = new Headers(request.headers);
-    headers.set('Authorization', `Bearer ${token}`);
-
-    const url = new URL(request.url);
-    const upstreamUrl = new URL(`${url.protocol}//${url.hostname}${url.pathname}`);
-    const proxyRequest = new Request(upstreamUrl.toString(), {
-        method: request.method,
-        headers
-    });
-
-    return await fetchWithRetry(proxyRequest.url, {
-        method: request.method,
-        headers: proxyRequest.headers
-    });
-}
+const routeService = new RouteService();
 
 export async function handleProxyRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
-
-    // 尝试从缓存中获取响应
-    const cachedResponse = await getCacheResponse(url.href);
-    if (cachedResponse) {
-        return cachedResponse; // 如果缓存中有响应，直接返回
+    const upstream = getUpstream(url.hostname);
+    if (!upstream) {
+        return toSuccess(registryConfigs, 'success', request.headers);
     }
 
-    const config = getRegistryConfig(url.hostname);
+    const authorization = request.headers.get('Authorization');
 
-    if (!config) {
-        return new Response('Unknown registry', { status: 404 });
+    logger.info(`upstream: ${upstream}, ${url.pathname}, ${authorization}`);
+
+    if (url.pathname === '/v2/') {
+        logger.info('Redirect to /v2');
+        return await routeService.toV2(url, upstream, authorization);
     }
-    if (config.requiresAuth) {
-        const authenticateUrl = `${config.authUrl}`;
-        const headers = new Headers();
-        const authorization = request.headers.get('Authorization');
-        if (authorization) {
-            headers.set('Authorization', authorization);
-        }
-        const authResponse = await fetch(authenticateUrl, { method: 'GET', headers, redirect: 'follow' });
+    if (url.pathname === '/v2/auth') {
+        logger.info('Redirect to /v2/auth');
+        return await routeService.toV2Auth(url, upstream, authorization);
+    }
 
-        if (authResponse.status === 401) {
-            const authenticateHeader = authResponse.headers.get('WWW-Authenticate');
-            if (!authenticateHeader) {
-                throw new Error('Missing WWW-Authenticate header');
-            }
+    logger.info(`isDockerHub: ${registryConfigs.docker}, ${url.hostname}`);
 
-            const wwwAuthenticate = parseAuthenticate(authenticateHeader); // 使用 parseAuthenticate 解析
-            const scope = formatScope(url.searchParams.get('scope') || '', config.baseUrl === 'https://registry-1.docker.io');
-
-            // 使用 wwwAuthenticate 中的 realm 和 service 构建认证请求
-            const token = await fetchToken(config.authUrl, scope, `Bearer ${wwwAuthenticate.service}`);
-            const proxiedResponse = await handleProxyRequestWithAuth(request, token);
-
-            return proxiedResponse;
+    if (isDockerHub(url.hostname)) {
+        const pathParts = url.pathname.split('/');
+        if (pathParts.length === 5) {
+            pathParts.splice(2, 0, 'library');
+            const redirectUrl = new URL(url);
+            redirectUrl.pathname = pathParts.join('/');
+            return Response.redirect(redirectUrl.href, 301);
         }
     }
-
-    // 执行代理请求的其他逻辑
-    const upstreamUrl = new URL(`${url.protocol}//${url.hostname}${url.pathname}`);
-    const proxyRequest = new Request(upstreamUrl.toString(), {
-        method: request.method,
-        headers: request.headers
-    });
-
-    const response = await fetchWithRetry(proxyRequest.url, {
-        method: request.method,
-        headers: proxyRequest.headers
-    });
-
-    // 将响应缓存
-    await cacheResponse(url.href, response.clone());
-    return response;
+    logger.info('Redirect to registry');
+    return await routeService.toRegistry(url, upstream, request);
 }
