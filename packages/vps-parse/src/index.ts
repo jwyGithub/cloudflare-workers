@@ -324,11 +324,11 @@ async function init(env: Env): Promise<Response> {
         await sendMessage(
             JSON.stringify({
                 type: 'success',
-                content: '所有操作已完成！'
+                content: '所有操作已完成！, 通知telegram'
             })
         );
 
-        notifyTelegram({
+        await notifyTelegram({
             token: env.TELEGRAM_BOT_TOKEN,
             chatId: env.TELEGRAM_CHAT_ID,
             message: [
