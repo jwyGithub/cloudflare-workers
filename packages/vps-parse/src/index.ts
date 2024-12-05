@@ -1,8 +1,9 @@
+import { sendMessage as notifyTelegram } from '@jiangweiye/worker-api';
+import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { toHTML, toServerError, toSuccess } from '@jiangweiye/worker-service';
 import { tryBase64Decode, tryBase64Encode, tryUrlDecode } from '@jiangweiye/worker-shared';
 import { HTML_PAGE } from './page';
 import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
-import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 
 let ws: WebSocket | null = null;
 
@@ -13,6 +14,15 @@ async function sendMessage(data: string): Promise<void> {
 
 const getPath = (filePath: string): string => {
     return `packages/vps-parse/address/${filePath}`;
+};
+
+const telegramMessageConfig = {
+    trojanCount: 0,
+    vlessCount: 0,
+    vmessCount: 0,
+    vlessPushStatus: 'error',
+    trojanPushStatus: 'error',
+    vmessPushStatus: 'error'
 };
 
 async function getVps(links: string[], retry: number): Promise<{ trojan: string[]; vless: string[]; vmess: string[] }> {
@@ -59,12 +69,12 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 }
             });
 
-            if (response.status === 200) {
-                const linkStr = await response?.text();
+            if (response.ok) {
+                const linkStr = await response.data.text();
                 await sendMessage(
                     JSON.stringify({
                         type: 'success',
-                        content: `成功获取链接数据: ${link}`
+                        content: `成功获取链接数据: ${response.config.url}`
                     })
                 );
                 result.push(tryBase64Decode(linkStr));
@@ -72,7 +82,7 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 await sendMessage(
                     JSON.stringify({
                         type: 'error',
-                        content: `获取链接数据失败: ${error?.message || error}`
+                        content: `获取链接数据失败: ${response.config.url}`
                     })
                 );
             }
@@ -96,6 +106,10 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 vmessVps.push(item);
             }
         }
+
+        telegramMessageConfig.trojanCount = trojanVps.length;
+        telegramMessageConfig.vlessCount = vlessVps.length;
+        telegramMessageConfig.vmessCount = vmessVps.length;
 
         await sendMessage(
             JSON.stringify({
@@ -288,12 +302,15 @@ async function init(env: Env): Promise<Response> {
         try {
             // 按顺序执行每个推送操作，并在之间添加延时
             results.vless = await pushGithub(vlessVps, getPath('vless_api.txt'), env);
+            telegramMessageConfig.vlessPushStatus = 'success';
             await sleep(2000); // 等待2秒
 
             results.trojan = await pushGithub(trojanVps, getPath('trojan_api.txt'), env);
+            telegramMessageConfig.trojanPushStatus = 'success';
             await sleep(2000); // 等待2秒
 
             results.vmess = await pushGithub(vmessVps, getPath('vmess_api.txt'), env);
+            telegramMessageConfig.vmessPushStatus = 'success';
             await sleep(2000); // 等待2秒
         } catch (error: any) {
             await sendMessage(
@@ -310,6 +327,16 @@ async function init(env: Env): Promise<Response> {
                 content: '所有操作已完成！'
             })
         );
+
+        notifyTelegram({
+            token: env.TELEGRAM_BOT_TOKEN,
+            chatId: env.TELEGRAM_CHAT_ID,
+            message: [
+                `vless: ${telegramMessageConfig.vlessPushStatus} (${telegramMessageConfig.vlessCount})`,
+                `trojan: ${telegramMessageConfig.trojanPushStatus} (${telegramMessageConfig.trojanCount})`,
+                `vmess: ${telegramMessageConfig.vmessPushStatus} (${telegramMessageConfig.vmessCount})`
+            ]
+        });
 
         return toSuccess({
             vless: { status: 'fulfilled', value: results.vless },
