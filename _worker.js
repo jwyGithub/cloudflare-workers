@@ -20,7 +20,7 @@ async function N(r) {
     return Response.error();
   }
 }
-const p = {
+const g = {
   retries: 3,
   // 默认最大重试次数
   retryDelay: 1e3,
@@ -44,7 +44,7 @@ class j {
   // 核心请求方法
   async request(e) {
     let t = { ...e };
-    t.retries = t.retries ?? p.retries, t.retryDelay = t.retryDelay ?? p.retryDelay;
+    t.retries = t.retries ?? g.retries, t.retryDelay = t.retryDelay ?? g.retryDelay;
     for (const a of this.requestInterceptors)
       t = await a(t);
     if (t.params) {
@@ -60,7 +60,7 @@ class j {
         i.abort();
       }, s);
       try {
-        const l = await fetch(t.url, {
+        const c = await fetch(t.url, {
           method: t.method,
           headers: t.headers,
           body: t.body ? JSON.stringify(t.body) : void 0,
@@ -68,22 +68,22 @@ class j {
         });
         clearTimeout(a);
         let d = {
-          data: l,
-          status: l.status,
-          statusText: l.statusText,
-          headers: l.headers,
+          data: c,
+          status: c.status,
+          statusText: c.statusText,
+          headers: c.headers,
           config: t,
-          ok: l.ok
+          ok: c.ok
         };
         for (const m of this.responseInterceptors)
           d = await m(d);
-        return !l.ok && t.retries && o < t.retries ? (await new Promise((m) => setTimeout(m, t.retryDelay)), n()) : d;
-      } catch (l) {
-        if (l.name === "AbortError")
+        return !c.ok && t.retries && o < t.retries ? (await new Promise((m) => setTimeout(m, t.retryDelay)), n()) : d;
+      } catch (c) {
+        if (c.name === "AbortError")
           throw new Error("Request timed out");
         if (t.retries && o < t.retries)
           return await new Promise((d) => setTimeout(d, t.retryDelay)), n();
-        throw l;
+        throw c;
       }
     };
     return n();
@@ -173,9 +173,9 @@ class j {
 }
 async function O(r, e) {
   const {
-    retries: t = p.retries,
-    retryDelay: s = p.retryDelay,
-    retryOnStatusCodes: o = p.retryOnStatusCodes,
+    retries: t = g.retries,
+    retryDelay: s = g.retryDelay,
+    retryOnStatusCodes: o = g.retryOnStatusCodes,
     onError: i,
     ...u
   } = e;
@@ -183,21 +183,28 @@ async function O(r, e) {
   const a = async () => {
     n++;
     try {
-      const l = await J.request({ url: r, ...u });
-      return o.includes(l.status) && n < t ? (await new Promise((d) => setTimeout(d, s)), a()) : l;
-    } catch (l) {
+      const c = await P.request({ url: r, ...u });
+      if (o.includes(c.status) && n <= t) {
+        if (i) {
+          const d = i(new Error(`Request failed with status ${c.status}`), n);
+          d instanceof Promise && await d;
+        }
+        return await new Promise((d) => setTimeout(d, s)), a();
+      }
+      return c;
+    } catch (c) {
       if (i) {
-        const d = i(l, n);
+        const d = i(c, n);
         d instanceof Promise && await d;
       }
-      if (n < t)
+      if (n <= t)
         return await new Promise((d) => setTimeout(d, s)), a();
-      throw l;
+      throw c;
     }
   };
   return a();
 }
-const J = new j(), P = "success", L = "internal server error", x = new Headers({
+const P = new j(), J = "success", L = "internal server error", x = new Headers({
   "Content-type": "application/json"
 });
 new Headers({
@@ -208,7 +215,7 @@ new Headers({
 });
 const I = new Headers({
   "Content-type": "text/html"
-}), A = (r, e = P, t = x) => Response.json(
+}), A = (r, e = J, t = x) => Response.json(
   {
     status: 200,
     message: e,
@@ -731,7 +738,7 @@ function G(r, e) {
     throw new Error(`error on parseTrojanLink: ${t.message || t} -> ${e}`);
   }
 }
-function _(r) {
+function q(r) {
   try {
     const e = JSON.parse($(r));
     return {
@@ -745,7 +752,7 @@ function _(r) {
     throw new Error(`error on parseVmessLink: ${e.message || e} -> ${r}`);
   }
 }
-function q() {
+function _() {
   return (/* @__PURE__ */ new Date()).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
 }
 function k(r, e) {
@@ -790,7 +797,7 @@ function F(r) {
   try {
     const e = [];
     for (const t of r) {
-      const { host: s, port: o, remark: i } = _(t.replace("vmess://", ""));
+      const { host: s, port: o, remark: i } = q(t.replace("vmess://", ""));
       !s.startsWith("127") && !/^[a-z]/i.test(s) && !k(s, e) && e.push({ host: s, port: o, remark: i });
     }
     return e.map((t) => `${t.host}:${t.port}${t.remark}`);
@@ -798,14 +805,14 @@ function F(r) {
     throw new Error(`catch on getVmess : ${e.message || e}`);
   }
 }
-function g(r = 1e3) {
+function p(r = 1e3) {
   return new Promise((e) => {
     setTimeout(e, r);
   });
 }
 let f = null;
-async function c(r) {
-  await g(100), f == null || f.send(r);
+async function l(r) {
+  await p(100), f == null || f.send(r);
 }
 const b = (r) => `packages/vps-parse/address/${r}`, h = {
   trojanCount: 0,
@@ -818,7 +825,7 @@ const b = (r) => `packages/vps-parse/address/${r}`, h = {
 async function Y(r, e) {
   try {
     const t = [], s = [], o = [], i = [];
-    await c(
+    await l(
       JSON.stringify({
         type: "info",
         content: ["开始获取 VPS 数据...", ...r].join(`
@@ -826,7 +833,7 @@ async function Y(r, e) {
       })
     );
     for await (const n of r) {
-      await c(
+      await l(
         JSON.stringify({
           type: "info",
           content: `正在获取订阅信息: ${n}`
@@ -839,11 +846,11 @@ async function Y(r, e) {
           "Accept-Encoding": "gzip, deflate, br",
           Connection: "keep-alive"
         })
-      }), l = await O(a.url, {
+      }), c = await O(a.url, {
         retries: e,
         headers: a.headers,
         onError: async (d, m) => {
-          await c(
+          await l(
             JSON.stringify({
               type: "error",
               content: `正在尝试第 ${m} 次请求... ${d.message || d}`
@@ -851,32 +858,32 @@ async function Y(r, e) {
           );
         }
       });
-      if (l.ok) {
-        const d = await l.data.text();
-        await c(
+      if (c.ok) {
+        const d = await c.data.text();
+        await l(
           JSON.stringify({
             type: "success",
-            content: `成功获取链接数据: ${l.config.url}`
+            content: `成功获取链接数据: ${c.config.url}`
           })
         ), t.push($(d));
       } else
-        await c(
+        await l(
           JSON.stringify({
             type: "error",
-            content: `获取链接数据失败: ${l.config.url}`
+            content: `获取链接数据失败: ${c.config.url}`
           })
         );
     }
     const u = t.map((n) => n.split(`
 `)).flat();
     for await (const n of u)
-      await c(
+      await l(
         JSON.stringify({
           type: "info",
           content: `${y(n, (a) => a)}`
         })
       ), n.trim().startsWith("trojan://") ? s.push(n) : n.trim().startsWith("vless://") ? o.push(n) : n.trim().startsWith("vmess://") && i.push(n);
-    return h.trojanCount = s.length, h.vlessCount = o.length, h.vmessCount = i.length, await c(
+    return h.trojanCount = s.length, h.vlessCount = o.length, h.vmessCount = i.length, await l(
       JSON.stringify({
         type: "success",
         content: `数据分类完成：
@@ -890,7 +897,7 @@ vmess: ${i.length}条`
       vmess: i
     };
   } catch (t) {
-    throw await c(
+    throw await l(
       JSON.stringify({
         type: "error",
         content: `获取VPS数据失败: ${t.message || t}`
@@ -900,7 +907,7 @@ vmess: ${i.length}条`
 }
 async function v(r, e, t) {
   try {
-    await c(
+    await l(
       JSON.stringify({
         type: "info",
         content: `开始推送到 GitHub: ${e}`
@@ -916,19 +923,19 @@ async function v(r, e, t) {
       if (a.ok)
         return (await a.json()).sha;
     }, n = async (a) => {
-      const l = {
-        message: `scheduled: update ${e} by ${q()}`,
+      const c = {
+        message: `scheduled: update ${e} by ${_()}`,
         content: s,
         branch: t.REPO_BRANCH
       };
-      a && (l.sha = a);
+      a && (c.sha = a);
       const d = await fetch(o, {
         method: "PUT",
         headers: {
           ...i,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(l)
+        body: JSON.stringify(c)
       });
       if (!d.ok) {
         const m = await d.text();
@@ -938,29 +945,29 @@ async function v(r, e, t) {
     };
     try {
       const a = await u();
-      await c(
+      await l(
         JSON.stringify({
           type: "info",
           content: `获取到最新 SHA: ${a || "null"}`
         })
       );
-      const l = await n(a);
-      return await c(
+      const c = await n(a);
+      return await l(
         JSON.stringify({
           type: "success",
           content: `成功推送到GitHub: ${e}`
         })
-      ), l;
+      ), c;
     } catch (a) {
       if (a.message.includes("409")) {
-        await c(
+        await l(
           JSON.stringify({
             type: "warning",
             content: "检测到文件冲突，正在重试..."
           })
         );
-        const l = await u(), d = await n(l);
-        return await c(
+        const c = await u(), d = await n(c);
+        return await l(
           JSON.stringify({
             type: "success",
             content: `重试成功，已推送到GitHub: ${e}`
@@ -970,7 +977,7 @@ async function v(r, e, t) {
       throw a;
     }
   } catch (s) {
-    throw await c(
+    throw await l(
       JSON.stringify({
         type: "error",
         content: `GitHub推送失败: ${s.message || s}`
@@ -980,36 +987,36 @@ async function v(r, e, t) {
 }
 async function S(r) {
   try {
-    await c(
+    await l(
       JSON.stringify({
         type: "info",
         content: "开始初始化同步流程..."
       })
     );
     const { trojan: e, vless: t, vmess: s } = await Y(r.LINKS.split(","), Number(r.RETRY ?? "3"));
-    await c(
+    await l(
       JSON.stringify({
         type: "info",
         content: "处理VPS数据..."
       })
     );
     const o = W(t.filter(Boolean)), i = z(e.filter(Boolean)), u = F(s.filter(Boolean));
-    await c(
+    await l(
       JSON.stringify({
         type: "success",
         content: `vless count: ${o.length}`
       })
-    ), await c(
+    ), await l(
       JSON.stringify({
         type: "success",
         content: `trojan count: ${i.length}`
       })
-    ), await c(
+    ), await l(
       JSON.stringify({
         type: "success",
         content: `vmess count: ${u.length}`
       })
-    ), await c(
+    ), await l(
       JSON.stringify({
         type: "info",
         content: "开始推送到GitHub..."
@@ -1021,21 +1028,21 @@ async function S(r) {
       vmess: ""
     };
     try {
-      n.vless = await v(o, b("vless_api.txt"), r), h.vlessPushStatus = "success", await g(2e3), n.trojan = await v(i, b("trojan_api.txt"), r), h.trojanPushStatus = "success", await g(2e3), n.vmess = await v(u, b("vmess_api.txt"), r), h.vmessPushStatus = "success", await g(2e3);
+      n.vless = await v(o, b("vless_api.txt"), r), h.vlessPushStatus = "success", await p(2e3), n.trojan = await v(i, b("trojan_api.txt"), r), h.trojanPushStatus = "success", await p(2e3), n.vmess = await v(u, b("vmess_api.txt"), r), h.vmessPushStatus = "success", await p(2e3);
     } catch (a) {
-      await c(
+      await l(
         JSON.stringify({
           type: "error",
           content: `GitHub推送过程中出错: ${a.message || a}`
         })
       );
     }
-    return await c(
+    return await l(
       JSON.stringify({
         type: "success",
-        content: "所有操作已完成！"
+        content: "所有操作已完成！, 通知telegram"
       })
-    ), N({
+    ), await N({
       token: r.TELEGRAM_BOT_TOKEN,
       chatId: r.TELEGRAM_CHAT_ID,
       message: [
@@ -1049,7 +1056,7 @@ async function S(r) {
       vmess: { status: "fulfilled", value: n.vmess }
     });
   } catch (e) {
-    throw await c(
+    throw await l(
       JSON.stringify({
         type: "error",
         content: `初始化过程失败: ${e.message || e}`
@@ -1062,7 +1069,7 @@ const Z = {
     try {
       if (r.headers.get("Upgrade") === "websocket") {
         const s = new WebSocketPair(), [o, i] = Object.values(s);
-        return i.accept(), f = i, await c(
+        return i.accept(), f = i, await l(
           JSON.stringify({
             type: "success",
             content: "WebSocket连接已建立"
@@ -1071,21 +1078,21 @@ const Z = {
           try {
             const n = JSON.parse(u.data);
             if (n.type === "command" && n.content === "sync") {
-              await c(
+              await l(
                 JSON.stringify({
                   type: "info",
                   content: "收到同步命令，开始执行..."
                 })
               );
               try {
-                await S(e), await c(
+                await S(e), await l(
                   JSON.stringify({
                     type: "success",
                     content: "同步操作完成"
                   })
                 );
               } catch (a) {
-                await c(
+                await l(
                   JSON.stringify({
                     type: "error",
                     content: `同步操作失败: ${a.message || a}`
@@ -1094,7 +1101,7 @@ const Z = {
               }
             }
           } catch (n) {
-            await c(
+            await l(
               JSON.stringify({
                 type: "error",
                 content: `处理消息失败: ${n.message || n}`
@@ -1108,7 +1115,7 @@ const Z = {
       }
       return R(B);
     } catch (s) {
-      return await c(
+      return await l(
         JSON.stringify({
           type: "error",
           content: `服务器错误: ${s.message || s}`
