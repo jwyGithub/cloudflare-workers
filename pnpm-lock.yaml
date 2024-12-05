@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@jiangweiye/worker-api':
+        specifier: ^0.0.4
+        version: 0.0.4
+      '@jiangweiye/worker-fetch':
+        specifier: ^0.0.4
+        version: 0.0.4
       '@jiangweiye/worker-service':
         specifier: ^0.0.2
         version: 0.0.2
@@ -624,6 +630,14 @@ packages:
     dependencies:
       '@types/node': 22.10.1
     dev: true
+
+  /@jiangweiye/worker-api@0.0.4:
+    resolution: {integrity: sha512-+iVPst/X5N/Jj8N1XNMRUAigYQDychMj3hWYV5djs9QmdxzC9qRjCr2FrqhvZDPOF09Jb0e6Il/36TLmaHS38w==}
+    dev: false
+
+  /@jiangweiye/worker-fetch@0.0.4:
+    resolution: {integrity: sha512-VZxKQJHkA+HWSf9U9MLzSN7Ffsd/G3WKVwGnk18IAw9R+4TOP6gK+bc6O/sQ1ooo3+BOSLhWxXpH8KYVNCN22A==}
+    dev: false
 
   /@jiangweiye/worker-service@0.0.2:
     resolution: {integrity: sha512-TTTvZDfd7nspRBS/2as8d++IYxGOAac8rXkOs3ROCRzDpcYHXiBilvoBnqjbDtR89+rmLH3IVw+w4NaJJ5cYvg==}

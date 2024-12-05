@@ -1,7 +1,8 @@
 import { toHTML, toServerError, toSuccess } from '@jiangweiye/worker-service';
 import { tryBase64Decode, tryBase64Encode, tryUrlDecode } from '@jiangweiye/worker-shared';
 import { HTML_PAGE } from './page';
-import { fetchWithRetry, getTime, getTrojan, getVless, getVmess, sleep } from './shared';
+import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
+import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 
 let ws: WebSocket | null = null;
 
@@ -45,8 +46,9 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 })
             });
 
-            const { response, success, error } = await fetchWithRetry(proxyRequest, {
+            const response = await fetchWithRetry(proxyRequest.url, {
                 retries: retry,
+                headers: proxyRequest.headers,
                 onError: async (reason, attempt) => {
                     await sendMessage(
                         JSON.stringify({
@@ -57,8 +59,8 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 }
             });
 
-            const linkStr = await response?.text();
-            if (success && linkStr) {
+            if (response.status === 200) {
+                const linkStr = await response?.text();
                 await sendMessage(
                     JSON.stringify({
                         type: 'success',

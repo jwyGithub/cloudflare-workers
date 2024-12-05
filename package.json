@@ -32,6 +32,8 @@
         "pages:convert": "pnpm --dir packages/vps-convert run pages"
     },
     "dependencies": {
+        "@jiangweiye/worker-api": "^0.0.4",
+        "@jiangweiye/worker-fetch": "^0.0.4",
         "@jiangweiye/worker-service": "^0.0.2",
         "@jiangweiye/worker-shared": "^0.0.2",
         "js-yaml": "^4.1.0"
