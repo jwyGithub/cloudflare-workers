@@ -1,10 +1,11 @@
 import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { toServerError, toStream } from '@jiangweiye/worker-service';
-import { dump } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import { getConfuseUrl } from './confuse';
 import { getOriginConfig } from './confuse/restore';
 import { SERVICE_GET_SUB } from './constants';
 import { DEFAULT_CONFIG, showPage } from './page';
+import type { Clash } from './types/Clash';
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
@@ -19,7 +20,7 @@ export default {
                 }
                 console.log(`confuseConfig: ${response.status} ${response.statusText}`);
                 const confuseConfig = await response.data.text();
-                console.log(`confuseConfig: ${confuseConfig}`);
+                console.log(`confuseConfig: ${(load(confuseConfig) as Clash).proxies}`);
                 const originConfig = getOriginConfig(confuseConfig, vpsMap);
                 return toStream(
                     dump(originConfig, { indent: 2, lineWidth: 200 }),
