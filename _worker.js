@@ -1878,7 +1878,7 @@ async function No(e, n) {
 `)), {
     headers: new Headers({ "Content-Type": "text/plain; charset=UTF-8" })
   });
-  caches.default.put(c, f), r.set("url", c);
+  await caches.default.put(c, f), r.set("url", c);
   const a = new URL(`${n}/sub`);
   return a.search = r.toString(), {
     confuseUrl: a.toString(),
@@ -1972,11 +1972,7 @@ const $o = {
           })
         );
       }
-      if (r === `/${De}`) {
-        const o = await caches.default.match(`${i}/${De}`);
-        return o || console.log("cache not found"), o || Fe("Cache not found");
-      }
-      return Yo({
+      return r === `/${De}` ? await caches.default.match(`${i}/${De}`) || Fe("Cache not found") : Yo({
         url: n.PAGE_URL ?? ge.PAGE_URL,
         lockBackend: n.LOCK_BACKEND ?? ge.LOCK_BACKEND,
         remoteConfig: n.REMOTE_CONFIG ?? ge.REMOTE_CONFIG,
