@@ -5,16 +5,13 @@ import { getConfuseUrl } from './confuse';
 import { getOriginConfig } from './confuse/restore';
 import { SERVICE_GET_SUB } from './constants';
 import { DEFAULT_CONFIG, showPage } from './page';
-import { Service } from './service/service';
-
-const service = new Service();
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         try {
             const { pathname, origin } = new URL(request.url);
             if (pathname === '/sub') {
-                const { confuseUrl, vpsMap } = await getConfuseUrl(request.url, service, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
+                const { confuseUrl, vpsMap } = await getConfuseUrl(request.url, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
                 console.log(`confuseUrl: ${confuseUrl}`);
                 const response = await fetchWithRetry(confuseUrl, { retries: 3 });
                 if (!response.ok) {
@@ -34,9 +31,8 @@ export default {
             }
 
             if (pathname === `/${SERVICE_GET_SUB}`) {
-                return new Response(service.getSub(), {
-                    headers: new Headers({ 'Content-Type': 'text/plain; charset=UTF-8' })
-                });
+                const cacheResponse = await caches.default.match(`${origin}/${SERVICE_GET_SUB}`);
+                return cacheResponse || toServerError('Cache not found');
             }
 
             return showPage({

@@ -1,4 +1,3 @@
-import type { Service } from '../service/service';
 import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { base64Encode, tryUrlDecode } from '@jiangweiye/worker-shared';
 import { SERVICE_GET_SUB } from '../constants';
@@ -51,7 +50,6 @@ async function getConfig(vps: string[]): Promise<{ urls: Set<string>; vpsMap: Ma
 
 export async function getConfuseUrl(
     url: Request['url'],
-    service: Service,
     backend: string
 ): Promise<{
     confuseUrl: string;
@@ -66,7 +64,11 @@ export async function getConfuseUrl(
 
     const subPath = `${origin}/${SERVICE_GET_SUB}`;
 
-    service.setSub(base64Encode(Array.from(urls).join('\n')));
+    const response = new Response(base64Encode(Array.from(urls).join('\n')), {
+        headers: new Headers({ 'Content-Type': 'text/plain; charset=UTF-8' })
+    });
+
+    caches.default.put(subPath, response);
 
     searchParams.set('url', subPath);
 
