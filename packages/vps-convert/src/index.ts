@@ -12,6 +12,7 @@ export default {
 
             const cacheResponse = await caches.default.match(href);
             if (cacheResponse) {
+                console.log('cacheResponse.ok', cacheResponse.ok, await cacheResponse.bytes());
                 return cacheResponse;
             }
 

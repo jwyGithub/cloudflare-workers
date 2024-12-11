@@ -68,7 +68,7 @@ export async function getConfuseUrl(
         headers: new Headers({ 'Content-Type': 'text/plain; charset=UTF-8' })
     });
 
-    await caches.default.put(subPath, response);
+    await caches.default.put(subPath, response.clone());
 
     searchParams.set('url', subPath);
 
@@ -77,7 +77,7 @@ export async function getConfuseUrl(
 
     const cache = await caches.default.match(subPath);
     if (cache) {
-        console.log(cache.bytes());
+        console.log(await cache.bytes());
     }
 
     return {
