@@ -7,10 +7,13 @@
 - [x] [trojan](trojan)
 - [x] [ss](ss)
 - [x] [ssr](ssr)
-- [] [hysteria]()
-- [] [hysteria2]()
-- [] [hy2]()
-- [] [sub]()
+- [ ] [hysteria]()
+- [ ] [hysteria2]()
+- [ ] [hy2]()
+- [x] [sub]()
+    - [x] [base64]()
+    - [ ] [yml]()
+    - [ ] [json]()
 
 ## 环境变量配置
 

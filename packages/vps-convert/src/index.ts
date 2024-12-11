@@ -1,3 +1,4 @@
+import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { toServerError, toStream } from '@jiangweiye/worker-service';
 import { dump } from 'js-yaml';
 import { getConfuseUrl } from './confuse';
@@ -14,11 +15,11 @@ export default {
             const { pathname, origin } = new URL(request.url);
             if (pathname === '/sub') {
                 const { confuseUrl, vpsMap } = await getConfuseUrl(request.url, service, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
-                const response = await fetch(confuseUrl);
+                const response = await fetchWithRetry(confuseUrl, { retries: 3 });
                 if (!response.ok) {
                     throw new Error(response.statusText);
                 }
-                const confuseConfig = await response.text();
+                const confuseConfig = await response.data.text();
                 const originConfig = getOriginConfig(confuseConfig, vpsMap);
                 return toStream(
                     dump(originConfig, { indent: 2, lineWidth: 200 }),
