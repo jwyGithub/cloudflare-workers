@@ -1,3 +1,7 @@
+import type { SubType } from '../types/Sub';
+import { base64Decode } from '@jiangweiye/worker-shared';
+import { load } from 'js-yaml';
+
 export class Confuse {
     readonly #hostnames = ['localhost', '127.0.0.1', 'abc.cba.com'];
     readonly #encryptionProtocol = ['AES_256_GCM', 'CHACHA20_POLY1305', 'AES_128_GCM', 'CHACHA20_IETF'];
@@ -133,4 +137,41 @@ export class PsUtil {
     public static setPs(name: string, ps: string): string {
         return [name, ps].join(PsUtil.#LINK_KEY);
     }
+}
+
+/**
+ * @description 获取订阅链接内容类型
+ * @param {string} content
+ * @returns {SubType} base64 | yaml | json | unknown
+ */
+export function getSubType(content: string): SubType {
+    try {
+        base64Decode(content);
+        return 'base64';
+    } catch {
+        try {
+            load(content);
+            return 'yaml';
+        } catch {
+            try {
+                JSON.parse(content);
+                return 'json';
+            } catch {
+                return 'unknown';
+            }
+        }
+    }
+}
+
+/**
+ * @description 转换base64订阅内容
+ * @param {string} subs
+ * @returns {string[]} 订阅
+ */
+export function processBase64(subs: string): string[] {
+    const content = base64Decode(subs);
+    return content
+        .split('\n')
+        .filter(Boolean)
+        .map(item => decodeURIComponent(item));
 }

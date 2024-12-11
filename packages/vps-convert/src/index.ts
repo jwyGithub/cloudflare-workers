@@ -2,14 +2,18 @@ import { toServerError, toStream } from '@jiangweiye/worker-service';
 import { dump } from 'js-yaml';
 import { getConfuseUrl } from './confuse';
 import { getOriginConfig } from './confuse/restore';
+import { SERVICE_GET_SUB } from './constants';
 import { DEFAULT_CONFIG, showPage } from './page';
+import { Service } from './service/service';
+
+const service = new Service();
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         try {
             const { pathname, origin } = new URL(request.url);
             if (pathname === '/sub') {
-                const { confuseUrl, vpsMap } = getConfuseUrl(request.url, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
+                const { confuseUrl, vpsMap } = await getConfuseUrl(request.url, service, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
                 const response = await fetch(confuseUrl);
                 if (!response.ok) {
                     throw new Error(response.statusText);
@@ -23,6 +27,10 @@ export default {
                         'Cache-Control': 'no-store'
                     })
                 );
+            }
+
+            if (pathname === `/${SERVICE_GET_SUB}`) {
+                return toStream(service.getSub(), new Headers({ 'Content-Type': 'text/plain; charset=UTF-8' }));
             }
 
             return showPage({
