@@ -3,13 +3,18 @@ import { toClientError, toServerError, toStream } from '@jiangweiye/worker-servi
 import { dump } from 'js-yaml';
 import { getConfuseUrl } from './confuse';
 import { getOriginConfig } from './confuse/restore';
-import { SERVICE_GET_SUB } from './constants';
 import { DEFAULT_CONFIG, showPage } from './page';
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         try {
-            const { pathname, origin } = new URL(request.url);
+            const { pathname, origin, href } = new URL(request.url);
+
+            const cacheResponse = await caches.default.match(href);
+            if (cacheResponse) {
+                return cacheResponse;
+            }
+
             if (pathname === '/sub') {
                 const { confuseUrl, vpsMap } = await getConfuseUrl(request.url, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
                 const response = await fetchWithRetry(confuseUrl, { retries: 3 });
@@ -28,11 +33,6 @@ export default {
                         'Cache-Control': 'no-store'
                     })
                 );
-            }
-
-            if (pathname === `/${SERVICE_GET_SUB}`) {
-                const cacheResponse = await caches.default.match(`${origin}/${SERVICE_GET_SUB}`);
-                return cacheResponse || toServerError('Cache not found');
             }
 
             return showPage({
