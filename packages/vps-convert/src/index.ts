@@ -15,11 +15,14 @@ export default {
             const { pathname, origin } = new URL(request.url);
             if (pathname === '/sub') {
                 const { confuseUrl, vpsMap } = await getConfuseUrl(request.url, service, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
+                console.log(`confuseUrl: ${confuseUrl}`);
                 const response = await fetchWithRetry(confuseUrl, { retries: 3 });
                 if (!response.ok) {
                     throw new Error(response.statusText);
                 }
+                console.log(`confuseConfig: ${response.status} ${response.statusText}`);
                 const confuseConfig = await response.data.text();
+                console.log(`confuseConfig: ${confuseConfig}`);
                 const originConfig = getOriginConfig(confuseConfig, vpsMap);
                 return toStream(
                     dump(originConfig, { indent: 2, lineWidth: 200 }),
@@ -31,7 +34,9 @@ export default {
             }
 
             if (pathname === `/${SERVICE_GET_SUB}`) {
-                return toStream(service.getSub(), new Headers({ 'Content-Type': 'text/plain; charset=UTF-8' }));
+                return new Response(service.getSub(), {
+                    headers: new Headers({ 'Content-Type': 'text/plain; charset=UTF-8' })
+                });
             }
 
             return showPage({
