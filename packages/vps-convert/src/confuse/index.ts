@@ -68,7 +68,7 @@ export async function getConfuseUrl(
         headers: new Headers({ 'Content-Type': 'text/plain; charset=UTF-8' })
     });
 
-    caches.default.put(subPath, response);
+    await caches.default.put(subPath, response);
 
     searchParams.set('url', subPath);
 

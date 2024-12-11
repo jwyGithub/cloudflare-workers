@@ -20,7 +20,6 @@ export default {
                 if (!confuseConfig) {
                     return toClientError('confuseConfig is empty');
                 }
-
                 const originConfig = getOriginConfig(confuseConfig, vpsMap);
                 return toStream(
                     dump(originConfig, { indent: 2, lineWidth: 200 }),
@@ -33,9 +32,6 @@ export default {
 
             if (pathname === `/${SERVICE_GET_SUB}`) {
                 const cacheResponse = await caches.default.match(`${origin}/${SERVICE_GET_SUB}`);
-                if (!cacheResponse) {
-                    console.log('cache not found');
-                }
                 return cacheResponse || toServerError('Cache not found');
             }
 
