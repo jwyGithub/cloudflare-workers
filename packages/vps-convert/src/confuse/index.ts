@@ -1,5 +1,6 @@
 import type { Service } from '../service/service';
-import { base64Encode } from '@jiangweiye/worker-shared';
+import { fetchWithRetry } from '@jiangweiye/worker-fetch';
+import { base64Encode, tryUrlDecode } from '@jiangweiye/worker-shared';
 import { SERVICE_GET_SUB } from '../constants';
 import { SS } from '../parse/ss';
 import { Trojan } from '../parse/trojan';
@@ -35,7 +36,7 @@ async function getConfig(vps: string[]): Promise<{ urls: Set<string>; vpsMap: Ma
             }
 
             if (v.startsWith('https://')) {
-                const subContent = await fetch(v).then(r => r.text());
+                const subContent = await fetchWithRetry(tryUrlDecode(v), { retries: 3 }).then(r => r.data.text());
                 const subType = getSubType(subContent);
                 if (subType === 'base64') {
                     await _parse(processBase64(subContent));
