@@ -12,7 +12,6 @@ export default {
 
             const cacheResponse = await caches.default.match(href);
             if (cacheResponse) {
-                console.log('cacheResponse.ok', cacheResponse.ok, await cacheResponse.bytes());
                 return cacheResponse;
             }
 
@@ -23,6 +22,7 @@ export default {
                     throw new Error(response.statusText);
                 }
                 const confuseConfig = await response.data.text();
+
                 if (!confuseConfig) {
                     return toClientError('confuseConfig is empty');
                 }

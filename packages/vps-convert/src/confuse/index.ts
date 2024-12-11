@@ -75,11 +75,6 @@ export async function getConfuseUrl(
     const confuseUrl = new URL(`${backend}/sub`);
     confuseUrl.search = searchParams.toString();
 
-    const cache = await caches.default.match(subPath);
-    if (cache) {
-        console.log(await cache.bytes());
-    }
-
     return {
         confuseUrl: confuseUrl.toString(),
         vpsMap
