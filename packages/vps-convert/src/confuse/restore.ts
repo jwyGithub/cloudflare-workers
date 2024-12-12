@@ -1,7 +1,7 @@
-import type { SS } from '../parse/ss';
-import type { Trojan } from '../parse/trojan';
-import type { Vless } from '../parse/vless';
-import type { Vmess } from '../parse/vmess';
+import type { SS } from '../parser/ss';
+import type { Trojan } from '../parser/trojan';
+import type { Vless } from '../parser/vless';
+import type { Vmess } from '../parser/vmess';
 import type { Clash } from '../types/Clash';
 import { load } from 'js-yaml';
 import { PsUtil } from '../shared';

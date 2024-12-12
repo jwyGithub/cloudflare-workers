@@ -1,23 +1,33 @@
+import type { VpsMap } from './types';
 import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { toClientError, toServerError, toStream } from '@jiangweiye/worker-service';
 import { dump } from 'js-yaml';
-import { getConfuseUrl } from './confuse';
+import { getConvertUrl } from './confuse';
 import { getOriginConfig } from './confuse/restore';
 import { DEFAULT_CONFIG, showPage } from './page';
+import { parseContent } from './parser/parser';
+
+let _vpsMap: VpsMap = new Map();
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         try {
-            const { pathname, origin, href } = new URL(request.url);
-
-            const cacheResponse = await caches.default.match(href);
-            if (cacheResponse) {
-                return cacheResponse;
+            const { pathname, origin } = new URL(request.url);
+            if (pathname === '/getSub') {
+                console.info('request.url', request.url);
+                const { base64, vpsMap } = await parseContent(request.url);
+                _vpsMap = vpsMap;
+                return new Response(base64, {
+                    headers: new Headers({
+                        'Content-Type': 'text/plain; charset=UTF-8',
+                        'Cache-Control': 'no-store'
+                    })
+                });
             }
-
             if (pathname === '/sub') {
-                const { confuseUrl, vpsMap } = await getConfuseUrl(request.url, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
-                const response = await fetchWithRetry(confuseUrl, { retries: 3 });
+                // 转换base64格式订阅链接
+                const convertUrl = getConvertUrl(request.url, env.BACKEND ?? DEFAULT_CONFIG.BACKEND);
+                const response = await fetchWithRetry(convertUrl, { retries: 3 });
                 if (!response.ok) {
                     throw new Error(response.statusText);
                 }
@@ -26,7 +36,11 @@ export default {
                 if (!confuseConfig) {
                     return toClientError('confuseConfig is empty');
                 }
-                const originConfig = getOriginConfig(confuseConfig, vpsMap);
+
+                console.info(`confuseConfig: ${confuseConfig.length}`);
+                console.info(`vpsMap: ${_vpsMap.size}`);
+                const originConfig = getOriginConfig(confuseConfig, _vpsMap);
+
                 return toStream(
                     dump(originConfig, { indent: 2, lineWidth: 200 }),
                     new Headers({
