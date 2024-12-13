@@ -35,8 +35,7 @@ async function getConfig(vps: string[]): Promise<{ urls: Set<string>; vpsMap: Vp
                 vpsMap.set(ss.confusePs, ss);
             }
 
-            if (v.startsWith('http://')) {
-                console.log(`parse https`, v);
+            if (v.startsWith('https://') || v.startsWith('http://')) {
                 const subContent = await fetchWithRetry(v, { retries: 3 }).then(r => r.data.text());
                 const subType = getSubType(subContent);
                 if (subType === 'base64') {
