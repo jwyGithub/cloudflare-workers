@@ -6,6 +6,7 @@ interface Env {
     LOCK_BACKEND?: boolean;
     REMOTE_CONFIG?: string;
     PAGE_URL?: string;
+    CHUNK_COUNT?: string;
 }
 
 declare module '*.html' {

@@ -1,3 +1,4 @@
+import type { Clash } from '../types/Clash';
 import type { SubType } from '../types/Sub';
 import { base64Decode } from '@jiangweiye/worker-shared';
 import { load } from 'js-yaml';
@@ -174,4 +175,97 @@ export function processBase64(subs: string): string[] {
         .split('\n')
         .filter(Boolean)
         .map(item => decodeURIComponent(item));
+}
+
+/**
+ * @description 分组URL
+ * @param {string[]} urls
+ * @param {number} chunkCount
+ * @returns {string[]} urlGroup
+ */
+export function getUrlGroup(urls: string[], chunkCount: number = 10): string[] {
+    const urlGroup: string[] = [];
+    let urlChunk: string[] = [];
+    urls.forEach((url, index) => {
+        urlChunk.push(url);
+        if ((index + 1) % chunkCount === 0) {
+            urlGroup.push(urlChunk.join('|'));
+            urlChunk = [];
+        }
+    });
+    if (urlChunk.length > 0) {
+        urlGroup.push(urlChunk.join('|'));
+    }
+    return urlGroup;
+}
+
+export function groupByName(proxyGroups: Clash['proxy-groups'] = []): Clash['proxy-groups'] {
+    const _proxyGroups: Clash['proxy-groups'] = [];
+
+    function hasName(name: string): boolean {
+        return _proxyGroups.findIndex(item => item.name === name) !== -1;
+    }
+
+    for (const item of proxyGroups) {
+        const { name, proxies } = item;
+        // 如果已经存在name
+        if (hasName(name)) {
+            const item = _proxyGroups.find(item => item.name === name);
+            if (item) {
+                item.proxies = [...new Set([...(item.proxies ?? []), ...(proxies ?? [])])];
+            }
+        } else {
+            _proxyGroups.push(item);
+        }
+    }
+
+    return _proxyGroups;
+}
+
+export function processClashVPSName(
+    proxies: Clash['proxies'] = [],
+    proxiesGroups: Clash['proxy-groups'] = []
+): [Clash['proxies'], Clash['proxy-groups']] {
+    const nameCount = {};
+    const uuidToNewName = {};
+
+    // 1. 统计每个开头名称的出现次数
+    proxies.forEach(proxy => {
+        const [origin, uuid] = PsUtil.getPs(proxy.name);
+        if (origin) {
+            nameCount[origin] = (nameCount[origin] || 0) + 1;
+            uuidToNewName[uuid] = proxy.name; // 记录原始完整名称
+        }
+    });
+
+    // 2. 为有重复名称的节点重命名
+    const renamedProxies = proxies.map(proxy => {
+        const [origin, uuid] = PsUtil.getPs(proxy.name);
+        if (nameCount[origin] > 1) {
+            const newIndex = nameCount[origin];
+            nameCount[origin] -= 1; // 减少计数
+            const newName = PsUtil.setPs(`${origin} ${newIndex}`, uuid);
+            uuidToNewName[uuid] = newName; // 更新为新名称
+            proxy.name = newName;
+            return proxy; // 重命名
+        }
+        return proxy; // 保持原样
+    });
+
+    // 3. 更新 proxiesGroups 中的 proxies，保持不重复的名称
+    const renamedProxiesGroups = proxiesGroups.map(group => {
+        return {
+            ...group,
+            proxies: group.proxies?.map(proxyName => {
+                const [_, uuid] = PsUtil.getPs(proxyName);
+                // 如果在 uuidToNewName 中存在，返回新名称，否则返回原名称
+                if (uuid && uuidToNewName[uuid]) {
+                    return uuidToNewName[uuid]; // 使用新名称
+                }
+                return proxyName; // 保持原样
+            })
+        };
+    });
+
+    return [renamedProxies, renamedProxiesGroups];
 }
