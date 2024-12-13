@@ -1926,8 +1926,7 @@ async function Do(e) {
         const t = new Io(l);
         n.add(t.confuseLink), r.set(t.confusePs, t);
       }
-      if (l.startsWith("http://")) {
-        console.log("parse https", l);
+      if (l.startsWith("https://") || l.startsWith("http://")) {
         const t = await In(l, { retries: 3 }).then((c) => c.data.text());
         bo(t) === "base64" && await i(So(t));
       }
