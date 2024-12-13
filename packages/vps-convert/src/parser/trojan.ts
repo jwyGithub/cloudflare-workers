@@ -38,7 +38,6 @@ export class Trojan extends Store<URL> {
         proxy.server = this.originConfig.hostname ?? '';
         proxy.port = Number(this.originConfig.port ?? 0);
         proxy.password = this.originConfig?.username ?? '';
-        proxy.sni = this.originConfig?.hostname ?? '';
         return proxy;
     }
 
