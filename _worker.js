@@ -1801,8 +1801,8 @@ class No extends Te {
     L(this, K, Mn).call(this, r);
   }
   restore(r, i) {
-    var o, l;
-    return r.name = i, r.server = this.originConfig.hostname ?? "", r.port = Number(this.originConfig.port ?? 0), r.password = ((o = this.originConfig) == null ? void 0 : o.username) ?? "", r.sni = ((l = this.originConfig) == null ? void 0 : l.hostname) ?? "", r;
+    var o;
+    return r.name = i, r.server = this.originConfig.hostname ?? "", r.port = Number(this.originConfig.port ?? 0), r.password = ((o = this.originConfig) == null ? void 0 : o.username) ?? "", r;
   }
   get confuseLink() {
     return m(this, de);
