@@ -1,7 +1,7 @@
-import { toServerError, toStream } from '@jiangweiye/worker-service';
+import { toClientError, toServerError, toStream } from '@jiangweiye/worker-service';
 import { dump } from 'js-yaml';
-import { getConfuseConfig, getConfuseUrl } from './confuse';
-import { getOriginConfig } from './confuse/restore';
+import { Confuse, Convert } from './convert';
+import { originClash } from './convert/Origin';
 import { DEFAULT_CONFIG, showPage } from './page';
 
 export default {
@@ -9,21 +9,33 @@ export default {
         try {
             const { pathname, origin } = new URL(request.url);
             if (pathname === '/sub') {
-                const { confuseUrls, vpsMap } = await getConfuseUrl(
+                const { vpsMap } = await Confuse.getConfuseUrl(
                     request.url,
                     env.BACKEND ?? DEFAULT_CONFIG.BACKEND,
                     env.CHUNK_COUNT ?? DEFAULT_CONFIG.CHUNK_COUNT
                 );
-                const confuseConfig = await getConfuseConfig(confuseUrls);
 
-                const originConfig = getOriginConfig(dump(confuseConfig), vpsMap);
-                return toStream(
-                    dump(originConfig, { indent: 2, lineWidth: 200 }),
-                    new Headers({
-                        'Content-Type': 'text/yaml; charset=UTF-8',
-                        'Cache-Control': 'no-store'
-                    })
-                );
+                const convertType = Convert.getConvertType(request.url);
+
+                // 如果客户端类型不支持
+                if (!convertType) {
+                    return toClientError('Unsupported client type');
+                }
+
+                // 如果客户端类型是Clash
+                if (['clash', 'clashr'].includes(convertType)) {
+                    const confuseConfig = await Confuse.getClashConfuseConfig();
+                    const originConfig = originClash.getOriginConfig(confuseConfig, vpsMap);
+                    return toStream(
+                        dump(originConfig, { indent: 2, lineWidth: 200 }),
+                        new Headers({
+                            'Content-Type': 'text/yaml; charset=UTF-8',
+                            'Cache-Control': 'no-store'
+                        })
+                    );
+                }
+
+                return toClientError('Unsupported client type, support list: clash, clashr');
             }
 
             return showPage({
