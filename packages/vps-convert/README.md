@@ -15,6 +15,12 @@
     - [ ] [yml]()
     - [ ] [json]()
 
+## 支持转换的客户端
+
+- [x] [clash](clash)
+- [x] [clashr](clash)
+- [x] [singbox](v2ray)
+
 ## 环境变量配置
 
 | 变量KEY       | 说明                     | 默认值            | 是否必填 |

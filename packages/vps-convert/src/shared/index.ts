@@ -163,6 +163,11 @@ export class PsUtil {
     static isConfigType(name: string): boolean {
         return name.includes(this.#LINK_KEY);
     }
+
+    // 清除缓存
+    static clearCache(): void {
+        this.#PREFIX_CACHE.clear();
+    }
 }
 
 /**

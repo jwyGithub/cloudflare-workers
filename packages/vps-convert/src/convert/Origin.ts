@@ -90,8 +90,6 @@ class OriginSingbox {
                 result.push(outbound);
             }
 
-            console.log('result', result);
-
             return result;
         } catch (error: any) {
             throw new Error(`Restore outbounds failed: ${error.message || error}, function trace: ${error.stack}`);
