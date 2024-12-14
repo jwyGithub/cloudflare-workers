@@ -1,12 +1,12 @@
-import type { Clash } from '../types/Clash';
+import type { ClashType } from '../types';
 import { load } from 'js-yaml';
 import { PsUtil } from '../shared';
 
 export class ClashClient {
-    #clashConfig: Clash;
+    #clashConfig: ClashType;
 
     constructor(configs: string[] = []) {
-        const clashConfigs = configs.map(config => load(config) as Clash);
+        const clashConfigs = configs.map(config => load(config) as ClashType);
         this.#clashConfig = clashConfigs.at(-1)!;
         const mergeConfig = this.#mergeClashConfig(clashConfigs);
         this.#clashConfig.proxies = mergeConfig.proxies;
@@ -15,11 +15,11 @@ export class ClashClient {
 
     /**
      * @description 合并配置
-     * @param {Clash[]} configs
-     * @returns {Clash} mergedConfig
+     * @param {ClashType[]} configs
+     * @returns {ClashType} mergedConfig
      */
-    #mergeClashConfig(configs: Clash[] = []): Clash {
-        const mergedConfig: Clash = {
+    #mergeClashConfig(configs: ClashType[] = []): ClashType {
+        const mergedConfig: ClashType = {
             proxies: [],
             'proxy-groups': []
         };
@@ -101,7 +101,7 @@ export class ClashClient {
         return mergedConfig;
     }
 
-    get clashConfig(): Clash {
+    get clashConfig(): ClashType {
         return this.#clashConfig;
     }
 }

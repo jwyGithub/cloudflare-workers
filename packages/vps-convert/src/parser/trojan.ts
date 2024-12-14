@@ -33,12 +33,20 @@ export class Trojan extends Store<URL> {
         this.#confuseLink = `trojan://${password}@${hostname}:${port}${search}${hash}`;
     }
 
-    restore(proxy: Record<string, string | number>, ps: string): Record<string, string | number> {
+    restoreClash(proxy: Record<string, string | number>, ps: string): Record<string, string | number> {
         proxy.name = ps;
         proxy.server = this.originConfig.hostname ?? '';
         proxy.port = Number(this.originConfig.port ?? 0);
         proxy.password = this.originConfig?.username ?? '';
         return proxy;
+    }
+
+    restoreSingbox(outbound: Record<string, string | number>, ps: string): Record<string, string | number> {
+        outbound.password = this.originConfig?.username ?? '';
+        outbound.server = this.originConfig.hostname ?? '';
+        outbound.server_port = Number(this.originConfig.port ?? 0);
+        outbound.tag = ps;
+        return outbound;
     }
 
     get confuseLink(): string {

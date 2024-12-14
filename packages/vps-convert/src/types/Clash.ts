@@ -1,4 +1,4 @@
-export interface Clash {
+export interface ClashType {
     proxies: Array<Record<string, string>>;
     'proxy-groups': Array<{
         name: string;

@@ -1,15 +1,15 @@
 import type { SS, Trojan, Vless, Vmess } from '../parser';
-import type { Clash, VpsMap } from '../types';
+import type { ClashType, SingboxOutboundType, SingboxType, VpsMap } from '../types';
 import { PsUtil } from '../shared';
 
 export class OriginClash {
     /**
      * @description 获取原始配置
-     * @param {Clash} confuseConfig
+     * @param {ClashType} confuseConfig
      * @param {VpsMap} vpsMap
-     * @returns {Clash} originConfig
+     * @returns {ClashType} originConfig
      */
-    getOriginConfig(confuseConfig: Clash, vpsMap: VpsMap): Clash {
+    getOriginConfig(confuseConfig: ClashType, vpsMap: VpsMap): ClashType {
         try {
             confuseConfig.proxies = this.#restoreProxies(confuseConfig.proxies, vpsMap);
             confuseConfig['proxy-groups'] = confuseConfig['proxy-groups'].map(group => {
@@ -35,7 +35,7 @@ export class OriginClash {
                 const [originPs, confusePs] = PsUtil.getPs(proxy.name);
                 if (vpsMap.has(confusePs)) {
                     const vps = vpsMap.get(confusePs);
-                    vps?.restore(proxy, originPs);
+                    vps?.restoreClash(proxy, originPs);
                     result.push(proxy);
                 }
             }
@@ -58,7 +58,64 @@ export class OriginClash {
     }
 }
 
-class OriginSingbox {}
+class OriginSingbox {
+    /**
+     * @description 获取原始配置
+     * @param {SingboxType} confuseConfig
+     * @param {VpsMap} vpsMap
+     * @returns {SingboxType} originConfig
+     */
+    getOriginConfig(confuseConfig: SingboxType, vpsMap: VpsMap): SingboxType {
+        try {
+            confuseConfig.outbounds = this.#restoreOutbounds(confuseConfig.outbounds, vpsMap);
+            return confuseConfig;
+        } catch (error: any) {
+            throw new Error(`Get origin config failed: ${error.message || error}, function trace: ${error.stack}`);
+        }
+    }
+
+    #restoreOutbounds(outbounds: SingboxType['outbounds'] = [], vpsMap: VpsMap): SingboxType['outbounds'] {
+        try {
+            const result: SingboxType['outbounds'] = [];
+            for (const outbound of outbounds) {
+                if (this.#isConfuseVps(outbound.tag)) {
+                    const [originPs, confusePs] = PsUtil.getPs(outbound.tag);
+                    const vps = vpsMap.get(confusePs);
+                    vps?.restoreSingbox(outbound, originPs);
+                }
+
+                if (Reflect.has(outbound, 'outbounds')) {
+                    outbound.outbounds = this.#updateOutbouns(outbound.outbounds);
+                }
+                result.push(outbound);
+            }
+
+            console.log('result', result);
+
+            return result;
+        } catch (error: any) {
+            throw new Error(`Restore outbounds failed: ${error.message || error}, function trace: ${error.stack}`);
+        }
+    }
+
+    #updateOutbouns(outbounds: string[] | undefined = []): string[] {
+        try {
+            return outbounds.map(outbound => {
+                if (this.#isConfuseVps(outbound)) {
+                    const [originPs] = PsUtil.getPs(outbound);
+                    return originPs;
+                }
+                return outbound;
+            });
+        } catch (error: any) {
+            throw new Error(`Update outbounds failed: ${error.message || error}, function trace: ${error.stack}`);
+        }
+    }
+
+    #isConfuseVps(tag: SingboxOutboundType['tag']): boolean {
+        return PsUtil.isConfigType(tag);
+    }
+}
 
 export const originClash = new OriginClash();
 export const originSingbox = new OriginSingbox();

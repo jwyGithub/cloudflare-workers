@@ -53,13 +53,21 @@ export class SS extends Store<URL> {
         this.#confuseLink = `ss://${username}@${hostname}:${port}${search ?? ''}${hash}`;
     }
 
-    restore(proxy: Record<string, string | number>, ps: string): Record<string, string | number> {
+    restoreClash(proxy: Record<string, string | number>, ps: string): Record<string, string | number> {
         proxy.name = ps;
         proxy.server = this.originConfig.hostname ?? '';
         proxy.port = Number(this.originConfig?.port ?? 0);
         proxy.cipher = this.#parseConfig.originEncryptionProtocol!;
         proxy.password = this.#parseConfig.originPassword!;
         return proxy;
+    }
+
+    restoreSingbox(outbound: Record<string, string | number>, ps: string): Record<string, string | number> {
+        outbound.password = this.#parseConfig.originPassword!;
+        outbound.server = this.originConfig.hostname ?? '';
+        outbound.server_port = Number(this.originConfig.port ?? 0);
+        outbound.tag = ps;
+        return outbound;
     }
 
     get confuseLink(): string {

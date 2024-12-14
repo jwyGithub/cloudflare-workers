@@ -64,13 +64,24 @@ export class Vmess extends Store<VMessConfig> {
         }
     }
 
-    restore(proxy: Record<string, string | number>, ps: string): Record<string, string | number> {
+    restoreClash(proxy: Record<string, string | number>, ps: string): Record<string, string | number> {
         this.#restoreWs(proxy);
         proxy.name = ps;
         proxy.server = this.originConfig.add ?? '';
         proxy.port = Number(this.originConfig?.port ?? 0);
         proxy.uuid = this.originConfig?.id ?? '';
         return proxy;
+    }
+
+    restoreSingbox(outbound: Record<string, any>, ps: string): Record<string, string | number> {
+        outbound.server = this.originConfig.add ?? '';
+        outbound.server_port = Number(this.originConfig.port ?? 0);
+        outbound.tag = ps;
+        if (outbound.tls?.server_name) {
+            outbound.tls.server_name = this.originConfig.add ?? '';
+        }
+        outbound.uuid = this.originConfig?.id ?? '';
+        return outbound;
     }
 
     get confuseLink(): string {

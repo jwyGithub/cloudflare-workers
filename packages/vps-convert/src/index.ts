@@ -1,7 +1,7 @@
 import { toClientError, toServerError, toStream } from '@jiangweiye/worker-service';
 import { dump } from 'js-yaml';
 import { Confuse, Convert } from './convert';
-import { originClash } from './convert/Origin';
+import { originClash, originSingbox } from './convert/Origin';
 import { DEFAULT_CONFIG, showPage } from './page';
 
 export default {
@@ -30,6 +30,19 @@ export default {
                         dump(originConfig, { indent: 2, lineWidth: 200 }),
                         new Headers({
                             'Content-Type': 'text/yaml; charset=UTF-8',
+                            'Cache-Control': 'no-store'
+                        })
+                    );
+                }
+
+                // 如果是客户端类型是singbox
+                if (convertType === 'singbox') {
+                    const confuseConfig = await Confuse.getSingboxConfuseConfig();
+                    const originConfig = originSingbox.getOriginConfig(confuseConfig, vpsMap);
+                    return toStream(
+                        JSON.stringify(originConfig),
+                        new Headers({
+                            'Content-Type': 'text/plain; charset=UTF-8',
                             'Cache-Control': 'no-store'
                         })
                     );

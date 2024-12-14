@@ -1,6 +1,7 @@
-import type { Clash, Singbox, VpsMap } from '../types';
+import type { ClashType, SingboxType, VpsMap } from '../types';
 import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { ClashClient } from '../client/Clash';
+import { Singbox } from '../client/Singbox';
 import { parseVps } from '../parser';
 import { getUrlGroup } from '../shared';
 
@@ -45,7 +46,7 @@ export class Confuse {
      * @description 获取Clash混淆配置
      * @returns {Promise<Clash>} clashConfig
      */
-    static async getClashConfuseConfig(): Promise<Clash> {
+    static async getClashConfuseConfig(): Promise<ClashType> {
         try {
             const result = await Promise.all(Confuse.#confuseUrls.map(url => fetchWithRetry(url, { retries: 3 }).then(r => r.data.text())));
             const clashClient = new ClashClient(result);
@@ -59,11 +60,13 @@ export class Confuse {
      * @description 获取Singbox混淆配置
      * @returns {Promise<Singbox>} Singbox
      */
-    static async getSingboxConfuseConfig(): Promise<Singbox> {
+    static async getSingboxConfuseConfig(): Promise<SingboxType> {
         try {
-            const result = await Promise.all(Confuse.#confuseUrls.map(url => fetchWithRetry(url, { retries: 3 }).then(r => r.data.text())));
-            const clashClient = new ClashClient(result);
-            return clashClient.clashConfig;
+            const result = await Promise.all(
+                Confuse.#confuseUrls.map(url => fetchWithRetry(url, { retries: 3 }).then(r => r.data.json())) as SingboxType[]
+            );
+            const singboxClient = new Singbox(result);
+            return singboxClient.singboxConfig;
         } catch (error: any) {
             throw new Error(error.message || error);
         }
