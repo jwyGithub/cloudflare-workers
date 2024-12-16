@@ -1998,32 +1998,32 @@ Ae = new WeakMap(), be = new WeakMap(), B = new WeakSet(), er = function(r) {
   });
 };
 async function Jo(e) {
-  const n = /* @__PURE__ */ new Set(), r = /* @__PURE__ */ new Map();
-  async function i(o) {
-    for await (const l of o) {
-      if (l.startsWith("vless:")) {
-        const t = new Qo(l);
-        n.add(t.confuseLink), r.set(t.confusePs, t);
+  const n = /* @__PURE__ */ new Set(), r = /* @__PURE__ */ new Map(), i = /* @__PURE__ */ new Set();
+  async function o(l) {
+    for await (const t of l) {
+      if (t.startsWith("vless:")) {
+        const u = new Qo(t);
+        n.add(u.confuseLink), i.add(t), r.set(u.confusePs, u);
       }
-      if (l.startsWith("vmess:")) {
-        const t = new Xo(l);
-        n.add(t.confuseLink), r.set(t.confusePs, t);
+      if (t.startsWith("vmess:")) {
+        const u = new Xo(t);
+        n.add(u.confuseLink), i.add(t), r.set(u.confusePs, u);
       }
-      if (l.startsWith("trojan://")) {
-        const t = new Vo(l);
-        n.add(t.confuseLink), r.set(t.confusePs, t);
+      if (t.startsWith("trojan://")) {
+        const u = new Vo(t);
+        n.add(u.confuseLink), i.add(t), r.set(u.confusePs, u);
       }
-      if (l.startsWith("ss://")) {
-        const t = new Wo(l);
-        n.add(t.confuseLink), r.set(t.confusePs, t);
+      if (t.startsWith("ss://")) {
+        const u = new Wo(t);
+        n.add(u.confuseLink), i.add(t), r.set(u.confusePs, u);
       }
-      if (l.startsWith("https://") || l.startsWith("http://")) {
-        const t = await Ge(l, { retries: 3 }).then((s) => s.data.text());
-        Ko(t) === "base64" && await i(Gn(ur.base64(t)));
+      if (t.startsWith("https://") || t.startsWith("http://")) {
+        const u = await Ge(t, { retries: 3 }).then((c) => c.data.text());
+        Ko(u) === "base64" && await o(Gn([...Array.from(i), ...ur.base64(u)]));
       }
     }
   }
-  return await i(e), { urls: n, vpsMap: r };
+  return await o(e), { urls: n, vpsMap: r };
 }
 var V;
 const W = class W {
