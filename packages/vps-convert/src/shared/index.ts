@@ -223,39 +223,42 @@ export function getUrlGroup(urls: string[], chunkCount: number = 10): string[] {
  * @returns {string[]} vps
  */
 export function processVps(vps: string[], existedVps: string[] = []): string[] {
-    // 使用 Set 存储已存在的 VPS，提高查找效率
+    const suffixCache = new WeakMap();
     const existedSet = new Set(existedVps);
 
-    // 使用 Map 存储每个后缀的最大计数
+    const suffixKey = {};
     const suffixMaxCount = new Map();
 
-    // 一次遍历处理已存在的 VPS 计数
     existedVps.forEach(item => {
         const [, suffixPart] = item.split('#');
         const [suffix, countStr] = suffixPart.split(' ');
-        const count = countStr ? Number.parseInt(countStr) : 0;
+        const count = countStr ? Number.parseInt(countStr) >>> 0 : 0;
 
         const currentMax = suffixMaxCount.get(suffix) || 0;
-        suffixMaxCount.set(suffix, Math.max(currentMax, count + 1));
+        suffixMaxCount.set(suffix, currentMax | (count + 1));
     });
 
-    // 处理新的 VPS 列表
     return vps.map(item => {
         const [name, suffix] = item.split('#');
-        let count = suffixMaxCount.get(suffix) || 0;
 
-        // 构建新项
+        if (!suffixCache.has(suffixKey)) {
+            suffixCache.set(suffixKey, new Map());
+        }
+        const cache = suffixCache.get(suffixKey);
+
+        let count = suffixMaxCount.get(suffix) || 0;
         let processedItem = count === 0 ? item : `${name}#${suffix} ${count}`;
 
-        // 如果存在重复，直接使用下一个可用的计数
-        if (existedSet.has(processedItem)) {
+        // 使用缓存检查是否存在重复
+        const cacheKey = `${suffix}_${count}`;
+        if (!cache.has(cacheKey) && existedSet.has(processedItem)) {
             while (existedSet.has(processedItem)) {
-                count++;
+                count = (count + 1) >>> 0; // 使用位运算确保是正整数
                 processedItem = `${name}#${suffix} ${count}`;
             }
+            cache.set(cacheKey, count);
         }
 
-        // 更新最大计数
         suffixMaxCount.set(suffix, count + 1);
         return processedItem;
     });
