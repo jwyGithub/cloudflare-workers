@@ -20,27 +20,32 @@ export * from './vmess';
 export async function parseVps(vps: string[]): Promise<{ urls: Set<string>; vpsMap: VpsMap }> {
     const urls = new Set<string>();
     const vpsMap = new Map<string, Vless | Vmess | Trojan | SS>();
+    const originUrls = new Set<string>();
 
     async function _parse(vps: string[]): Promise<void> {
         for await (const v of vps) {
             if (v.startsWith('vless:')) {
                 const vless = new Vless(v);
                 urls.add(vless.confuseLink);
+                originUrls.add(v);
                 vpsMap.set(vless.confusePs, vless);
             }
             if (v.startsWith('vmess:')) {
                 const vmess = new Vmess(v);
                 urls.add(vmess.confuseLink);
+                originUrls.add(v);
                 vpsMap.set(vmess.confusePs, vmess);
             }
             if (v.startsWith('trojan://')) {
                 const trojan = new Trojan(v);
                 urls.add(trojan.confuseLink);
+                originUrls.add(v);
                 vpsMap.set(trojan.confusePs, trojan);
             }
             if (v.startsWith('ss://')) {
                 const ss = new SS(v);
                 urls.add(ss.confuseLink);
+                originUrls.add(v);
                 vpsMap.set(ss.confusePs, ss);
             }
 
@@ -48,7 +53,7 @@ export async function parseVps(vps: string[]): Promise<{ urls: Set<string>; vpsM
                 const subContent = await fetchWithRetry(v, { retries: 3 }).then(r => r.data.text());
                 const subType = getSubType(subContent);
                 if (subType === 'base64') {
-                    await _parse(processVps(Convert.base64(subContent)));
+                    await _parse(processVps([...Array.from(originUrls), ...Convert.base64(subContent)]));
                 }
             }
         }
