@@ -1,16 +1,13 @@
 import type { ClashType } from '../types';
 import { load } from 'js-yaml';
-import { PsUtil } from '../shared';
 
 export class ClashClient {
     #clashConfig: ClashType;
 
     constructor(configs: string[] = []) {
         const clashConfigs = configs.map(config => load(config) as ClashType);
-        this.#clashConfig = clashConfigs.at(-1)!;
         const mergeConfig = this.#mergeClashConfig(clashConfigs);
-        this.#clashConfig.proxies = mergeConfig.proxies;
-        this.#clashConfig['proxy-groups'] = mergeConfig['proxy-groups'];
+        this.#clashConfig = mergeConfig;
     }
 
     /**
@@ -19,79 +16,74 @@ export class ClashClient {
      * @returns {ClashType} mergedConfig
      */
     #mergeClashConfig(configs: ClashType[] = []): ClashType {
+        if (!configs.length) {
+            return {} as ClashType;
+        }
+
+        // 使用第一个配置作为基准
+        const baseConfig = structuredClone(configs[0]);
+
+        // 如果只有一个配置，直接返回
+        if (configs.length === 1) {
+            return baseConfig;
+        }
+
         const mergedConfig: ClashType = {
-            proxies: [],
-            'proxy-groups': []
+            ...baseConfig,
+            proxies: baseConfig.proxies || [],
+            'proxy-groups': baseConfig['proxy-groups'] || []
         };
 
-        const nameCountMap = Object.create(null);
-        const nameMapping = Object.create(null);
-
         // 预计算总代理数量
-        const totalProxies = configs.reduce((total, config) => total + config.proxies.length, 0);
+        const totalProxies = configs.reduce((total, config) => total + (config.proxies?.length || 0), 0);
 
-        // 使用TypedArray提高性能
+        // 使用 TypedArray 和 Set 提高性能
         const proxyIndices = new Int32Array(totalProxies);
-        let proxyIndex = 0;
+        const existingProxies = new Set(baseConfig.proxies?.map(p => p.name));
+        let proxyIndex = baseConfig.proxies?.length || 0;
+
+        // 使用 Map 存储代理组
+        const groupMap = new Map(mergedConfig['proxy-groups'].map(group => [group.name, group]));
 
         // 批量处理配置
-        for (const config of configs) {
-            const proxies = config.proxies;
-            const proxyGroups = config['proxy-groups'];
+        for (let i = 1; i < configs.length; i++) {
+            const config = configs[i];
 
             // 批量处理代理
-            for (let i = 0; i < proxies.length; i++) {
-                const proxy = proxies[i];
-                const [prefix, uuid] = PsUtil.getPs(proxy.name);
-
-                if (nameMapping[proxy.name]) {
-                    proxyIndices[proxyIndex++] = -1;
-                    continue;
+            if (config.proxies?.length) {
+                for (const proxy of config.proxies) {
+                    if (!existingProxies.has(proxy.name)) {
+                        mergedConfig.proxies[proxyIndex] = proxy;
+                        proxyIndices[proxyIndex] = proxyIndex;
+                        existingProxies.add(proxy.name);
+                        proxyIndex++;
+                    }
                 }
-
-                const count = nameCountMap[prefix] || 0;
-                nameCountMap[prefix] = count + 1;
-
-                const newName = count === 0 ? proxy.name : PsUtil.setPs(`${prefix} ${count + 1}`, uuid);
-
-                nameMapping[proxy.name] = newName;
-
-                const newProxy = {
-                    ...proxy,
-                    name: newName
-                };
-
-                mergedConfig.proxies[proxyIndex] = newProxy;
-                proxyIndices[proxyIndex] = proxyIndex;
-                proxyIndex++;
             }
 
-            if (!proxyGroups) continue;
+            // 批量处理代理组
+            if (config['proxy-groups']?.length) {
+                for (const group of config['proxy-groups']) {
+                    const existingGroup = groupMap.get(group.name);
 
-            // 使用 Set 优化代理组去重
-            const processedGroups = new Set();
+                    if (existingGroup) {
+                        // 使用 Set 优化代理列表去重
+                        const proxySet = new Set(existingGroup.proxies);
+                        for (const proxy of group.proxies || []) {
+                            proxySet.add(proxy);
+                        }
+                        existingGroup.proxies = Array.from(proxySet);
 
-            for (const group of proxyGroups) {
-                if (processedGroups.has(group.name)) continue;
-
-                const existingGroup = mergedConfig['proxy-groups'].find(g => g.name === group.name);
-
-                group.proxies = group.proxies || [];
-                if (existingGroup) {
-                    const proxySet = new Set(existingGroup.proxies);
-                    for (const p of group.proxies) {
-                        proxySet.add(nameMapping[p] || p);
+                        // 合并其他属性
+                        Object.assign(existingGroup, {
+                            ...group,
+                            proxies: existingGroup.proxies
+                        });
+                    } else {
+                        mergedConfig['proxy-groups'].push(group);
+                        groupMap.set(group.name, group);
                     }
-                    existingGroup.proxies = Array.from(proxySet);
-                } else {
-                    const newGroup = {
-                        ...group,
-                        proxies: group.proxies.map(p => nameMapping[p] || p)
-                    };
-                    mergedConfig['proxy-groups'].push(newGroup);
                 }
-
-                processedGroups.add(group.name);
             }
         }
 

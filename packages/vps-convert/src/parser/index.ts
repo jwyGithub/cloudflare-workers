@@ -1,7 +1,7 @@
 import type { VpsMap } from '../types';
 import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { Convert } from '../convert';
-import { getSubType } from '../shared';
+import { getSubType, processVps } from '../shared';
 import { SS } from './ss';
 import { Trojan } from './trojan';
 import { Vless } from './vless';
@@ -48,7 +48,7 @@ export async function parseVps(vps: string[]): Promise<{ urls: Set<string>; vpsM
                 const subContent = await fetchWithRetry(v, { retries: 3 }).then(r => r.data.text());
                 const subType = getSubType(subContent);
                 if (subType === 'base64') {
-                    await _parse(Convert.base64(subContent));
+                    await _parse(processVps(Convert.base64(subContent)));
                 }
             }
         }

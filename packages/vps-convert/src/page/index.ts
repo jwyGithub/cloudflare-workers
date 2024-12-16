@@ -32,8 +32,8 @@ function replaceDisabled(data: string, v: boolean): string {
 }
 
 export const DEFAULT_CONFIG: Required<Env> = {
-    PAGE_URL: `https://raw.githubusercontent.com/jwyGithub/subconverter-cloudflare/main/index.html`,
-    BACKEND: 'https://url.v1.mk',
+    PAGE_URL: `http://192.168.1.232:8081`,
+    BACKEND: 'http://0.0.0.0:8788',
     LOCK_BACKEND: false,
     REMOTE_CONFIG: '',
     CHUNK_COUNT: '20'

@@ -215,3 +215,26 @@ export function getUrlGroup(urls: string[], chunkCount: number = 10): string[] {
     }
     return urlGroup;
 }
+
+/**
+ * @description 处理vps备注，并分组
+ * @param vps
+ */
+export function processVps(vps: string[]): string[] {
+    const suffixCount = new Map<string, number>();
+    const result: string[] = [];
+
+    for (const item of vps) {
+        const [name, suffix] = item.split('#');
+
+        // 获取并更新后缀计数
+        const count = suffixCount.get(suffix) || 0;
+        suffixCount.set(suffix, count + 1);
+
+        // 处理当前项
+        const processedItem = count === 0 ? item : `${name}#${suffix} ${count}`;
+        result.push(processedItem);
+    }
+
+    return result;
+}

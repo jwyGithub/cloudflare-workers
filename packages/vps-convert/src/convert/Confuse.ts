@@ -3,7 +3,7 @@ import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { ClashClient } from '../client/Clash';
 import { Singbox } from '../client/Singbox';
 import { parseVps } from '../parser';
-import { getUrlGroup } from '../shared';
+import { getUrlGroup, processVps } from '../shared';
 
 export class Confuse {
     static #confuseUrls: string[];
@@ -27,7 +27,7 @@ export class Confuse {
 
         const vps = vpsUrl!.split(/\||\n/).filter(Boolean);
 
-        const { urls, vpsMap } = await parseVps(vps);
+        const { urls, vpsMap } = await parseVps(processVps(vps));
 
         const urlGroups = getUrlGroup(Array.from(urls), Number(chunkCount));
 
