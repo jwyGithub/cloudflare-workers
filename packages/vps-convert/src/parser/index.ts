@@ -53,7 +53,7 @@ export async function parseVps(vps: string[]): Promise<{ urls: Set<string>; vpsM
                 const subContent = await fetchWithRetry(v, { retries: 3 }).then(r => r.data.text());
                 const subType = getSubType(subContent);
                 if (subType === 'base64') {
-                    await _parse(processVps([...Array.from(originUrls), ...Convert.base64(subContent)]));
+                    await _parse(processVps(Convert.base64(subContent), Array.from(originUrls)));
                 }
             }
         }

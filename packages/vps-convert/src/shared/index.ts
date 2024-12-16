@@ -217,24 +217,46 @@ export function getUrlGroup(urls: string[], chunkCount: number = 10): string[] {
 }
 
 /**
- * @description 处理vps备注，并分组
- * @param vps
+ * @description 处理vps备注
+ * @param {string[]} vps
+ * @param {string[]} existedVps 已经存在的 vps
+ * @returns {string[]} vps
  */
-export function processVps(vps: string[]): string[] {
-    const suffixCount = new Map<string, number>();
-    const result: string[] = [];
+export function processVps(vps: string[], existedVps: string[] = []): string[] {
+    // 使用 Set 存储已存在的 VPS，提高查找效率
+    const existedSet = new Set(existedVps);
 
-    for (const item of vps) {
+    // 使用 Map 存储每个后缀的最大计数
+    const suffixMaxCount = new Map();
+
+    // 一次遍历处理已存在的 VPS 计数
+    existedVps.forEach(item => {
+        const [, suffixPart] = item.split('#');
+        const [suffix, countStr] = suffixPart.split(' ');
+        const count = countStr ? Number.parseInt(countStr) : 0;
+
+        const currentMax = suffixMaxCount.get(suffix) || 0;
+        suffixMaxCount.set(suffix, Math.max(currentMax, count + 1));
+    });
+
+    // 处理新的 VPS 列表
+    return vps.map(item => {
         const [name, suffix] = item.split('#');
+        let count = suffixMaxCount.get(suffix) || 0;
 
-        // 获取并更新后缀计数
-        const count = suffixCount.get(suffix) || 0;
-        suffixCount.set(suffix, count + 1);
+        // 构建新项
+        let processedItem = count === 0 ? item : `${name}#${suffix} ${count}`;
 
-        // 处理当前项
-        const processedItem = count === 0 ? item : `${name}#${suffix} ${count}`;
-        result.push(processedItem);
-    }
+        // 如果存在重复，直接使用下一个可用的计数
+        if (existedSet.has(processedItem)) {
+            while (existedSet.has(processedItem)) {
+                count++;
+                processedItem = `${name}#${suffix} ${count}`;
+            }
+        }
 
-    return result;
+        // 更新最大计数
+        suffixMaxCount.set(suffix, count + 1);
+        return processedItem;
+    });
 }
