@@ -1,11 +1,7 @@
-var I = Object.defineProperty;
-var M = (t) => {
-  throw TypeError(t);
-};
-var U = (t, e, s) => e in t ? I(t, e, { enumerable: !0, configurable: !0, writable: !0, value: s }) : t[e] = s;
-var m = (t, e, s) => U(t, typeof e != "symbol" ? e + "" : e, s), E = (t, e, s) => e.has(t) || M("Cannot " + s);
-var f = (t, e, s) => (E(t, e, "read from private field"), s ? s.call(t) : e.get(t)), C = (t, e, s) => e.has(t) ? M("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), y = (t, e, s, n) => (E(t, e, "write to private field"), n ? n.call(t, s) : e.set(t, s), s);
-const T = {
+var b = Object.defineProperty;
+var S = (e, t, s) => t in e ? b(e, t, { enumerable: !0, configurable: !0, writable: !0, value: s }) : e[t] = s;
+var f = (e, t, s) => S(e, typeof t != "symbol" ? t + "" : t, s);
+const m = {
   /** 默认不启用重试 */
   retries: 0,
   /** 默认重试间隔（毫秒） */
@@ -13,179 +9,151 @@ const T = {
   /** 默认需要重试的状态码 */
   retryOnStatusCodes: [500, 502, 503, 504]
 };
-async function j(t, e = T) {
+async function L(e, t = m) {
   const {
-    retries: s = T.retries,
-    retryDelay: n = T.retryDelay,
-    retryOnStatusCodes: r = T.retryOnStatusCodes,
-    onError: i,
-    ...u
-  } = e;
+    retries: s = m.retries,
+    retryDelay: n = m.retryDelay,
+    retryOnStatusCodes: r = m.retryOnStatusCodes,
+    onError: o,
+    ...c
+  } = t;
   let a = 0;
-  const c = async () => {
+  const u = async () => {
     a++;
     try {
-      let o, d;
-      t instanceof Request ? (d = t.url, o = new Request(t, u)) : (d = t.toString(), o = new Request(d, u));
-      const l = await fetch(o), p = {
-        status: l.status,
-        statusText: l.statusText,
-        headers: Object.fromEntries(l.headers.entries()),
-        data: await l.json(),
-        config: { url: d, ...u },
-        ok: l.ok
+      let i, d;
+      e instanceof Request ? (d = e.url, i = new Request(e, c)) : (d = e.toString(), i = new Request(d, c));
+      const p = await fetch(i), h = {
+        status: p.status,
+        statusText: p.statusText,
+        headers: Object.fromEntries(p.headers.entries()),
+        data: p,
+        config: { url: d, ...c },
+        ok: p.ok
       };
-      if (r.includes(p.status) && a <= s) {
-        if (i) {
-          const g = i(new Error(`请求失败，状态码 ${p.status}`), a);
+      if (r.includes(h.status) && a <= s) {
+        if (o) {
+          const g = o(new Error(`请求失败，状态码 ${h.status}`), a);
           g instanceof Promise && await g;
         }
-        return await new Promise((g) => setTimeout(g, n)), c();
+        return await new Promise((g) => setTimeout(g, n)), u();
       }
-      return p;
-    } catch (o) {
-      if (i) {
-        const d = i(o, a);
+      return h;
+    } catch (i) {
+      if (o) {
+        const d = o(i, a);
         d instanceof Promise && await d;
       }
       if (a <= s)
-        return await new Promise((d) => setTimeout(d, n)), c();
-      throw o;
+        return await new Promise((d) => setTimeout(d, n)), u();
+      throw i;
     }
   };
-  return c();
+  return u();
 }
-const q = "unauthorized", A = "internal server error", P = new Headers({
-  "Content-type": "application/json"
-}), O = new Headers({
-  "Content-type": "application/octet-stream"
-});
-new Headers({
-  "Content-type": "text/plain"
-});
-new Headers({
-  "Content-type": "text/html"
-});
-const H = (t, e = O) => new Response(t, {
-  status: 200,
-  headers: e
-}), W = (t = q, e = 401, s = P) => Response.json(
-  {
-    status: e,
-    message: t
-  },
-  {
-    status: e,
-    statusText: t,
-    headers: s
-  }
-), x = (t = A, e = 500, s = P) => Response.json(
-  {
-    status: e,
-    message: t
-  },
-  {
-    status: e,
-    statusText: t,
-    headers: s
-  }
-);
-class k {
+function M(e, t = ["*"]) {
+  const s = typeof e == "string" ? e : e.headers.get("x-real-ip") || e.headers.get("cf-connecting-ip") || e.headers.get("x-forwarded-for");
+  return !s || !t || t.length === 0 ? !1 : t.includes("*") ? !0 : t.map((n) => {
+    const r = n.replace(/\./g, "\\.").replace(/\*/g, "\\d+");
+    return new RegExp(`^${r}$`);
+  }).some((n) => n.test(s));
+}
+class E {
   constructor() {
-    m(this, "buffer");
+    f(this, "buffer");
     this.buffer = new Uint8Array(0);
   }
-  transform(e, s) {
-    const n = new Uint8Array(this.buffer.length + e.length);
-    n.set(this.buffer), n.set(e, this.buffer.length), this.buffer = n;
+  transform(t, s) {
+    const n = new Uint8Array(this.buffer.length + t.length);
+    n.set(this.buffer), n.set(t, this.buffer.length), this.buffer = n;
     let r = 0;
-    for (let i = 0; i < this.buffer.length; i++)
-      if (this.buffer[i] === 10) {
+    for (let o = 0; o < this.buffer.length; o++)
+      if (this.buffer[o] === 10) {
         try {
-          const u = this.buffer.slice(r, i), a = new TextDecoder().decode(u);
+          const c = this.buffer.slice(r, o), a = new TextDecoder().decode(c);
           if (a.trim()) {
-            const c = JSON.parse(a);
-            this.handleProgressData(c, s);
+            const u = JSON.parse(a);
+            this.handleProgressData(u, s);
           }
         } catch {
-          s.enqueue(this.buffer.slice(r, i)), s.enqueue(new Uint8Array([10]));
+          s.enqueue(this.buffer.slice(r, o)), s.enqueue(new Uint8Array([10]));
         }
-        r = i + 1;
+        r = o + 1;
       }
     r < this.buffer.length ? this.buffer = this.buffer.slice(r) : this.buffer = new Uint8Array(0);
   }
-  flush(e) {
+  flush(t) {
     if (this.buffer.length > 0)
       try {
         const s = new TextDecoder().decode(this.buffer);
         if (s.trim()) {
           const n = JSON.parse(s);
-          this.handleProgressData(n, e);
+          this.handleProgressData(n, t);
         }
       } catch {
-        this.buffer.length > 0 && (e.enqueue(this.buffer), e.enqueue(new Uint8Array([10])));
+        this.buffer.length > 0 && (t.enqueue(this.buffer), t.enqueue(new Uint8Array([10])));
       }
   }
-  handleProgressData(e, s) {
-    if (e.type === "progress") {
-      const n = this.formatProgressMessage(e);
+  handleProgressData(t, s) {
+    if (t.type === "progress") {
+      const n = this.formatProgressMessage(t);
       s.enqueue(new TextEncoder().encode(`${n}
 `));
-    } else if (e.type === "status") {
-      const n = this.formatStatusMessage(e);
+    } else if (t.type === "status") {
+      const n = this.formatStatusMessage(t);
       s.enqueue(new TextEncoder().encode(`${n}
 `));
-    } else if (e.type === "error") {
-      const n = this.formatErrorMessage(e);
+    } else if (t.type === "error") {
+      const n = this.formatErrorMessage(t);
       s.enqueue(new TextEncoder().encode(`${n}
 `));
     } else
-      s.enqueue(new TextEncoder().encode(`${JSON.stringify(e)}
+      s.enqueue(new TextEncoder().encode(`${JSON.stringify(t)}
 `));
   }
-  formatProgressMessage(e) {
-    if (!e.data) return "";
-    const { name: s, completed: n, total: r } = e.data, i = r > 0 ? Math.round(n / r * 100) : 0, u = 20, a = Math.round(i / 100 * u), c = u - a, o = `[${"=".repeat(a)}${" ".repeat(c)}]`;
-    return `${s} ${o} ${i}% (${n}/${r})`;
+  formatProgressMessage(t) {
+    if (!t.data) return "";
+    const { name: s, completed: n, total: r } = t.data, o = r > 0 ? Math.round(n / r * 100) : 0, c = 20, a = Math.round(o / 100 * c), u = c - a, i = `[${"=".repeat(a)}${" ".repeat(u)}]`;
+    return `${s} ${i} ${o}% (${n}/${r})`;
   }
-  formatStatusMessage(e) {
-    if (!e.data) return "";
-    const { status: s, name: n } = e.data;
+  formatStatusMessage(t) {
+    if (!t.data) return "";
+    const { status: s, name: n } = t.data;
     return `${s}: ${n}`;
   }
-  formatErrorMessage(e) {
-    return e.error ? `Error: ${e.error.message || "Unknown error"}` : "";
+  formatErrorMessage(t) {
+    return t.error ? `Error: ${t.error.message || "Unknown error"}` : "";
   }
 }
-async function b(t) {
-  var i;
-  const e = t.headers.get("content-type") || "";
-  if (!e.includes("text/") && !e.includes("application/json") && !e.includes("application/javascript"))
-    return t;
-  const s = new CompressionStream("gzip"), n = (i = t.body) == null ? void 0 : i.pipeThrough(s), r = new Headers(t.headers);
+async function y(e) {
+  var o;
+  const t = e.headers.get("content-type") || "";
+  if (!t.includes("text/") && !t.includes("application/json") && !t.includes("application/javascript"))
+    return e;
+  const s = new CompressionStream("gzip"), n = (o = e.body) == null ? void 0 : o.pipeThrough(s), r = new Headers(e.headers);
   return r.set("content-encoding", "gzip"), new Response(n, {
-    status: t.status,
-    statusText: t.statusText,
+    status: e.status,
+    statusText: e.statusText,
     headers: r
   });
 }
-async function z(t) {
-  if (t.headers.get("content-encoding") !== "gzip" || !t.body)
-    return t;
-  const s = new DecompressionStream("gzip"), n = t.body.pipeThrough(s), r = new Headers(t.headers);
-  return r.delete("content-encoding"), new Request(t.url, {
-    method: t.method,
+async function D(e) {
+  if (e.headers.get("content-encoding") !== "gzip" || !e.body)
+    return e;
+  const s = new DecompressionStream("gzip"), n = e.body.pipeThrough(s), r = new Headers(e.headers);
+  return r.delete("content-encoding"), new Request(e.url, {
+    method: e.method,
     headers: r,
     body: n,
-    redirect: t.redirect
+    redirect: e.redirect
   });
 }
-class N {
+class $ {
   constructor() {
-    m(this, "limits");
-    m(this, "usage");
-    m(this, "queues");
-    m(this, "lastCleanup");
+    f(this, "limits");
+    f(this, "usage");
+    f(this, "queues");
+    f(this, "lastCleanup");
     this.limits = /* @__PURE__ */ new Map(), this.usage = /* @__PURE__ */ new Map(), this.queues = /* @__PURE__ */ new Map(), this.lastCleanup = Date.now(), this.setDefaultLimits();
   }
   setDefaultLimits() {
@@ -218,58 +186,58 @@ class N {
       priority: 4
     });
   }
-  setLimit(e, s) {
-    this.limits.set(e, s);
+  setLimit(t, s) {
+    this.limits.set(t, s);
   }
   cleanup() {
-    const e = Date.now();
-    if (!(e - this.lastCleanup < 5 * 60 * 1e3)) {
-      this.lastCleanup = e;
+    const t = Date.now();
+    if (!(t - this.lastCleanup < 5 * 60 * 1e3)) {
+      this.lastCleanup = t;
       for (const [s, n] of this.queues.entries())
-        n.queue = n.queue.filter((r) => e - r.timestamp < 60 * 1e3), n.queue.length === 0 && n.processing === 0 && this.queues.delete(s);
+        n.queue = n.queue.filter((r) => t - r.timestamp < 60 * 1e3), n.queue.length === 0 && n.processing === 0 && this.queues.delete(s);
       for (const [s, n] of this.usage.entries())
         n === 0 && this.usage.delete(s);
     }
   }
-  async acquireToken(e, s, n) {
+  async acquireToken(t, s, n) {
     this.cleanup();
     const r = this.limits.get(s);
     if (!r) return !0;
-    const i = `${e}:${s}`, u = this.usage.get(i) || 0, a = this.getOrCreateQueue(i);
-    return u >= r.concurrent ? a.queue.length >= r.burstLimit ? !1 : new Promise((c) => {
+    const o = `${t}:${s}`, c = this.usage.get(o) || 0, a = this.getOrCreateQueue(o);
+    return c >= r.concurrent ? a.queue.length >= r.burstLimit ? !1 : new Promise((u) => {
       a.queue.push({
-        resolve: c,
+        resolve: u,
         priority: n || r.priority,
         timestamp: Date.now()
       }), this.sortQueue(a);
-    }) : (this.usage.set(i, u + 1), a.processing++, setTimeout(() => {
-      this.releaseToken(i);
+    }) : (this.usage.set(o, c + 1), a.processing++, setTimeout(() => {
+      this.releaseToken(o);
     }, r.windowMs), !0);
   }
-  getOrCreateQueue(e) {
-    let s = this.queues.get(e);
+  getOrCreateQueue(t) {
+    let s = this.queues.get(t);
     return s || (s = {
       queue: [],
       processing: 0
-    }, this.queues.set(e, s)), s;
+    }, this.queues.set(t, s)), s;
   }
-  sortQueue(e) {
-    e.queue.sort((s, n) => s.priority !== n.priority ? s.priority - n.priority : s.timestamp - n.timestamp);
+  sortQueue(t) {
+    t.queue.sort((s, n) => s.priority !== n.priority ? s.priority - n.priority : s.timestamp - n.timestamp);
   }
-  releaseToken(e) {
-    const s = this.queues.get(e);
+  releaseToken(t) {
+    const s = this.queues.get(t);
     if (!s) return;
     s.processing--;
-    const n = this.usage.get(e) || 0;
-    if (n > 0 && this.usage.set(e, n - 1), s.queue.length > 0 && s.processing < this.getLimitForKey(e).concurrent) {
+    const n = this.usage.get(t) || 0;
+    if (n > 0 && this.usage.set(t, n - 1), s.queue.length > 0 && s.processing < this.getLimitForKey(t).concurrent) {
       const r = s.queue.shift();
       r && (s.processing++, r.resolve(!0), setTimeout(() => {
-        this.releaseToken(e);
-      }, this.getLimitForKey(e).windowMs));
+        this.releaseToken(t);
+      }, this.getLimitForKey(t).windowMs));
     }
   }
-  getLimitForKey(e) {
-    const s = e.split(":")[1];
+  getLimitForKey(t) {
+    const s = t.split(":")[1];
     return this.limits.get(s) || {
       windowMs: 60 * 1e3,
       maxRequests: 100,
@@ -279,49 +247,24 @@ class N {
     };
   }
 }
-const v = new N();
-function F(t, e) {
-  if (!t || !e) return !1;
-  for (let s = 0; s < e.length; s++)
-    if (new RegExp(e[s].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(t))
-      return !0;
-  return !1;
-}
-var h;
-class J {
-  constructor() {
-    C(this, h, []);
-    y(this, h, []);
-  }
-  setEnv(e) {
-    if (f(this, h).length || f(this, h) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
-    const s = Reflect.get(e, "IP_WHITELIST") ?? "*";
-    s === "*" ? y(this, h, "*") : y(this, h, s.split(",").map((n) => n.trim()));
-  }
-  checkIpIsWhitelisted(e) {
-    const s = e.headers.get("x-real-ip") || "";
-    return (typeof f(this, h) == "string" && f(this, h)) === "*" || Array.isArray(f(this, h)) && f(this, h).length === 0 ? !0 : Array.isArray(f(this, h)) && f(this, h).length > 0 ? F(s, f(this, h)) : !1;
-  }
-}
-h = new WeakMap();
-const D = new J(), R = {
+const P = new $(), w = {
   maxContentLength: 100 * 1024 * 1024,
   // 100MB
   allowedMethods: ["GET", "PUT", "POST", "DELETE"],
   blockedUserAgents: ["curl/7.29.0"]
   // 示例：阻止特定的User-Agent
 };
-async function _(t) {
-  if (!R.allowedMethods.includes(t.method))
+async function U(e) {
+  if (!w.allowedMethods.includes(e.method))
     return new Response("Method Not Allowed", { status: 405 });
-  if (Number.parseInt(t.headers.get("content-length") || "0") > R.maxContentLength)
+  if (Number.parseInt(e.headers.get("content-length") || "0") > w.maxContentLength)
     return new Response("Content Too Large", { status: 413 });
-  const s = t.headers.get("user-agent") || "";
-  if (R.blockedUserAgents.some((a) => s.includes(a)))
+  const s = e.headers.get("user-agent") || "";
+  if (w.blockedUserAgents.some((a) => s.includes(a)))
     return new Response("Forbidden User Agent", { status: 403 });
-  const n = t.headers.get("x-real-ip") || "", r = G(t.url, t.method);
-  let i = 2;
-  return L(t) && (i = 1), await v.acquireToken(n, r, i) ? null : new Response("Too Many Requests", {
+  const n = e.headers.get("x-real-ip") || "", r = q(e.url, e.method);
+  let o = 2;
+  return T(e) && (o = 1), await P.acquireToken(n, r, o) ? null : new Response("Too Many Requests", {
     status: 429,
     headers: {
       "Retry-After": "60",
@@ -329,131 +272,132 @@ async function _(t) {
     }
   });
 }
-async function B(t) {
-  const e = t.headers.get("content-type") || "", s = t.headers.get("content-encoding");
-  if (e.includes("application/json") && (t.headers.get("npm-notice") || t.headers.get("npm-in-progress"))) {
-    const n = new Headers(t.headers), r = ["npm-notice", "npm-in-progress", "npm-progress", "npm-json", "npm-in-progress-details"];
-    for (const c of r) {
-      const o = t.headers.get(c);
-      o && n.set(c, o);
+async function C(e) {
+  const t = e.headers.get("content-type") || "", s = e.headers.get("content-encoding");
+  if (t.includes("application/json") && (e.headers.get("npm-notice") || e.headers.get("npm-in-progress"))) {
+    const n = new Headers(e.headers), r = ["npm-notice", "npm-in-progress", "npm-progress", "npm-json", "npm-in-progress-details"];
+    for (const u of r) {
+      const i = e.headers.get(u);
+      i && n.set(u, i);
     }
-    let i = t.body;
-    if (s === "gzip" && i) {
-      const c = new DecompressionStream("gzip");
-      i = i == null ? void 0 : i.pipeThrough(c);
+    let o = e.body;
+    if (s === "gzip" && o) {
+      const u = new DecompressionStream("gzip");
+      o = o == null ? void 0 : o.pipeThrough(u);
     }
-    const u = new TransformStream(new k()), a = i == null ? void 0 : i.pipeThrough(u);
+    const c = new TransformStream(new E()), a = o == null ? void 0 : o.pipeThrough(c);
     return new Response(a, {
-      status: t.status,
-      statusText: t.statusText,
+      status: e.status,
+      statusText: e.statusText,
       headers: n
     });
   }
-  return t;
+  return e;
 }
-function L(t) {
-  const e = t.headers.get("user-agent") || "", s = t.headers.get("accept") || "";
-  return (e.includes("npm/") || e.includes("Node")) && t.method === "GET" && s.includes("application/json");
+function T(e) {
+  const t = e.headers.get("user-agent") || "", s = e.headers.get("accept") || "";
+  return (t.includes("npm/") || t.includes("Node")) && e.method === "GET" && s.includes("application/json");
 }
-const X = {
-  async fetch(t, e) {
-    const s = Date.now(), n = t.headers.get("cf-connecting-ip") || "";
+const N = {
+  async fetch(e, t) {
+    var r;
+    const s = Date.now(), n = e.headers.get("cf-connecting-ip") || "";
     try {
-      const r = await _(t);
-      if (r)
-        return await w(t, r, s, n), r;
-      const { pathname: i } = new URL(t.url);
-      if (D.setEnv(e), !D.checkIpIsWhitelisted(t)) {
-        const a = W();
-        return await w(t, a, s, n), a;
+      const o = await U(e);
+      if (o)
+        return await l(e, o, s, n), o;
+      const { pathname: c } = new URL(e.url);
+      if (!M(e, (r = t.IP_WHITELIST) == null ? void 0 : r.split(/\\n|\|/))) {
+        const u = new Response();
+        return await l(e, u, s, n), u;
       }
-      if (i === "/favicon.ico") {
-        const a = H("", t.headers);
-        return await w(t, a, s, n), a;
+      if (c === "/favicon.ico") {
+        const u = new Response("", { headers: e.headers });
+        return await l(e, u, s, n), u;
       }
-      const u = await Q(t);
-      return await w(t, u, s, n), u;
-    } catch (r) {
-      const i = x(r.message);
-      return await w(t, i, s, n), i;
+      const a = await O(e);
+      return await l(e, a, s, n), a;
+    } catch (o) {
+      const c = new Response(o.message);
+      return await l(e, c, s, n), c;
     }
   }
 };
-function G(t, e) {
-  return t.endsWith(".tgz") ? "tarball" : e !== "GET" ? "write" : "metadata";
+function q(e, t) {
+  return e.endsWith(".tgz") ? "tarball" : t !== "GET" ? "write" : "metadata";
 }
-async function w(t, e, s, n) {
-  const r = Date.now() - s, i = new URL(t.url), u = {
+async function l(e, t, s, n) {
+  const r = Date.now() - s, o = new URL(e.url), c = {
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-    method: t.method,
-    path: i.pathname,
-    status: e.status,
+    method: e.method,
+    path: o.pathname,
+    status: t.status,
     duration: r,
     ip: n
   };
-  console.log(JSON.stringify(u));
+  console.log(JSON.stringify(c));
 }
-async function Q(t) {
-  const e = new URL(t.url), s = `https://registry.npmjs.org${e.pathname}${e.search}`, n = t.method, r = new Headers(t.headers);
-  r.set("accept", "application/json"), L(t) && (r.set("npm-in-progress", "1"), r.set("npm-progress", "true"));
-  const i = t.headers.get("authorization");
-  if (i && r.set("authorization", i), n === "PUT") {
-    const p = t.headers.get("content-length");
-    p && r.set("content-length", p);
+async function O(e) {
+  const t = new URL(e.url), s = `https://registry.npmjs.org${t.pathname}${t.search}`, n = e.method, r = new Headers(e.headers);
+  r.set("accept", "application/json"), T(e) && (r.set("npm-in-progress", "1"), r.set("npm-progress", "true"));
+  const o = e.headers.get("authorization");
+  if (o && r.set("authorization", o), n === "PUT") {
+    const h = e.headers.get("content-length");
+    h && r.set("content-length", h);
   }
-  let u = t;
-  t.headers.get("content-encoding") === "gzip" && (u = await z(t));
+  let c = e;
+  e.headers.get("content-encoding") === "gzip" && (c = await D(e));
   const a = {
     method: n,
     headers: r,
-    body: u.body || void 0,
+    body: c.body || void 0,
     redirect: "follow"
-  }, c = new Request(s, a);
-  let o;
+  }, u = new Request(s, a);
+  let i;
   try {
-    o = await j(c).then((p) => p.data);
-  } catch (p) {
-    return console.error("Failed to send request to npm registry", p), x();
+    i = await L(u).then((h) => h.data);
+  } catch (h) {
+    return console.error("Failed to send request to npm registry", h), new Response(h.message || h, { status: 502 });
   }
-  if (L(t))
-    return B(o);
-  if (e.pathname.startsWith("/-/") && e.pathname.includes("/-/package/") && e.pathname.endsWith("/dist-tags"))
-    return K(t, o);
-  const d = e.pathname.startsWith("/-/user/org.couchdb.user:");
-  if (o.status === 201 && d && (o.headers.get("content-type") || "").includes("application/json")) {
+  if (T(e))
+    return C(i);
+  if (t.pathname.startsWith("/-/") && t.pathname.includes("/-/package/") && t.pathname.endsWith("/dist-tags"))
+    return j(e, i);
+  const d = t.pathname.startsWith("/-/user/org.couchdb.user:");
+  if (i.status === 201 && d && (i.headers.get("content-type") || "").includes("application/json")) {
     let g;
     try {
-      g = await o.json();
-    } catch ($) {
-      return console.error("Failed to parse response JSON", $), x();
+      g = await i.json();
+    } catch (x) {
+      return console.error("Failed to parse response JSON", x), new Response("Failed to parse response JSON", { status: 502 });
     }
-    const S = JSON.stringify(g);
-    return o.headers.set("content-length", String(S.length)), o.headers.set("content-type", "application/json; charset=utf-8"), b(
-      new Response(S, {
-        status: o.status,
-        statusText: o.statusText,
-        headers: o.headers
+    const R = JSON.stringify(g);
+    return i.headers.set("content-length", String(R.length)), i.headers.set("content-type", "application/json; charset=utf-8"), y(
+      new Response(R, {
+        status: i.status,
+        statusText: i.statusText,
+        headers: i.headers
       })
     );
   }
-  if ([101, 204, 205, 304].includes(o.status))
+  if ([101, 204, 205, 304].includes(i.status))
     return new Response(null, {
-      status: o.status,
-      statusText: o.statusText,
-      headers: o.headers
+      status: i.status,
+      statusText: i.statusText,
+      headers: i.headers
     });
-  const l = o.headers.get("cache-control");
-  return l && r.set("cache-control", l), b(
-    new Response(o.body, {
-      status: o.status,
-      statusText: o.statusText,
-      headers: o.headers
+  const p = i.headers.get("cache-control");
+  return p && r.set("cache-control", p), y(
+    new Response(i.body, {
+      status: i.status,
+      statusText: i.statusText,
+      headers: i.headers
     })
   );
 }
-async function K(t, e) {
-  return b(e);
+async function j(e, t) {
+  return y(t);
 }
 export {
-  X as default
+  N as default
 };
