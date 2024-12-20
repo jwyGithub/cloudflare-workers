@@ -1,43 +1,14 @@
-var v = Object.defineProperty;
-var m = (o) => {
-  throw TypeError(o);
-};
-var E = (o, e, t) => e in o ? v(o, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : o[e] = t;
-var i = (o, e, t) => E(o, typeof e != "symbol" ? e + "" : e, t), w = (o, e, t) => e.has(o) || m("Cannot " + t);
-var l = (o, e, t) => (w(o, e, "read from private field"), t ? t.call(o) : e.get(o)), f = (o, e, t) => e.has(o) ? m("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(o) : e.set(o, t), u = (o, e, t, s) => (w(o, e, "write to private field"), s ? s.call(o, t) : e.set(o, t), t);
-const k = "unauthorized", S = "internal server error", b = new Headers({
-  "Content-type": "application/json"
-});
-new Headers({
-  "Content-type": "application/octet-stream"
-});
-new Headers({
-  "Content-type": "text/plain"
-});
-new Headers({
-  "Content-type": "text/html"
-});
-const I = (o = k, e = 401, t = b) => Response.json(
-  {
-    status: e,
-    message: o
-  },
-  {
-    status: e,
-    statusText: o,
-    headers: t
-  }
-), R = (o = S, e = 500, t = b) => Response.json(
-  {
-    status: e,
-    message: o
-  },
-  {
-    status: e,
-    statusText: o,
-    headers: t
-  }
-), T = 52428800, C = 3e4, d = {
+var g = Object.defineProperty;
+var u = (r, e, t) => e in r ? g(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
+var a = (r, e, t) => u(r, typeof e != "symbol" ? e + "" : e, t);
+function m(r, e = ["*"]) {
+  const t = typeof r == "string" ? r : r.headers.get("x-real-ip") || r.headers.get("cf-connecting-ip") || r.headers.get("x-forwarded-for");
+  return !t || !e || e.length === 0 ? !1 : e.includes("*") ? !0 : e.map((o) => {
+    const s = o.replace(/\./g, "\\.").replace(/\*/g, "\\d+");
+    return new RegExp(`^${s}$`);
+  }).some((o) => o.test(t));
+}
+const w = 52428800, b = 3e4, c = {
   FILE_TOO_LARGE: "File size exceeds the maximum limit of 50MB",
   UNAUTHORIZED: "Authentication required to access this resource",
   FORBIDDEN: "Access to this resource is forbidden",
@@ -46,27 +17,27 @@ const I = (o = k, e = 401, t = b) => Response.json(
   NETWORK_ERROR: "Network error occurred",
   UNKNOWN: "An unknown error occurred"
 };
-class O {
-  constructor(e, t, s, r) {
-    i(this, "ws");
-    i(this, "url");
-    i(this, "options");
-    i(this, "abortController");
-    i(this, "startTime");
-    i(this, "ctx");
-    this.ws = e, this.url = t, this.ctx = s, this.options = {
-      maxSize: r.MAX_SIZE ? Number(r.MAX_SIZE) : T,
-      timeout: C
+class f {
+  constructor(e, t, o, s) {
+    a(this, "ws");
+    a(this, "url");
+    a(this, "options");
+    a(this, "abortController");
+    a(this, "startTime");
+    a(this, "ctx");
+    this.ws = e, this.url = t, this.ctx = o, this.options = {
+      maxSize: s.MAX_SIZE ? Number(s.MAX_SIZE) : w,
+      timeout: b
     }, this.abortController = new AbortController(), this.startTime = 0;
   }
   async download() {
     try {
-      const e = caches.default, t = new Request(this.url), s = await e.match(t);
-      if (s)
-        return this.sendComplete(this.url, Number.parseInt(s.headers.get("content-length") || "0")), this.createFinalResponse(s);
+      const e = caches.default, t = new Request(this.url), o = await e.match(t);
+      if (o)
+        return this.sendComplete(this.url, Number.parseInt(o.headers.get("content-length") || "0")), this.createFinalResponse(o);
       await this.checkFileSize();
-      const r = await this.fetchWithProgress(), a = r.clone();
-      return this.ctx.waitUntil(e.put(t, a)), this.createFinalResponse(r);
+      const s = await this.fetchWithProgress(), n = s.clone();
+      return this.ctx.waitUntil(e.put(t, n)), this.createFinalResponse(s);
     } catch (e) {
       throw this.sendError(e), e;
     }
@@ -78,9 +49,9 @@ class O {
         headers: this.getRequestHeaders()
       });
       if (this.handleErrorResponse(e), Number.parseInt(e.headers.get("content-length") || "0") > this.options.maxSize)
-        throw new Error(d.FILE_TOO_LARGE);
+        throw new Error(c.FILE_TOO_LARGE);
     } catch (e) {
-      if (e.message === d.FILE_TOO_LARGE)
+      if (e.message === c.FILE_TOO_LARGE)
         throw e;
     }
   }
@@ -91,17 +62,17 @@ class O {
       signal: e
     });
     this.handleErrorResponse(t);
-    const s = Number.parseInt(t.headers.get("content-length") || "0"), { readable: r, writable: a } = new TransformStream();
+    const o = Number.parseInt(t.headers.get("content-length") || "0"), { readable: s, writable: n } = new TransformStream();
     return this.ctx.waitUntil(
       (async () => {
-        const p = a.getWriter();
+        const l = n.getWriter();
         try {
-          await this.streamResponse(t.body, p, s);
+          await this.streamResponse(t.body, l, o);
         } finally {
-          await p.close();
+          await l.close();
         }
       })()
-    ), new Response(r, {
+    ), new Response(s, {
       headers: this.getResponseHeaders(t)
     });
   }
@@ -113,37 +84,37 @@ class O {
       headers: t
     });
   }
-  async streamResponse(e, t, s) {
-    let r = 0, a = Date.now();
-    const p = e.getReader();
+  async streamResponse(e, t, o) {
+    let s = 0, n = Date.now();
+    const l = e.getReader();
     try {
       for (; ; ) {
-        const { done: c, value: g } = await p.read();
-        if (c)
+        const { done: i, value: h } = await l.read();
+        if (i)
           break;
-        if (r += g.length, r > this.options.maxSize)
-          throw new Error(d.FILE_TOO_LARGE);
-        await t.write(g);
-        const h = Date.now();
-        if (h - a > 200) {
-          const x = r / ((h - this.startTime) / 1e3);
-          this.sendProgress(r, s, x), a = h;
+        if (s += h.length, s > this.options.maxSize)
+          throw new Error(c.FILE_TOO_LARGE);
+        await t.write(h);
+        const d = Date.now();
+        if (d - n > 200) {
+          const p = s / ((d - this.startTime) / 1e3);
+          this.sendProgress(s, o, p), n = d;
         }
       }
-    } catch (c) {
-      throw t.abort(c), c;
+    } catch (i) {
+      throw t.abort(i), i;
     } finally {
-      await t.close(), this.sendComplete(this.url, r);
+      await t.close(), this.sendComplete(this.url, s);
     }
   }
   handleErrorResponse(e) {
     switch (e.status) {
       case 401:
-        throw new Error(d.UNAUTHORIZED);
+        throw new Error(c.UNAUTHORIZED);
       case 403:
-        throw new Error(d.FORBIDDEN);
+        throw new Error(c.FORBIDDEN);
       case 404:
-        throw new Error(d.NOT_FOUND);
+        throw new Error(c.NOT_FOUND);
       default:
         if (!e.ok)
           throw new Error(`HTTP Error: ${e.status}`);
@@ -159,30 +130,30 @@ class O {
   }
   getResponseHeaders(e) {
     const t = new Headers();
-    if (["content-type", "content-disposition", "content-length", "last-modified", "etag", "cache-control"].forEach((r) => {
-      const a = e.headers.get(r);
-      a && t.set(r, a);
+    if (["content-type", "content-disposition", "content-length", "last-modified", "etag", "cache-control"].forEach((s) => {
+      const n = e.headers.get(s);
+      n && t.set(s, n);
     }), t.has("cache-control") || t.set("cache-control", "public, max-age=86400"), t.set("Access-Control-Allow-Origin", "*"), !t.has("content-disposition")) {
-      const r = this.getFilenameFromUrl(this.url);
-      t.set("Content-Disposition", `attachment; filename="${r}"`);
+      const s = this.getFilenameFromUrl(this.url);
+      t.set("Content-Disposition", `attachment; filename="${s}"`);
     }
     return t;
   }
   getFilenameFromUrl(e) {
     try {
-      const r = new URL(e).pathname.split("/").pop() || "download";
-      return decodeURIComponent(r);
+      const s = new URL(e).pathname.split("/").pop() || "download";
+      return decodeURIComponent(s);
     } catch {
       return "download";
     }
   }
-  sendProgress(e, t, s) {
+  sendProgress(e, t, o) {
     this.sendMessage({
       type: "progress",
       loaded: e,
       total: t,
       percent: Math.round(e / t * 100),
-      speed: s
+      speed: o
     });
   }
   sendComplete(e, t) {
@@ -197,14 +168,14 @@ class O {
     this.sendMessage({
       type: "error",
       code: 500,
-      message: e.message || d.UNKNOWN
+      message: e.message || c.UNKNOWN
     });
   }
   sendMessage(e) {
     this.ws.readyState === WebSocket.OPEN && this.ws.send(JSON.stringify(e));
   }
 }
-function H() {
+function y() {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -886,35 +857,11 @@ function H() {
 </html>
 `;
 }
-function M(o, e) {
-  if (!o || !e) return !1;
-  for (let t = 0; t < e.length; t++)
-    if (new RegExp(e[t].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(o))
-      return !0;
-  return !1;
-}
-var n;
-class A {
-  constructor() {
-    f(this, n, []);
-    u(this, n, []);
-  }
-  setEnv(e) {
-    if (l(this, n).length || l(this, n) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
-    const t = Reflect.get(e, "IP_WHITELIST") ?? "*";
-    t === "*" ? u(this, n, "*") : u(this, n, t.split(",").map((s) => s.trim()));
-  }
-  checkIpIsWhitelisted(e) {
-    const t = e.headers.get("x-real-ip") || "";
-    return (typeof l(this, n) == "string" && l(this, n)) === "*" || Array.isArray(l(this, n)) && l(this, n).length === 0 ? !0 : Array.isArray(l(this, n)) && l(this, n).length > 0 ? M(t, l(this, n)) : !1;
-  }
-}
-n = new WeakMap();
-class z {
+class x {
   constructor(e) {
-    i(this, "ws");
-    i(this, "heartbeatInterval");
-    i(this, "lastPong");
+    a(this, "ws");
+    a(this, "heartbeatInterval");
+    a(this, "lastPong");
     this.ws = e, this.heartbeatInterval = 3e4, this.lastPong = Date.now(), this.initialize();
   }
   initialize() {
@@ -948,17 +895,18 @@ class z {
     this.ws.send(JSON.stringify(e));
   }
 }
-const y = new A(), N = {
-  async fetch(o, e, t) {
-    if (o.method === "OPTIONS")
-      return L();
-    if (y.setEnv(e), !y.checkIpIsWhitelisted(o))
-      return I();
-    const s = new URL(o.url);
-    return s.pathname === "/" ? B() : s.pathname === "/ws" ? D(o) : U(o, s, t, e);
+const R = {
+  async fetch(r, e, t) {
+    var s;
+    if (r.method === "OPTIONS")
+      return v();
+    if (!m(r, (s = e.IP_WHITELIST) == null ? void 0 : s.split(/\\n|\|/)))
+      return new Response("Unauthorized", { status: 401 });
+    const o = new URL(r.url);
+    return o.pathname === "/" ? S() : o.pathname === "/ws" ? E(r) : k(r, o, t, e);
   }
 };
-function L() {
+function v() {
   return new Response(null, {
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -967,32 +915,32 @@ function L() {
     }
   });
 }
-function D(o) {
-  if (o.headers.get("Upgrade") !== "websocket")
+function E(r) {
+  if (r.headers.get("Upgrade") !== "websocket")
     return new Response("Expected websocket", { status: 400 });
-  const e = new WebSocketPair(), [t, s] = Object.values(e);
-  return s.accept(), new z(s), new Response(null, {
+  const e = new WebSocketPair(), [t, o] = Object.values(e);
+  return o.accept(), new x(o), new Response(null, {
     status: 101,
     webSocket: t
   });
 }
-async function U(o, e, t, s) {
-  const r = e.pathname.startsWith("/http") ? e.pathname.slice(1) : `https://github.com${e.pathname}`, a = new WebSocketPair(), [p, c] = Object.values(a);
-  c.accept();
-  const g = new O(c, r, t, s);
+async function k(r, e, t, o) {
+  const s = e.pathname.startsWith("/http") ? e.pathname.slice(1) : `https://github.com${e.pathname}`, n = new WebSocketPair(), [l, i] = Object.values(n);
+  i.accept();
+  const h = new f(i, s, t, o);
   try {
-    return await g.download();
-  } catch (h) {
-    return R(h.message || h);
+    return await h.download();
+  } catch (d) {
+    return new Response(d.message, { status: 500 });
   }
 }
-function B() {
-  return new Response(H(), {
+function S() {
+  return new Response(y(), {
     headers: {
       "content-type": "text/html;charset=UTF-8"
     }
   });
 }
 export {
-  N as default
+  R as default
 };
