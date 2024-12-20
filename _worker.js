@@ -1,14 +1,101 @@
-var E = Object.defineProperty;
-var T = (r, e, t) => e in r ? E(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var w = (r, e, t) => T(r, typeof e != "symbol" ? e + "" : e, t);
-async function N(r) {
-  const { token: e, chatId: t, message: s } = r;
-  if (!e || !t) return new Response("Missing token or chatId", { status: 400 });
-  const o = Array.isArray(s) ? s : [s], i = encodeURIComponent(o.join(`
+const p = {
+  /** 默认不启用重试 */
+  retries: 0,
+  /** 默认重试间隔（毫秒） */
+  retryDelay: 1e3,
+  /** 默认需要重试的状态码 */
+  retryOnStatusCodes: [500, 502, 503, 504]
+};
+async function S(e, n = p) {
+  const {
+    retries: t = p.retries,
+    retryDelay: r = p.retryDelay,
+    retryOnStatusCodes: s = p.retryOnStatusCodes,
+    onError: a,
+    ...d
+  } = n;
+  let c = 0;
+  const u = async () => {
+    c++;
+    try {
+      let i, l;
+      e instanceof Request ? (l = e.url, i = new Request(e, d)) : (l = e.toString(), i = new Request(l, d));
+      const g = await fetch(i), b = {
+        status: g.status,
+        statusText: g.statusText,
+        headers: Object.fromEntries(g.headers.entries()),
+        data: g,
+        config: { url: l, ...d },
+        ok: g.ok
+      };
+      if (s.includes(b.status) && c <= t) {
+        if (a) {
+          const m = a(new Error(`请求失败，状态码 ${b.status}`), c);
+          m instanceof Promise && await m;
+        }
+        return await new Promise((m) => setTimeout(m, r)), u();
+      }
+      return b;
+    } catch (i) {
+      if (a) {
+        const l = a(i, c);
+        l instanceof Promise && await l;
+      }
+      if (c <= t)
+        return await new Promise((l) => setTimeout(l, r)), u();
+      throw i;
+    }
+  };
+  return u();
+}
+function E(e) {
+  if (!e) return e;
+  const n = atob(e), t = new Uint8Array(n.length);
+  for (let r = 0; r < n.length; r++)
+    t[r] = n.charCodeAt(r);
+  return new TextDecoder().decode(t);
+}
+function C(e, n) {
+  const t = (r) => r;
+  try {
+    return e ? E(e.toString()) : t(e);
+  } catch {
+    return t(e);
+  }
+}
+function j(e) {
+  if (!e) return e;
+  const n = new TextEncoder().encode(e.trim());
+  let t = "";
+  for (let r = 0; r < n.length; r += 1)
+    t += String.fromCharCode(n[r]);
+  return btoa(t);
+}
+function T(e, n) {
+  const t = (r) => r;
+  try {
+    return e ? j(e.toString()) : t(e);
+  } catch {
+    return t(e);
+  }
+}
+function w(e, n) {
+  const t = n || ((r) => r);
+  try {
+    return e ? decodeURIComponent(e) : t(e);
+  } catch {
+    return t(e);
+  }
+}
+async function O(e) {
+  const { token: n, chatId: t, message: r } = e;
+  if (!n || !t) return new Response("Missing token or chatId", { status: 400 });
+  const s = Array.isArray(r) ? r : [r], a = new URLSearchParams();
+  a.set("chat_id", t), a.set("parse_mode", "HTML"), a.set("text", s.join(`
 `));
   try {
-    const u = `https://api.telegram.org/bot${e}/sendMessage?chat_id=${t}&parse_mode=HTML&text=${i}`;
-    return fetch(u, {
+    const d = `https://api.telegram.org/bot${n}/sendMessage?${a.toString()}`;
+    return await fetch(d, {
       method: "GET",
       headers: {
         Accept: "text/html,application/xhtml+xml,application/xml;",
@@ -20,265 +107,7 @@ async function N(r) {
     return Response.error();
   }
 }
-const g = {
-  retries: 3,
-  // 默认最大重试次数
-  retryDelay: 1e3,
-  // 默认每次重试的间隔时间（毫秒）
-  retryOnStatusCodes: [500, 502, 503, 504]
-  // 默认重试的状态码
-};
-class j {
-  constructor() {
-    w(this, "requestInterceptors", []);
-    w(this, "responseInterceptors", []);
-  }
-  // 添加请求拦截器
-  useRequestInterceptor(e) {
-    this.requestInterceptors.push(e);
-  }
-  // 添加响应拦截器
-  useResponseInterceptor(e) {
-    this.responseInterceptors.push(e);
-  }
-  // 核心请求方法
-  async request(e) {
-    let t = { ...e };
-    t.retries = t.retries ?? g.retries, t.retryDelay = t.retryDelay ?? g.retryDelay;
-    for (const a of this.requestInterceptors)
-      t = await a(t);
-    if (t.params) {
-      const a = new URLSearchParams(t.params).toString();
-      t.url += (t.url.includes("?") ? "&" : "?") + a;
-    }
-    t.method = t.method || "GET";
-    const { timeout: s = 1e4 } = t;
-    let o = 0;
-    const i = new AbortController(), u = e.signal || i.signal, n = async () => {
-      o++;
-      const a = setTimeout(() => {
-        i.abort();
-      }, s);
-      try {
-        const c = await fetch(t.url, {
-          method: t.method,
-          headers: t.headers,
-          body: t.body ? JSON.stringify(t.body) : void 0,
-          signal: u
-        });
-        clearTimeout(a);
-        let d = {
-          data: c,
-          status: c.status,
-          statusText: c.statusText,
-          headers: c.headers,
-          config: t,
-          ok: c.ok
-        };
-        for (const m of this.responseInterceptors)
-          d = await m(d);
-        return !c.ok && t.retries && o < t.retries ? (await new Promise((m) => setTimeout(m, t.retryDelay)), n()) : d;
-      } catch (c) {
-        if (c.name === "AbortError")
-          throw new Error("Request timed out");
-        if (t.retries && o < t.retries)
-          return await new Promise((d) => setTimeout(d, t.retryDelay)), n();
-        throw c;
-      }
-    };
-    return n();
-  }
-  /**
-   * 使用示例：
-   * ```typescript
-   * // 基本使用
-   * const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
-   * console.log(response.data);
-   *
-   * // 带参数的请求
-   * const responseWithParams = await axios.get('https://jsonplaceholder.typicode.com/posts', {
-   *   params: { userId: 1 },
-   * });
-   * console.log(responseWithParams.data);
-   * ```
-   */
-  get(e, t) {
-    return this.request({ ...t, url: e, method: "GET" });
-  }
-  /**
-   * 使用示例：
-   * ```typescript
-   * // 基本使用
-   * const response = await axios.post('https://jsonplaceholder.typicode.com/posts', {
-   *   title: 'foo',
-   *   body: 'bar',
-   *   userId: 1,
-   * });
-   * console.log(response.data);
-   *
-   * // 带参数的请求
-   * const responseWithParams = await axios.post('https://jsonplaceholder.typicode.com/posts', {
-   *   title: 'foo',
-   *   body: 'bar',
-   * }, {
-   *   params: { userId: 1 },
-   * });
-   * console.log(responseWithParams.data);
-   * ```
-   */
-  post(e, t, s) {
-    return this.request({ ...s, url: e, method: "POST", body: t });
-  }
-  /**
-   * 使用示例：
-   * ```typescript
-   * // 基本使用
-   * const response = await axios.put('https://jsonplaceholder.typicode.com/posts/1', {
-   *   title: 'foo',
-   *   body: 'bar',
-   *   userId: 1,
-   * });
-   * console.log(response.data);
-   *
-   * // 带参数的请求
-   * const responseWithParams = await axios.put('https://jsonplaceholder.typicode.com/posts/1', {
-   *   title: 'foo',
-   *   body: 'bar',
-   * }, {
-   *   params: { admin: true },
-   * });
-   * console.log(responseWithParams.data);
-   * ```
-   */
-  put(e, t, s) {
-    return this.request({ ...s, url: e, method: "PUT", body: t });
-  }
-  /**
-   * 使用示例：
-   * ```typescript
-   * // 基本使用
-   * const response = await axios.delete('https://jsonplaceholder.typicode.com/posts/1');
-   * console.log(response.data);
-   *
-   * // 带参数的请求
-   * const responseWithParams = await axios.delete('https://jsonplaceholder.typicode.com/posts', {
-   *   params: { userId: 1 },
-   * });
-   * console.log(responseWithParams.data);
-   * ```
-   */
-  delete(e, t) {
-    return this.request({ ...t, url: e, method: "DELETE" });
-  }
-}
-async function O(r, e) {
-  const {
-    retries: t = g.retries,
-    retryDelay: s = g.retryDelay,
-    retryOnStatusCodes: o = g.retryOnStatusCodes,
-    onError: i,
-    ...u
-  } = e;
-  let n = 0;
-  const a = async () => {
-    n++;
-    try {
-      const c = await P.request({ url: r, ...u });
-      if (o.includes(c.status) && n <= t) {
-        if (i) {
-          const d = i(new Error(`Request failed with status ${c.status}`), n);
-          d instanceof Promise && await d;
-        }
-        return await new Promise((d) => setTimeout(d, s)), a();
-      }
-      return c;
-    } catch (c) {
-      if (i) {
-        const d = i(c, n);
-        d instanceof Promise && await d;
-      }
-      if (n <= t)
-        return await new Promise((d) => setTimeout(d, s)), a();
-      throw c;
-    }
-  };
-  return a();
-}
-const P = new j(), J = "success", L = "internal server error", x = new Headers({
-  "Content-type": "application/json"
-});
-new Headers({
-  "Content-type": "application/octet-stream"
-});
-new Headers({
-  "Content-type": "text/plain"
-});
-const I = new Headers({
-  "Content-type": "text/html"
-}), A = (r, e = J, t = x) => Response.json(
-  {
-    status: 200,
-    message: e,
-    data: r
-  },
-  {
-    status: 200,
-    statusText: e,
-    headers: t
-  }
-), R = (r, e = I) => new Response(r, {
-  headers: e
-}), D = (r = L, e = 500, t = x) => Response.json(
-  {
-    status: e,
-    message: r
-  },
-  {
-    status: e,
-    statusText: r,
-    headers: t
-  }
-);
-function H(r) {
-  if (!r) return r;
-  const e = atob(r), t = new Uint8Array(e.length);
-  for (let s = 0; s < e.length; s++)
-    t[s] = e.charCodeAt(s);
-  return new TextDecoder().decode(t);
-}
-function $(r, e) {
-  const t = (s) => s;
-  try {
-    return r ? H(r.toString()) : t(r);
-  } catch {
-    return t(r);
-  }
-}
-function M(r) {
-  if (!r) return r;
-  const e = new TextEncoder().encode(r.trim());
-  let t = "";
-  for (let s = 0; s < e.length; s += 1)
-    t += String.fromCharCode(e[s]);
-  return btoa(t);
-}
-function V(r, e) {
-  const t = (s) => s;
-  try {
-    return r ? M(r.toString()) : t(r);
-  } catch {
-    return t(r);
-  }
-}
-function y(r, e) {
-  const t = e || ((s) => s);
-  try {
-    return r ? decodeURIComponent(r) : t(r);
-  } catch {
-    return t(r);
-  }
-}
-const B = `<!doctype html>
+const J = `<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -712,109 +541,109 @@ const B = `<!doctype html>
     </body>
 </html>
 `;
-function U(r, e) {
+function P(e, n) {
   try {
     return {
       type: "vless",
-      host: r.hostname,
-      port: Number.parseInt(r.port),
-      id: r.username,
-      remark: y(r.hash)
+      host: e.hostname,
+      port: Number.parseInt(e.port),
+      id: e.username,
+      remark: w(e.hash)
     };
   } catch (t) {
-    throw new Error(`error on parseVlessLink: ${t.message || t} -> ${e}`);
+    throw new Error(`error on parseVlessLink: ${t.message || t} -> ${n}`);
   }
 }
-function G(r, e) {
+function L(e, n) {
   try {
     return {
       type: "trojan",
-      host: r.hostname,
-      port: Number.parseInt(r.port),
-      id: r.username,
-      remark: y(r.hash)
+      host: e.hostname,
+      port: Number.parseInt(e.port),
+      id: e.username,
+      remark: w(e.hash)
     };
   } catch (t) {
-    throw new Error(`error on parseTrojanLink: ${t.message || t} -> ${e}`);
+    throw new Error(`error on parseTrojanLink: ${t.message || t} -> ${n}`);
   }
 }
-function q(r) {
+function A(e) {
   try {
-    const e = JSON.parse($(r));
+    const n = JSON.parse(C(e));
     return {
       type: "vmess",
-      host: e.add,
-      port: Number.parseInt(e.port),
-      id: e.id,
-      remark: y(e.ps)
+      host: n.add,
+      port: Number.parseInt(n.port),
+      id: n.id,
+      remark: w(n.ps)
     };
-  } catch (e) {
-    throw new Error(`error on parseVmessLink: ${e.message || e} -> ${r}`);
+  } catch (n) {
+    throw new Error(`error on parseVmessLink: ${n.message || n} -> ${e}`);
   }
 }
-function _() {
+function I() {
   return (/* @__PURE__ */ new Date()).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
 }
-function k(r, e) {
-  return e.some((t) => t.host === r);
+function x(e, n) {
+  return n.some((t) => t.host === e);
 }
-function C(r) {
+function N(e) {
   try {
-    return new URL(r);
+    return new URL(e);
   } catch {
     return null;
   }
 }
-function W(r) {
+function R(e) {
   try {
-    const e = [];
-    for (const t of r) {
-      const s = C(t);
-      if (s === null) continue;
-      const { host: o, port: i, remark: u } = U(s, t);
-      !o.startsWith("127") && !/^[a-z]/i.test(o) && !k(o, e) && e.push({ host: o, port: i, remark: u });
+    const n = [];
+    for (const t of e) {
+      const r = N(t);
+      if (r === null) continue;
+      const { host: s, port: a, remark: d } = P(r, t);
+      !s.startsWith("127") && !/^[a-z]/i.test(s) && !x(s, n) && n.push({ host: s, port: a, remark: d });
     }
-    return e.map((t) => `${t.host}:${t.port}${t.remark}`);
-  } catch (e) {
-    throw new Error(`catch on getVless : ${e.message || e}`);
+    return n.map((t) => `${t.host}:${t.port}${t.remark}`);
+  } catch (n) {
+    throw new Error(`catch on getVless : ${n.message || n}`);
   }
 }
-function z(r) {
+function H(e) {
   try {
-    const e = [];
-    for (const t of r) {
-      const s = C(t);
-      if (s === null) continue;
-      const { host: o, port: i, remark: u } = G(s, t);
-      !o.startsWith("127") && !/^[a-z]/i.test(o) && !k(o, e) && e.push({ host: o, port: i, remark: u });
+    const n = [];
+    for (const t of e) {
+      const r = N(t);
+      if (r === null) continue;
+      const { host: s, port: a, remark: d } = L(r, t);
+      !s.startsWith("127") && !/^[a-z]/i.test(s) && !x(s, n) && n.push({ host: s, port: a, remark: d });
     }
-    return e.map((t) => `${t.host}:${t.port}${t.remark}`);
-  } catch (e) {
-    throw new Error(`catch on getTrojan : ${e.message || e}`);
+    return n.map((t) => `${t.host}:${t.port}${t.remark}`);
+  } catch (n) {
+    throw new Error(`catch on getTrojan : ${n.message || n}`);
   }
 }
-function F(r) {
+function V(e) {
   try {
-    const e = [];
-    for (const t of r) {
-      const { host: s, port: o, remark: i } = q(t.replace("vmess://", ""));
-      !s.startsWith("127") && !/^[a-z]/i.test(s) && !k(s, e) && e.push({ host: s, port: o, remark: i });
+    const n = [];
+    for (const t of e) {
+      const { host: r, port: s, remark: a } = A(t.replace("vmess://", ""));
+      !r.startsWith("127") && !/^[a-z]/i.test(r) && !x(r, n) && n.push({ host: r, port: s, remark: a });
     }
-    return e.map((t) => `${t.host}:${t.port}${t.remark}`);
-  } catch (e) {
-    throw new Error(`catch on getVmess : ${e.message || e}`);
+    return n.map((t) => `${t.host}:${t.port}${t.remark}`);
+  } catch (n) {
+    throw new Error(`catch on getVmess : ${n.message || n}`);
   }
 }
-function p(r = 1e3) {
-  return new Promise((e) => {
-    setTimeout(e, r);
+function f(e = 1e3) {
+  return new Promise((n) => {
+    setTimeout(n, e);
   });
 }
-let f = null;
-async function l(r) {
-  await p(100), f == null || f.send(r);
+let y = null;
+async function o(e) {
+  await f(100), y == null || y.send(e);
 }
-const b = (r) => `packages/vps-parse/address/${r}`, h = {
+const v = (e) => `packages/vps-parse/address/${e}`, h = {
   trojanCount: 0,
   vlessCount: 0,
   vmessCount: 0,
@@ -822,82 +651,82 @@ const b = (r) => `packages/vps-parse/address/${r}`, h = {
   trojanPushStatus: "error",
   vmessPushStatus: "error"
 };
-async function Y(r, e) {
+async function D(e, n) {
   try {
-    const t = [], s = [], o = [], i = [];
-    await l(
+    const t = [], r = [], s = [], a = [];
+    await o(
       JSON.stringify({
         type: "info",
-        content: ["开始获取 VPS 数据...", ...r].join(`
+        content: ["开始获取 VPS 数据...", ...e].join(`
 `)
       })
     );
-    for await (const n of r) {
-      await l(
+    for await (const c of e) {
+      await o(
         JSON.stringify({
           type: "info",
-          content: `正在获取订阅信息: ${n}`
+          content: `正在获取订阅信息: ${c}`
         })
       );
-      const a = new Request(n, {
+      const u = new Request(c, {
         headers: new Headers({
           "User-Agent": "PostmanRuntime/7.43.0",
           Accept: "*/*",
           "Accept-Encoding": "gzip, deflate, br",
           Connection: "keep-alive"
         })
-      }), c = await O(a.url, {
-        retries: e,
-        headers: a.headers,
-        onError: async (d, m) => {
-          await l(
+      }), i = await S(u, {
+        retries: n,
+        headers: u.headers,
+        onError: async (l, g) => {
+          await o(
             JSON.stringify({
               type: "error",
-              content: `正在尝试第 ${m} 次请求... ${d.message || d}`
+              content: `正在尝试第 ${g} 次请求... ${l.message || l}`
             })
           );
         }
       });
-      if (c.ok) {
-        const d = await c.data.text();
-        await l(
+      if (i.ok) {
+        const l = await i.data.text();
+        await o(
           JSON.stringify({
             type: "success",
-            content: `成功获取链接数据: ${c.config.url}`
+            content: `成功获取链接数据: ${i.config.url}`
           })
-        ), t.push($(d));
+        ), t.push(C(l));
       } else
-        await l(
+        await o(
           JSON.stringify({
             type: "error",
-            content: `获取链接数据失败: ${c.config.url}`
+            content: `获取链接数据失败: ${i.config.url}`
           })
         );
     }
-    const u = t.map((n) => n.split(`
+    const d = t.map((c) => c.split(`
 `)).flat();
-    for await (const n of u)
-      await l(
+    for await (const c of d)
+      await o(
         JSON.stringify({
           type: "info",
-          content: `${y(n, (a) => a)}`
+          content: `${w(c, (u) => u)}`
         })
-      ), n.trim().startsWith("trojan://") ? s.push(n) : n.trim().startsWith("vless://") ? o.push(n) : n.trim().startsWith("vmess://") && i.push(n);
-    return h.trojanCount = s.length, h.vlessCount = o.length, h.vmessCount = i.length, await l(
+      ), c.trim().startsWith("trojan://") ? r.push(c) : c.trim().startsWith("vless://") ? s.push(c) : c.trim().startsWith("vmess://") && a.push(c);
+    return h.trojanCount = r.length, h.vlessCount = s.length, h.vmessCount = a.length, await o(
       JSON.stringify({
         type: "success",
         content: `数据分类完成：
-trojan: ${s.length}条
-vless: ${o.length}条
-vmess: ${i.length}条`
+trojan: ${r.length}条
+vless: ${s.length}条
+vmess: ${a.length}条`
       })
     ), {
-      trojan: s,
-      vless: o,
-      vmess: i
+      trojan: r,
+      vless: s,
+      vmess: a
     };
   } catch (t) {
-    throw await l(
+    throw await o(
       JSON.stringify({
         type: "error",
         content: `获取VPS数据失败: ${t.message || t}`
@@ -905,228 +734,238 @@ vmess: ${i.length}条`
     ), new Error(`catch on getVps => reason: ${t.message || t}`);
   }
 }
-async function v(r, e, t) {
+async function k(e, n, t) {
   try {
-    await l(
+    await o(
       JSON.stringify({
         type: "info",
-        content: `开始推送到 GitHub: ${e}`
+        content: `开始推送到 GitHub: ${n}`
       })
     );
-    const s = V(r.join(`
-`)), o = `https://api.github.com/repos/${t.GITHUB_USERNAME}/${t.REPO_NAME}/contents/${e}`, i = {
+    const r = T(e.join(`
+`)), s = `https://api.github.com/repos/${t.GITHUB_USERNAME}/${t.REPO_NAME}/contents/${n}`, a = {
       Authorization: `Bearer ${t.GITHUB_TOKEN}`,
       Accept: "application/vnd.github.v3+json",
       "User-Agent": "Cloudflare-Worker"
-    }, u = async () => {
-      const a = await fetch(o, { headers: i });
-      if (a.ok)
-        return (await a.json()).sha;
-    }, n = async (a) => {
-      const c = {
-        message: `scheduled: update ${e} by ${_()}`,
-        content: s,
+    }, d = async () => {
+      const u = await S(s, { headers: a });
+      if (u.ok)
+        return (await u.data.json()).sha;
+    }, c = async (u) => {
+      const i = {
+        message: `scheduled: update ${n} by ${I()}`,
+        content: r,
         branch: t.REPO_BRANCH
       };
-      a && (c.sha = a);
-      const d = await fetch(o, {
+      u && (i.sha = u);
+      const l = await S(s, {
         method: "PUT",
         headers: {
-          ...i,
+          ...a,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(c)
+        body: JSON.stringify(i)
       });
-      if (!d.ok) {
-        const m = await d.text();
-        throw new Error(`GitHub API responded with ${d.status}: ${m}`);
+      if (!l.ok) {
+        const g = await l.data.text();
+        throw new Error(`GitHub API responded with ${l.status}: ${g}`);
       }
-      return d.json();
+      return l.data.json();
     };
     try {
-      const a = await u();
-      await l(
+      const u = await d();
+      await o(
         JSON.stringify({
           type: "info",
-          content: `获取到最新 SHA: ${a || "null"}`
+          content: `获取到最新 SHA: ${u || "null"}`
         })
       );
-      const c = await n(a);
-      return await l(
+      const i = await c(u);
+      return await o(
         JSON.stringify({
           type: "success",
-          content: `成功推送到GitHub: ${e}`
+          content: `成功推送到GitHub: ${n}`
         })
-      ), c;
-    } catch (a) {
-      if (a.message.includes("409")) {
-        await l(
+      ), i;
+    } catch (u) {
+      if (u.message.includes("409")) {
+        await o(
           JSON.stringify({
             type: "warning",
             content: "检测到文件冲突，正在重试..."
           })
         );
-        const c = await u(), d = await n(c);
-        return await l(
+        const i = await d(), l = await c(i);
+        return await o(
           JSON.stringify({
             type: "success",
-            content: `重试成功，已推送到GitHub: ${e}`
+            content: `重试成功，已推送到GitHub: ${n}`
           })
-        ), d;
+        ), l;
       }
-      throw a;
+      throw u;
     }
-  } catch (s) {
-    throw await l(
+  } catch (r) {
+    throw await o(
       JSON.stringify({
         type: "error",
-        content: `GitHub推送失败: ${s.message || s}`
+        content: `GitHub推送失败: ${r.message || r}`
       })
-    ), new Error(`catch on pushGithub => reason: ${s.message || s}`);
+    ), new Error(`catch on pushGithub => reason: ${r.message || r}`);
   }
 }
-async function S(r) {
+async function $(e) {
+  var n;
   try {
-    await l(
+    await o(
       JSON.stringify({
         type: "info",
         content: "开始初始化同步流程..."
       })
     );
-    const { trojan: e, vless: t, vmess: s } = await Y(r.LINKS.split(","), Number(r.RETRY ?? "3"));
-    await l(
+    const t = ((n = e.LINKS) == null ? void 0 : n.split(",")) ?? [], { trojan: r, vless: s, vmess: a } = await D(t, Number(e.RETRY ?? "3"));
+    await o(
       JSON.stringify({
         type: "info",
         content: "处理VPS数据..."
       })
     );
-    const o = W(t.filter(Boolean)), i = z(e.filter(Boolean)), u = F(s.filter(Boolean));
-    await l(
+    const d = R(s.filter(Boolean)), c = H(r.filter(Boolean)), u = V(a.filter(Boolean));
+    await o(
       JSON.stringify({
         type: "success",
-        content: `vless count: ${o.length}`
+        content: `vless count: ${d.length}`
       })
-    ), await l(
+    ), await o(
       JSON.stringify({
         type: "success",
-        content: `trojan count: ${i.length}`
+        content: `trojan count: ${c.length}`
       })
-    ), await l(
+    ), await o(
       JSON.stringify({
         type: "success",
         content: `vmess count: ${u.length}`
       })
-    ), await l(
+    ), await o(
       JSON.stringify({
         type: "info",
         content: "开始推送到GitHub..."
       })
     );
-    const n = {
+    const i = {
       vless: "",
       trojan: "",
       vmess: ""
     };
     try {
-      n.vless = await v(o, b("vless_api.txt"), r), h.vlessPushStatus = "success", await p(2e3), n.trojan = await v(i, b("trojan_api.txt"), r), h.trojanPushStatus = "success", await p(2e3), n.vmess = await v(u, b("vmess_api.txt"), r), h.vmessPushStatus = "success", await p(2e3);
-    } catch (a) {
-      await l(
+      i.vless = await k(d, v("vless_api.txt"), e), h.vlessPushStatus = "success", await f(2e3), i.trojan = await k(c, v("trojan_api.txt"), e), h.trojanPushStatus = "success", await f(2e3), i.vmess = await k(u, v("vmess_api.txt"), e), h.vmessPushStatus = "success", await f(2e3);
+    } catch (l) {
+      await o(
         JSON.stringify({
           type: "error",
-          content: `GitHub推送过程中出错: ${a.message || a}`
+          content: `GitHub推送过程中出错: ${l.message || l}`
         })
       );
     }
-    return await l(
+    return await o(
       JSON.stringify({
         type: "success",
         content: "所有操作已完成！, 通知telegram"
       })
-    ), await N({
-      token: r.TELEGRAM_BOT_TOKEN,
-      chatId: r.TELEGRAM_CHAT_ID,
+    ), await O({
+      token: e.TG_TOKEN,
+      chatId: e.TG_ID,
       message: [
         `vless: ${h.vlessPushStatus} (${h.vlessCount})`,
         `trojan: ${h.trojanPushStatus} (${h.trojanCount})`,
         `vmess: ${h.vmessPushStatus} (${h.vmessCount})`
       ]
-    }), A({
-      vless: { status: "fulfilled", value: n.vless },
-      trojan: { status: "fulfilled", value: n.trojan },
-      vmess: { status: "fulfilled", value: n.vmess }
+    }), Response.json({
+      vless: { status: "fulfilled", value: i.vless },
+      trojan: { status: "fulfilled", value: i.trojan },
+      vmess: { status: "fulfilled", value: i.vmess }
     });
-  } catch (e) {
-    throw await l(
+  } catch (t) {
+    throw await o(
       JSON.stringify({
         type: "error",
-        content: `初始化过程失败: ${e.message || e}`
+        content: `初始化过程失败: ${t.message || t}`
       })
-    ), new Error(`cache on init => reason: ${e.message || e}`);
+    ), new Error(`cache on init => reason: ${t.message || t}`);
   }
 }
-const Z = {
-  async fetch(r, e, t) {
+const M = {
+  async fetch(e, n) {
     try {
-      if (r.headers.get("Upgrade") === "websocket") {
-        const s = new WebSocketPair(), [o, i] = Object.values(s);
-        return i.accept(), f = i, await l(
+      if (e.headers.get("Upgrade") === "websocket") {
+        const t = new WebSocketPair(), [r, s] = Object.values(t);
+        return s.accept(), y = s, await o(
           JSON.stringify({
             type: "success",
             content: "WebSocket连接已建立"
           })
-        ), i.addEventListener("message", async (u) => {
+        ), s.addEventListener("message", async (a) => {
           try {
-            const n = JSON.parse(u.data);
-            if (n.type === "command" && n.content === "sync") {
-              await l(
+            const d = JSON.parse(a.data);
+            if (d.type === "command" && d.content === "sync") {
+              await o(
                 JSON.stringify({
                   type: "info",
                   content: "收到同步命令，开始执行..."
                 })
               );
               try {
-                await S(e), await l(
+                await $(n), await o(
                   JSON.stringify({
                     type: "success",
                     content: "同步操作完成"
                   })
                 );
-              } catch (a) {
-                await l(
+              } catch (c) {
+                await o(
                   JSON.stringify({
                     type: "error",
-                    content: `同步操作失败: ${a.message || a}`
+                    content: `同步操作失败: ${c.message || c}`
                   })
                 );
               }
             }
-          } catch (n) {
-            await l(
+          } catch (d) {
+            await o(
               JSON.stringify({
                 type: "error",
-                content: `处理消息失败: ${n.message || n}`
+                content: `处理消息失败: ${d.message || d}`
               })
             );
           }
         }), new Response(null, {
           status: 101,
-          webSocket: o
+          webSocket: r
         });
       }
-      return R(B);
-    } catch (s) {
-      return await l(
+      return new Response(J, {
+        headers: new Headers({
+          "content-type": "text/html;charset=UTF-8"
+        })
+      });
+    } catch (t) {
+      return await o(
         JSON.stringify({
           type: "error",
-          content: `服务器错误: ${s.message || s}`
+          content: `服务器错误: ${t.message || t}`
         })
-      ), D(s.message || s);
+      ), new Response(t.message || t, {
+        status: 500,
+        headers: new Headers({
+          "content-type": "text/plain;charset=UTF-8"
+        })
+      });
     }
   },
-  async scheduled(r, e, t) {
-    t.waitUntil(S(e));
+  async scheduled(e, n, t) {
+    t.waitUntil($(n));
   }
 };
 export {
-  Z as default
+  M as default
 };
