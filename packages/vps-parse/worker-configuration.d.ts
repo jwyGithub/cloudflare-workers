@@ -9,6 +9,6 @@ interface Env {
     LINKS: string;
     RETRY?: string;
 
-    TELEGRAM_BOT_TOKEN?: string;
-    TELEGRAM_CHAT_ID?: string;
+    TG_TOKEN?: string;
+    TG_ID?: string;
 }

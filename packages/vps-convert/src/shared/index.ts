@@ -1,5 +1,5 @@
 import type { SubType } from '../types';
-import { base64Decode } from '@jiangweiye/worker-shared';
+import { base64Decode } from 'cloudflare-tools';
 import { load } from 'js-yaml';
 
 export class ConfuseUtil {

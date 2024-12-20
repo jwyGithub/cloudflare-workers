@@ -1,4 +1,4 @@
-import { base64Decode, base64Encode } from '@jiangweiye/worker-shared';
+import { base64Decode, base64Encode } from 'cloudflare-tools';
 import { PsUtil, Store } from '../shared';
 
 interface VMessConfig {

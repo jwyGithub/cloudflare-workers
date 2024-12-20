@@ -1,7 +1,4 @@
-import { sendMessage as notifyTelegram } from '@jiangweiye/worker-api';
-import { fetchWithRetry } from '@jiangweiye/worker-fetch';
-import { toHTML, toServerError, toSuccess } from '@jiangweiye/worker-service';
-import { tryBase64Decode, tryBase64Encode, tryUrlDecode } from '@jiangweiye/worker-shared';
+import { fetchWithRetry, notifyTelegram, tryBase64Decode, tryBase64Encode, tryUrlDecode } from 'cloudflare-tools';
 import { HTML_PAGE } from './page';
 import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
 
@@ -56,7 +53,7 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 })
             });
 
-            const response = await fetchWithRetry(proxyRequest.url, {
+            const response = await fetchWithRetry(proxyRequest, {
                 retries: retry,
                 headers: proxyRequest.headers,
                 onError: async (reason, attempt) => {
@@ -155,9 +152,9 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
 
         // 获取最新的文件信息
         const getLatestSha = async (): Promise<string | undefined> => {
-            const response = await fetch(url, { headers });
+            const response = await fetchWithRetry(url, { headers });
             if (response.ok) {
-                const fileInfo: any = await response.json();
+                const fileInfo: any = await response.data.json();
                 return fileInfo.sha;
             }
             return undefined;
@@ -175,7 +172,7 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
                 requestBody.sha = sha;
             }
 
-            const response = await fetch(url, {
+            const response = await fetchWithRetry(url, {
                 method: 'PUT',
                 headers: {
                     ...headers,
@@ -185,11 +182,11 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
             });
 
             if (!response.ok) {
-                const errorData = await response.text();
+                const errorData = await response.data.text();
                 throw new Error(`GitHub API responded with ${response.status}: ${errorData}`);
             }
 
-            return response.json();
+            return response.data.json();
         };
 
         // 尝试推送，如果失败则重新获取 SHA 再试一次
@@ -251,7 +248,9 @@ async function init(env: Env): Promise<Response> {
             })
         );
 
-        const { trojan, vless, vmess } = await getVps(env.LINKS.split(','), Number(env.RETRY ?? '3'));
+        const links = env.LINKS?.split(',') ?? [];
+
+        const { trojan, vless, vmess } = await getVps(links, Number(env.RETRY ?? '3'));
 
         await sendMessage(
             JSON.stringify({
@@ -329,8 +328,8 @@ async function init(env: Env): Promise<Response> {
         );
 
         await notifyTelegram({
-            token: env.TELEGRAM_BOT_TOKEN,
-            chatId: env.TELEGRAM_CHAT_ID,
+            token: env.TG_TOKEN,
+            chatId: env.TG_ID,
             message: [
                 `vless: ${telegramMessageConfig.vlessPushStatus} (${telegramMessageConfig.vlessCount})`,
                 `trojan: ${telegramMessageConfig.trojanPushStatus} (${telegramMessageConfig.trojanCount})`,
@@ -338,7 +337,7 @@ async function init(env: Env): Promise<Response> {
             ]
         });
 
-        return toSuccess({
+        return Response.json({
             vless: { status: 'fulfilled', value: results.vless },
             trojan: { status: 'fulfilled', value: results.trojan },
             vmess: { status: 'fulfilled', value: results.vmess }
@@ -355,7 +354,7 @@ async function init(env: Env): Promise<Response> {
 }
 
 export default {
-    async fetch(request, env, _ctx) {
+    async fetch(request, env): Promise<Response> {
         try {
             // 处理 WebSocket 连接请求
             if (request.headers.get('Upgrade') === 'websocket') {
@@ -418,7 +417,11 @@ export default {
                 });
             }
 
-            return toHTML(HTML_PAGE);
+            return new Response(HTML_PAGE, {
+                headers: new Headers({
+                    'content-type': 'text/html;charset=UTF-8'
+                })
+            });
         } catch (error: any) {
             await sendMessage(
                 JSON.stringify({
@@ -426,11 +429,16 @@ export default {
                     content: `服务器错误: ${error.message || error}`
                 })
             );
-            return toServerError(error.message || error);
+            return new Response(error.message || error, {
+                status: 500,
+                headers: new Headers({
+                    'content-type': 'text/plain;charset=UTF-8'
+                })
+            });
         }
     },
 
-    async scheduled(_event, env, _ctx): Promise<void> {
-        _ctx.waitUntil(init(env));
+    async scheduled(_event, env, ctx): Promise<void> {
+        ctx.waitUntil(init(env));
     }
 } satisfies ExportedHandler<Env>;

@@ -8,18 +8,12 @@ importers:
 
   .:
     dependencies:
-      '@jiangweiye/worker-api':
-        specifier: ^0.0.5
-        version: 0.0.5
-      '@jiangweiye/worker-fetch':
-        specifier: ^0.0.7
-        version: 0.0.7
-      '@jiangweiye/worker-service':
-        specifier: ^0.0.2
-        version: 0.0.2
-      '@jiangweiye/worker-shared':
-        specifier: ^0.0.2
-        version: 0.0.2
+      cloudflare-tools:
+        specifier: ^0.1.1
+        version: 0.1.1
+      ini:
+        specifier: ^5.0.0
+        version: 5.0.0
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -36,6 +30,9 @@ importers:
       '@jiangweiye/tsconfig':
         specifier: ^0.0.11
         version: 0.0.11(@types/node@22.10.1)
+      '@types/ini':
+        specifier: ^4.1.1
+        version: 4.1.1
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
@@ -631,22 +628,6 @@ packages:
       '@types/node': 22.10.1
     dev: true
 
-  /@jiangweiye/worker-api@0.0.5:
-    resolution: {integrity: sha512-BN+ej20KYvDxHCPnCmfLecFhWeajnI+9x5pWj9GHmNZVpLohR4goDDDOq2g55vG6dmHnC8bdrjpcVJQ3roQHVA==}
-    dev: false
-
-  /@jiangweiye/worker-fetch@0.0.7:
-    resolution: {integrity: sha512-g5IEF9JaMGYDJlKYU1utWsWvn//ZIRJQHPKdBKgNIgKiaPMlj8vX0Kk9lR939mBPaB1ADrPKfbNQIwiQVYZnwQ==}
-    dev: false
-
-  /@jiangweiye/worker-service@0.0.2:
-    resolution: {integrity: sha512-TTTvZDfd7nspRBS/2as8d++IYxGOAac8rXkOs3ROCRzDpcYHXiBilvoBnqjbDtR89+rmLH3IVw+w4NaJJ5cYvg==}
-    dev: false
-
-  /@jiangweiye/worker-shared@0.0.2:
-    resolution: {integrity: sha512-LmDrUxSekhvH9WWwyByUKGft/QFYZV6KOT9ZVB61RYvkI30ELqtsp6SpcuzL+E+wd+8VjeuPeORa/RZuf/QlZg==}
-    dev: false
-
   /@jridgewell/sourcemap-codec@1.5.0:
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
     dev: true
@@ -865,6 +846,10 @@ packages:
 
   /@types/estree@1.0.6:
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
+    dev: true
+
+  /@types/ini@4.1.1:
+    resolution: {integrity: sha512-MIyNUZipBTbyUNnhvuXJTY7B6qNI78meck9Jbv3wk0OgNwRyOOVEKDutAkOs1snB/tx0FafyR6/SN4Ps0hZPeg==}
     dev: true
 
   /@types/js-yaml@4.0.9:
@@ -1332,6 +1317,21 @@ packages:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
     dev: true
+
+  /cloudflare-tools-fetch@0.1.1:
+    resolution: {integrity: sha512-NXLxyK5wTSsqlaXjdbYlkPzXkHsh6QHC1c5xo/obYAKCululHipBqhN8jfQX7OilW+ftKmhOuwo2YUJlIAwfFw==}
+    dev: false
+
+  /cloudflare-tools-shared@0.1.1:
+    resolution: {integrity: sha512-HR78YQFnhs3R7a0gD+gWbdIQ4LSp8v7QzUI2vrdJ2u8jIzhfhGtNpycXcPfBgbOiNR8VKCGk+xMK+3gQC/XkbQ==}
+    dev: false
+
+  /cloudflare-tools@0.1.1:
+    resolution: {integrity: sha512-+J1BJ3zx2c9RMMTQUV7Sd2S7q6sBOKJv10y2l2JsZGb6EBno4Tx7N3C9n5JC6nZN01GcbfosRwMn+Mc46cDB9w==}
+    dependencies:
+      cloudflare-tools-fetch: 0.1.1
+      cloudflare-tools-shared: 0.1.1
+    dev: false
 
   /color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -2165,6 +2165,11 @@ packages:
     resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
     engines: {node: '>=8'}
     dev: true
+
+  /ini@5.0.0:
+    resolution: {integrity: sha512-+N0ngpO3e7cRUWOJAS7qw0IZIVc6XPrW4MlFBdD066F2L4k1L6ker3hLqSq7iXxU5tgS4WGkIUElWn5vogAEnw==}
+    engines: {node: ^18.17.0 || >=20.5.0}
+    dev: false
 
   /is-alphabetical@1.0.4:
     resolution: {integrity: sha512-DwzsA04LQ10FHTZuL0/grVDk4rFoVH1pjAToYwBrHSxcrBIGQuXrQMtD5U1b0U2XVgKZCTLLP8u2Qxqhy3l2Vg==}

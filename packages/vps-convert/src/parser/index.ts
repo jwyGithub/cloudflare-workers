@@ -1,5 +1,5 @@
 import type { VpsMap } from '../types';
-import { fetchWithRetry } from '@jiangweiye/worker-fetch';
+import { fetchWithRetry } from 'cloudflare-tools';
 import { Convert } from '../convert';
 import { getSubType, processVps } from '../shared';
 import { SS } from './ss';

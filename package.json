@@ -32,10 +32,8 @@
         "pages:convert": "pnpm --dir packages/vps-convert run pages"
     },
     "dependencies": {
-        "@jiangweiye/worker-api": "^0.0.5",
-        "@jiangweiye/worker-fetch": "^0.0.7",
-        "@jiangweiye/worker-service": "^0.0.2",
-        "@jiangweiye/worker-shared": "^0.0.2",
+        "cloudflare-tools": "^0.1.1",
+        "ini": "^5.0.0",
         "js-yaml": "^4.1.0"
     },
     "devDependencies": {
@@ -43,6 +41,7 @@
         "@jiangweiye/eslint-config": "0.1.13",
         "@jiangweiye/prettier-config": "^0.0.18",
         "@jiangweiye/tsconfig": "^0.0.11",
+        "@types/ini": "^4.1.1",
         "@types/js-yaml": "^4.0.9",
         "@types/node": "^22.10.1",
         "eslint": "^9.10.0",

@@ -1,10 +1,7 @@
-import { toServerError, toUnauthorized } from '@jiangweiye/worker-service';
+import { validateIp } from 'cloudflare-tools';
 import { DownloadHandler } from './download';
 import { generateHTML } from './page';
-import { ValidateIp } from './validate';
 import { WebSocketHandler } from './websocket-handler';
-
-const validate = new ValidateIp();
 
 export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -12,10 +9,8 @@ export default {
             return handleCORS();
         }
 
-        validate.setEnv(env);
-
-        if (!validate.checkIpIsWhitelisted(request)) {
-            return toUnauthorized();
+        if (!validateIp(request, env.IP_WHITELIST?.split(/\\n|\|/))) {
+            return new Response('Unauthorized', { status: 401 });
         }
 
         const url = new URL(request.url);
@@ -72,7 +67,7 @@ async function handleDownload(_: Request, url: URL, ctx: ExecutionContext, env: 
     try {
         return await downloadHandler.download();
     } catch (error: any) {
-        return toServerError(error.message || error);
+        return new Response(error.message, { status: 500 });
     }
 }
 

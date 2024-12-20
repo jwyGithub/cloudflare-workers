@@ -1,11 +1,7 @@
-import { fetchWithRetry } from '@jiangweiye/worker-fetch';
-import { toServerError, toStream, toUnauthorized } from '@jiangweiye/worker-service';
+import { fetchWithRetry, validateIp } from 'cloudflare-tools';
 import { ProgressTransformer } from './ProgressTransformer';
 import { compressResponse, decompressRequest } from './shared';
 import { smartRateLimiter } from './SmartRateLimiter';
-import { ValidateIp } from './validate';
-
-const validateIp = new ValidateIp();
 
 // 安全检查配置
 const securityConfig = {
@@ -128,16 +124,15 @@ export default {
             }
 
             const { pathname } = new URL(request.url);
-            validateIp.setEnv(env);
 
-            if (!validateIp.checkIpIsWhitelisted(request)) {
-                const response = toUnauthorized();
+            if (!validateIp(request, env.IP_WHITELIST?.split(/\\n|\|/))) {
+                const response = new Response();
                 await logRequest(request, response, startTime, clientIp);
                 return response;
             }
 
             if (pathname === '/favicon.ico') {
-                const response = toStream('', request.headers);
+                const response = new Response('', { headers: request.headers });
                 await logRequest(request, response, startTime, clientIp);
                 return response;
             }
@@ -145,7 +140,7 @@ export default {
             await logRequest(request, response, startTime, clientIp);
             return response;
         } catch (error: any) {
-            const response = toServerError(error.message);
+            const response = new Response(error.message);
             await logRequest(request, response, startTime, clientIp);
             return response;
         }
@@ -224,9 +219,9 @@ async function handleRequest(req: Request): Promise<Response> {
     let resp: Response;
     try {
         resp = await fetchWithRetry(proxyReq).then(res => res.data);
-    } catch (e) {
+    } catch (e: any) {
         console.error('Failed to send request to npm registry', e);
-        return toServerError();
+        return new Response(e.message || e, { status: 502 });
     }
 
     // 处理进度信息
@@ -251,7 +246,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 json = await resp.json();
             } catch (e) {
                 console.error('Failed to parse response JSON', e);
-                return toServerError();
+                return new Response('Failed to parse response JSON', { status: 502 });
             }
 
             const modifiedBody = JSON.stringify(json);

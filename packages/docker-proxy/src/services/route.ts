@@ -1,4 +1,3 @@
-import { RESPONSE_UNAUTHORIZED_CODE, toUnauthorized } from '@jiangweiye/worker-service';
 import { cacheResponse, getCacheResponse } from '../utils/cache';
 import { fetchWithRetry } from '../utils/fetch';
 import { logger } from '../utils/logger';
@@ -28,7 +27,7 @@ export class RouteService {
         await cacheResponse(newUrl.toString(), resp.clone());
         if (resp.status === 401) {
             headers.set('Www-Authenticate', `Bearer realm="https://${url.hostname}/v2/auth",service="cloudflare-docker-proxy"`);
-            return toUnauthorized('UNAUTHORIZED', RESPONSE_UNAUTHORIZED_CODE, headers);
+            return new Response('UNAUTHORIZED', { status: 401, headers });
         } else {
             return resp;
         }

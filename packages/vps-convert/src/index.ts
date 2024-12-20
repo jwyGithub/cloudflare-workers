@@ -1,4 +1,3 @@
-import { toClientError, toServerError, toStream } from '@jiangweiye/worker-service';
 import { dump } from 'js-yaml';
 import { Confuse, Convert } from './convert';
 import { originClash, originSingbox } from './convert/Origin';
@@ -19,36 +18,34 @@ export default {
 
                 // 如果客户端类型不支持
                 if (!convertType) {
-                    return toClientError('Unsupported client type');
+                    return new Response('Unsupported client type', { status: 400 });
                 }
 
                 // 如果客户端类型是Clash
                 if (['clash', 'clashr'].includes(convertType)) {
                     const confuseConfig = await Confuse.getClashConfuseConfig();
                     const originConfig = originClash.getOriginConfig(confuseConfig, vpsMap);
-                    return toStream(
-                        dump(originConfig, { indent: 2, lineWidth: 200 }),
-                        new Headers({
+                    return new Response(dump(originConfig, { indent: 2, lineWidth: 200 }), {
+                        headers: new Headers({
                             'Content-Type': 'text/yaml; charset=UTF-8',
                             'Cache-Control': 'no-store'
                         })
-                    );
+                    });
                 }
 
                 // 如果是客户端类型是singbox
                 if (convertType === 'singbox') {
                     const confuseConfig = await Confuse.getSingboxConfuseConfig();
                     const originConfig = originSingbox.getOriginConfig(confuseConfig, vpsMap);
-                    return toStream(
-                        JSON.stringify(originConfig),
-                        new Headers({
+                    return new Response(JSON.stringify(originConfig), {
+                        headers: new Headers({
                             'Content-Type': 'text/plain; charset=UTF-8',
                             'Cache-Control': 'no-store'
                         })
-                    );
+                    });
                 }
 
-                return toClientError('Unsupported client type, support list: clash, clashr');
+                return new Response('Unsupported client type, support list: clash, clashr', { status: 400 });
             }
 
             return showPage({
@@ -58,7 +55,7 @@ export default {
                 origin
             });
         } catch (error: any) {
-            return toServerError(error.message || error);
+            return new Response(error.message || error);
         }
     }
 } satisfies ExportedHandler<Env>;

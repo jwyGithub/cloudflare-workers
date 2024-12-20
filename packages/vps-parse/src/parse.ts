@@ -1,4 +1,4 @@
-import { tryBase64Decode, tryUrlDecode } from '@jiangweiye/worker-shared';
+import { tryBase64Decode, tryUrlDecode } from 'cloudflare-tools';
 
 export interface VlessLink {
     type: 'vless';

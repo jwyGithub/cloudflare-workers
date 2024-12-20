@@ -1,5 +1,3 @@
-import { toHTML, toServerError } from '@jiangweiye/worker-service';
-
 interface IPageOption {
     url: string;
     lockBackend: boolean;
@@ -54,8 +52,10 @@ export async function showPage(pageOptions: IPageOption): Promise<Response> {
         // 替换是否锁定后端
         originPage = replaceDisabled(originPage, lockBackend);
 
-        return toHTML(originPage, new Headers({ ...response.headers, 'Content-Type': 'text/html; charset=utf-8' }));
+        return new Response(originPage, {
+            headers: new Headers({ ...response.headers, 'Content-Type': 'text/html; charset=utf-8' })
+        });
     } catch (error: any) {
-        return toServerError(error.message || error);
+        return new Response(error.message || error);
     }
 }

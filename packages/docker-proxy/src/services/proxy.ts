@@ -1,4 +1,3 @@
-import { toSuccess } from '@jiangweiye/worker-service';
 import { registryConfigs } from '../constants/registry';
 
 import { logger } from '../utils/logger';
@@ -11,7 +10,7 @@ export async function handleProxyRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const upstream = getUpstream(url.hostname);
     if (!upstream) {
-        return toSuccess(registryConfigs, 'success', request.headers);
+        return Response.json(registryConfigs);
     }
 
     const authorization = request.headers.get('Authorization');
