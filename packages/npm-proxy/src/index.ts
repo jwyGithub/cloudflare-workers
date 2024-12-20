@@ -1,3 +1,4 @@
+import { fetchWithRetry } from '@jiangweiye/worker-fetch';
 import { toServerError, toStream, toUnauthorized } from '@jiangweiye/worker-service';
 import { ProgressTransformer } from './ProgressTransformer';
 import { compressResponse, decompressRequest } from './shared';
@@ -178,18 +179,6 @@ async function logRequest(request: Request, response: Response, startTime: numbe
     console.log(JSON.stringify(logEntry));
 }
 
-async function fetchWithRetry(request: Request, retries = 3): Promise<Response> {
-    try {
-        return await fetch(request);
-    } catch (error) {
-        if (retries > 0) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return fetchWithRetry(request, retries - 1);
-        }
-        throw error;
-    }
-}
-
 async function handleRequest(req: Request): Promise<Response> {
     const url = new URL(req.url);
     const targetUrl = `https://registry.npmjs.org${url.pathname}${url.search}`;
@@ -234,7 +223,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
     let resp: Response;
     try {
-        resp = await fetchWithRetry(proxyReq);
+        resp = await fetchWithRetry(proxyReq).then(res => res.data);
     } catch (e) {
         console.error('Failed to send request to npm registry', e);
         return toServerError();
@@ -266,6 +255,8 @@ async function handleRequest(req: Request): Promise<Response> {
             }
 
             const modifiedBody = JSON.stringify(json);
+            resp.headers.set('content-length', String(modifiedBody.length));
+            resp.headers.set('content-type', 'application/json; charset=utf-8');
             return compressResponse(
                 new Response(modifiedBody, {
                     status: resp.status,

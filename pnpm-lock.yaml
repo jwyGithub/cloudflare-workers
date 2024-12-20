@@ -12,8 +12,8 @@ importers:
         specifier: ^0.0.5
         version: 0.0.5
       '@jiangweiye/worker-fetch':
-        specifier: ^0.0.6
-        version: 0.0.6
+        specifier: ^0.0.7
+        version: 0.0.7
       '@jiangweiye/worker-service':
         specifier: ^0.0.2
         version: 0.0.2
@@ -635,8 +635,8 @@ packages:
     resolution: {integrity: sha512-BN+ej20KYvDxHCPnCmfLecFhWeajnI+9x5pWj9GHmNZVpLohR4goDDDOq2g55vG6dmHnC8bdrjpcVJQ3roQHVA==}
     dev: false
 
-  /@jiangweiye/worker-fetch@0.0.6:
-    resolution: {integrity: sha512-bEZeN+2Yn4VasqGNAKHOSlYMQ+42QLBRADwAp8KkT9IkM3y/6sXT9WzK2CGCsP9zsVVSsOmcrj2UKBwyMaeeTg==}
+  /@jiangweiye/worker-fetch@0.0.7:
+    resolution: {integrity: sha512-g5IEF9JaMGYDJlKYU1utWsWvn//ZIRJQHPKdBKgNIgKiaPMlj8vX0Kk9lR939mBPaB1ADrPKfbNQIwiQVYZnwQ==}
     dev: false
 
   /@jiangweiye/worker-service@0.0.2:
