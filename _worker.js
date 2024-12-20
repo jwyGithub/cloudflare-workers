@@ -1,13 +1,63 @@
-var $ = Object.defineProperty;
-var b = (t) => {
+var I = Object.defineProperty;
+var M = (t) => {
   throw TypeError(t);
 };
-var A = (t, e, s) => e in t ? $(t, e, { enumerable: !0, configurable: !0, writable: !0, value: s }) : t[e] = s;
-var d = (t, e, s) => A(t, typeof e != "symbol" ? e + "" : e, s), L = (t, e, s) => e.has(t) || b("Cannot " + s);
-var p = (t, e, s) => (L(t, e, "read from private field"), s ? s.call(t) : e.get(t)), M = (t, e, s) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), g = (t, e, s, n) => (L(t, e, "write to private field"), n ? n.call(t, s) : e.set(t, s), s);
-const P = "unauthorized", j = "internal server error", E = new Headers({
+var U = (t, e, s) => e in t ? I(t, e, { enumerable: !0, configurable: !0, writable: !0, value: s }) : t[e] = s;
+var m = (t, e, s) => U(t, typeof e != "symbol" ? e + "" : e, s), E = (t, e, s) => e.has(t) || M("Cannot " + s);
+var f = (t, e, s) => (E(t, e, "read from private field"), s ? s.call(t) : e.get(t)), C = (t, e, s) => e.has(t) ? M("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), y = (t, e, s, n) => (E(t, e, "write to private field"), n ? n.call(t, s) : e.set(t, s), s);
+const T = {
+  /** 默认不启用重试 */
+  retries: 0,
+  /** 默认重试间隔（毫秒） */
+  retryDelay: 1e3,
+  /** 默认需要重试的状态码 */
+  retryOnStatusCodes: [500, 502, 503, 504]
+};
+async function j(t, e = T) {
+  const {
+    retries: s = T.retries,
+    retryDelay: n = T.retryDelay,
+    retryOnStatusCodes: r = T.retryOnStatusCodes,
+    onError: i,
+    ...u
+  } = e;
+  let a = 0;
+  const c = async () => {
+    a++;
+    try {
+      let o, d;
+      t instanceof Request ? (d = t.url, o = new Request(t, u)) : (d = t.toString(), o = new Request(d, u));
+      const l = await fetch(o), p = {
+        status: l.status,
+        statusText: l.statusText,
+        headers: Object.fromEntries(l.headers.entries()),
+        data: await l.json(),
+        config: { url: d, ...u },
+        ok: l.ok
+      };
+      if (r.includes(p.status) && a <= s) {
+        if (i) {
+          const g = i(new Error(`请求失败，状态码 ${p.status}`), a);
+          g instanceof Promise && await g;
+        }
+        return await new Promise((g) => setTimeout(g, n)), c();
+      }
+      return p;
+    } catch (o) {
+      if (i) {
+        const d = i(o, a);
+        d instanceof Promise && await d;
+      }
+      if (a <= s)
+        return await new Promise((d) => setTimeout(d, n)), c();
+      throw o;
+    }
+  };
+  return c();
+}
+const q = "unauthorized", A = "internal server error", P = new Headers({
   "Content-type": "application/json"
-}), W = new Headers({
+}), O = new Headers({
   "Content-type": "application/octet-stream"
 });
 new Headers({
@@ -16,10 +66,10 @@ new Headers({
 new Headers({
   "Content-type": "text/html"
 });
-const H = (t, e = W) => new Response(t, {
+const H = (t, e = O) => new Response(t, {
   status: 200,
   headers: e
-}), q = (t = P, e = 401, s = E) => Response.json(
+}), W = (t = q, e = 401, s = P) => Response.json(
   {
     status: e,
     message: t
@@ -29,7 +79,7 @@ const H = (t, e = W) => new Response(t, {
     statusText: t,
     headers: s
   }
-), w = (t = j, e = 500, s = E) => Response.json(
+), x = (t = A, e = 500, s = P) => Response.json(
   {
     status: e,
     message: t
@@ -40,9 +90,9 @@ const H = (t, e = W) => new Response(t, {
     headers: s
   }
 );
-class z {
+class k {
   constructor() {
-    d(this, "buffer");
+    m(this, "buffer");
     this.buffer = new Uint8Array(0);
   }
   transform(e, s) {
@@ -52,10 +102,10 @@ class z {
     for (let i = 0; i < this.buffer.length; i++)
       if (this.buffer[i] === 10) {
         try {
-          const c = this.buffer.slice(r, i), a = new TextDecoder().decode(c);
+          const u = this.buffer.slice(r, i), a = new TextDecoder().decode(u);
           if (a.trim()) {
-            const h = JSON.parse(a);
-            this.handleProgressData(h, s);
+            const c = JSON.parse(a);
+            this.handleProgressData(c, s);
           }
         } catch {
           s.enqueue(this.buffer.slice(r, i)), s.enqueue(new Uint8Array([10]));
@@ -95,7 +145,7 @@ class z {
   }
   formatProgressMessage(e) {
     if (!e.data) return "";
-    const { name: s, completed: n, total: r } = e.data, i = r > 0 ? Math.round(n / r * 100) : 0, c = 20, a = Math.round(i / 100 * c), h = c - a, o = `[${"=".repeat(a)}${" ".repeat(h)}]`;
+    const { name: s, completed: n, total: r } = e.data, i = r > 0 ? Math.round(n / r * 100) : 0, u = 20, a = Math.round(i / 100 * u), c = u - a, o = `[${"=".repeat(a)}${" ".repeat(c)}]`;
     return `${s} ${o} ${i}% (${n}/${r})`;
   }
   formatStatusMessage(e) {
@@ -107,7 +157,7 @@ class z {
     return e.error ? `Error: ${e.error.message || "Unknown error"}` : "";
   }
 }
-async function y(t) {
+async function b(t) {
   var i;
   const e = t.headers.get("content-type") || "";
   if (!e.includes("text/") && !e.includes("application/json") && !e.includes("application/javascript"))
@@ -119,7 +169,7 @@ async function y(t) {
     headers: r
   });
 }
-async function N(t) {
+async function z(t) {
   if (t.headers.get("content-encoding") !== "gzip" || !t.body)
     return t;
   const s = new DecompressionStream("gzip"), n = t.body.pipeThrough(s), r = new Headers(t.headers);
@@ -130,12 +180,12 @@ async function N(t) {
     redirect: t.redirect
   });
 }
-class O {
+class N {
   constructor() {
-    d(this, "limits");
-    d(this, "usage");
-    d(this, "queues");
-    d(this, "lastCleanup");
+    m(this, "limits");
+    m(this, "usage");
+    m(this, "queues");
+    m(this, "lastCleanup");
     this.limits = /* @__PURE__ */ new Map(), this.usage = /* @__PURE__ */ new Map(), this.queues = /* @__PURE__ */ new Map(), this.lastCleanup = Date.now(), this.setDefaultLimits();
   }
   setDefaultLimits() {
@@ -185,14 +235,14 @@ class O {
     this.cleanup();
     const r = this.limits.get(s);
     if (!r) return !0;
-    const i = `${e}:${s}`, c = this.usage.get(i) || 0, a = this.getOrCreateQueue(i);
-    return c >= r.concurrent ? a.queue.length >= r.burstLimit ? !1 : new Promise((h) => {
+    const i = `${e}:${s}`, u = this.usage.get(i) || 0, a = this.getOrCreateQueue(i);
+    return u >= r.concurrent ? a.queue.length >= r.burstLimit ? !1 : new Promise((c) => {
       a.queue.push({
-        resolve: h,
+        resolve: c,
         priority: n || r.priority,
         timestamp: Date.now()
       }), this.sortQueue(a);
-    }) : (this.usage.set(i, c + 1), a.processing++, setTimeout(() => {
+    }) : (this.usage.set(i, u + 1), a.processing++, setTimeout(() => {
       this.releaseToken(i);
     }, r.windowMs), !0);
   }
@@ -229,49 +279,49 @@ class O {
     };
   }
 }
-const k = new O();
-function v(t, e) {
+const v = new N();
+function F(t, e) {
   if (!t || !e) return !1;
   for (let s = 0; s < e.length; s++)
     if (new RegExp(e[s].replace(/\./g, "\\.").replace(/\*/g, "\\d+")).test(t))
       return !0;
   return !1;
 }
-var u;
-class F {
+var h;
+class J {
   constructor() {
-    M(this, u, []);
-    g(this, u, []);
+    C(this, h, []);
+    y(this, h, []);
   }
   setEnv(e) {
-    if (p(this, u).length || p(this, u) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
+    if (f(this, h).length || f(this, h) === "*" || !Reflect.has(e, "IP_WHITELIST")) return;
     const s = Reflect.get(e, "IP_WHITELIST") ?? "*";
-    s === "*" ? g(this, u, "*") : g(this, u, s.split(",").map((n) => n.trim()));
+    s === "*" ? y(this, h, "*") : y(this, h, s.split(",").map((n) => n.trim()));
   }
   checkIpIsWhitelisted(e) {
     const s = e.headers.get("x-real-ip") || "";
-    return (typeof p(this, u) == "string" && p(this, u)) === "*" || Array.isArray(p(this, u)) && p(this, u).length === 0 ? !0 : Array.isArray(p(this, u)) && p(this, u).length > 0 ? v(s, p(this, u)) : !1;
+    return (typeof f(this, h) == "string" && f(this, h)) === "*" || Array.isArray(f(this, h)) && f(this, h).length === 0 ? !0 : Array.isArray(f(this, h)) && f(this, h).length > 0 ? F(s, f(this, h)) : !1;
   }
 }
-u = new WeakMap();
-const S = new F(), m = {
+h = new WeakMap();
+const D = new J(), R = {
   maxContentLength: 100 * 1024 * 1024,
   // 100MB
   allowedMethods: ["GET", "PUT", "POST", "DELETE"],
   blockedUserAgents: ["curl/7.29.0"]
   // 示例：阻止特定的User-Agent
 };
-async function J(t) {
-  if (!m.allowedMethods.includes(t.method))
+async function _(t) {
+  if (!R.allowedMethods.includes(t.method))
     return new Response("Method Not Allowed", { status: 405 });
-  if (Number.parseInt(t.headers.get("content-length") || "0") > m.maxContentLength)
+  if (Number.parseInt(t.headers.get("content-length") || "0") > R.maxContentLength)
     return new Response("Content Too Large", { status: 413 });
   const s = t.headers.get("user-agent") || "";
-  if (m.blockedUserAgents.some((a) => s.includes(a)))
+  if (R.blockedUserAgents.some((a) => s.includes(a)))
     return new Response("Forbidden User Agent", { status: 403 });
-  const n = t.headers.get("x-real-ip") || "", r = B(t.url, t.method);
+  const n = t.headers.get("x-real-ip") || "", r = G(t.url, t.method);
   let i = 2;
-  return T(t) && (i = 1), await k.acquireToken(n, r, i) ? null : new Response("Too Many Requests", {
+  return L(t) && (i = 1), await v.acquireToken(n, r, i) ? null : new Response("Too Many Requests", {
     status: 429,
     headers: {
       "Retry-After": "60",
@@ -279,20 +329,20 @@ async function J(t) {
     }
   });
 }
-async function _(t) {
+async function B(t) {
   const e = t.headers.get("content-type") || "", s = t.headers.get("content-encoding");
   if (e.includes("application/json") && (t.headers.get("npm-notice") || t.headers.get("npm-in-progress"))) {
     const n = new Headers(t.headers), r = ["npm-notice", "npm-in-progress", "npm-progress", "npm-json", "npm-in-progress-details"];
-    for (const h of r) {
-      const o = t.headers.get(h);
-      o && n.set(h, o);
+    for (const c of r) {
+      const o = t.headers.get(c);
+      o && n.set(c, o);
     }
     let i = t.body;
     if (s === "gzip" && i) {
-      const h = new DecompressionStream("gzip");
-      i = i == null ? void 0 : i.pipeThrough(h);
+      const c = new DecompressionStream("gzip");
+      i = i == null ? void 0 : i.pipeThrough(c);
     }
-    const c = new TransformStream(new z()), a = i == null ? void 0 : i.pipeThrough(c);
+    const u = new TransformStream(new k()), a = i == null ? void 0 : i.pipeThrough(u);
     return new Response(a, {
       status: t.status,
       statusText: t.statusText,
@@ -301,39 +351,39 @@ async function _(t) {
   }
   return t;
 }
-function T(t) {
+function L(t) {
   const e = t.headers.get("user-agent") || "", s = t.headers.get("accept") || "";
   return (e.includes("npm/") || e.includes("Node")) && t.method === "GET" && s.includes("application/json");
 }
-const V = {
+const X = {
   async fetch(t, e) {
     const s = Date.now(), n = t.headers.get("cf-connecting-ip") || "";
     try {
-      const r = await J(t);
+      const r = await _(t);
       if (r)
-        return await l(t, r, s, n), r;
+        return await w(t, r, s, n), r;
       const { pathname: i } = new URL(t.url);
-      if (S.setEnv(e), !S.checkIpIsWhitelisted(t)) {
-        const a = q();
-        return await l(t, a, s, n), a;
+      if (D.setEnv(e), !D.checkIpIsWhitelisted(t)) {
+        const a = W();
+        return await w(t, a, s, n), a;
       }
       if (i === "/favicon.ico") {
         const a = H("", t.headers);
-        return await l(t, a, s, n), a;
+        return await w(t, a, s, n), a;
       }
-      const c = await G(t);
-      return await l(t, c, s, n), c;
+      const u = await Q(t);
+      return await w(t, u, s, n), u;
     } catch (r) {
-      const i = w(r.message);
-      return await l(t, i, s, n), i;
+      const i = x(r.message);
+      return await w(t, i, s, n), i;
     }
   }
 };
-function B(t, e) {
+function G(t, e) {
   return t.endsWith(".tgz") ? "tarball" : e !== "GET" ? "write" : "metadata";
 }
-async function l(t, e, s, n) {
-  const r = Date.now() - s, i = new URL(t.url), c = {
+async function w(t, e, s, n) {
+  const r = Date.now() - s, i = new URL(t.url), u = {
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
     method: t.method,
     path: i.pathname,
@@ -341,54 +391,45 @@ async function l(t, e, s, n) {
     duration: r,
     ip: n
   };
-  console.log(JSON.stringify(c));
+  console.log(JSON.stringify(u));
 }
-async function C(t, e = 3) {
-  try {
-    return await fetch(t);
-  } catch (s) {
-    if (e > 0)
-      return await new Promise((n) => setTimeout(n, 1e3)), C(t, e - 1);
-    throw s;
-  }
-}
-async function G(t) {
+async function Q(t) {
   const e = new URL(t.url), s = `https://registry.npmjs.org${e.pathname}${e.search}`, n = t.method, r = new Headers(t.headers);
-  r.set("accept", "application/json"), T(t) && (r.set("npm-in-progress", "1"), r.set("npm-progress", "true"));
+  r.set("accept", "application/json"), L(t) && (r.set("npm-in-progress", "1"), r.set("npm-progress", "true"));
   const i = t.headers.get("authorization");
   if (i && r.set("authorization", i), n === "PUT") {
-    const f = t.headers.get("content-length");
-    f && r.set("content-length", f);
+    const p = t.headers.get("content-length");
+    p && r.set("content-length", p);
   }
-  let c = t;
-  t.headers.get("content-encoding") === "gzip" && (c = await N(t));
+  let u = t;
+  t.headers.get("content-encoding") === "gzip" && (u = await z(t));
   const a = {
     method: n,
     headers: r,
-    body: c.body || void 0,
+    body: u.body || void 0,
     redirect: "follow"
-  }, h = new Request(s, a);
+  }, c = new Request(s, a);
   let o;
   try {
-    o = await C(h);
-  } catch (f) {
-    return console.error("Failed to send request to npm registry", f), w();
+    o = await j(c).then((p) => p.data);
+  } catch (p) {
+    return console.error("Failed to send request to npm registry", p), x();
   }
-  if (T(t))
-    return _(o);
+  if (L(t))
+    return B(o);
   if (e.pathname.startsWith("/-/") && e.pathname.includes("/-/package/") && e.pathname.endsWith("/dist-tags"))
-    return Q(t, o);
-  const D = e.pathname.startsWith("/-/user/org.couchdb.user:");
-  if (o.status === 201 && D && (o.headers.get("content-type") || "").includes("application/json")) {
-    let x;
+    return K(t, o);
+  const d = e.pathname.startsWith("/-/user/org.couchdb.user:");
+  if (o.status === 201 && d && (o.headers.get("content-type") || "").includes("application/json")) {
+    let g;
     try {
-      x = await o.json();
-    } catch (U) {
-      return console.error("Failed to parse response JSON", U), w();
+      g = await o.json();
+    } catch ($) {
+      return console.error("Failed to parse response JSON", $), x();
     }
-    const I = JSON.stringify(x);
-    return y(
-      new Response(I, {
+    const S = JSON.stringify(g);
+    return o.headers.set("content-length", String(S.length)), o.headers.set("content-type", "application/json; charset=utf-8"), b(
+      new Response(S, {
         status: o.status,
         statusText: o.statusText,
         headers: o.headers
@@ -401,8 +442,8 @@ async function G(t) {
       statusText: o.statusText,
       headers: o.headers
     });
-  const R = o.headers.get("cache-control");
-  return R && r.set("cache-control", R), y(
+  const l = o.headers.get("cache-control");
+  return l && r.set("cache-control", l), b(
     new Response(o.body, {
       status: o.status,
       statusText: o.statusText,
@@ -410,9 +451,9 @@ async function G(t) {
     })
   );
 }
-async function Q(t, e) {
-  return y(e);
+async function K(t, e) {
+  return b(e);
 }
 export {
-  V as default
+  X as default
 };
