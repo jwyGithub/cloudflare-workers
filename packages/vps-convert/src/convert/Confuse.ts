@@ -1,8 +1,8 @@
 import type { ClashType, SingboxType, VpsMap } from '../types';
-import { fetchWithRetry } from '@jiangweiye/worker-fetch';
+import { fetchWithRetry } from 'cloudflare-tools';
 import { ClashClient } from '../client/Clash';
 import { Singbox } from '../client/Singbox';
-import { parseVps } from '../parser';
+import { Parser } from '../core/parser';
 import { getUrlGroup, processVps } from '../shared';
 
 export class Confuse {
@@ -15,21 +15,17 @@ export class Confuse {
      * @param {string} chunkCount
      * @returns {Promise<{ vpsMap: VpsMap }>} vpsMap
      */
-    static async getConfuseUrl(
-        url: string | URL,
-        backend: string,
-        chunkCount: string
-    ): Promise<{
-        vpsMap: VpsMap;
-    }> {
+    static async getConfuseUrl(url: string | URL, backend: string, chunkCount: string): Promise<Parser> {
         const { searchParams } = new URL(url);
         const vpsUrl = searchParams.get('url');
 
         const vps = vpsUrl!.split(/\||\n/).filter(Boolean);
 
-        const { urls, vpsMap } = await parseVps(processVps(vps));
+        const parser = new Parser(vps);
 
-        const urlGroups = getUrlGroup(Array.from(urls), Number(chunkCount));
+        await parser.parse(processVps(vps));
+
+        const urlGroups = getUrlGroup(Array.from(parser.urls), Number(chunkCount));
 
         Confuse.#confuseUrls = urlGroups.map(urlGroup => {
             const confuseUrl = new URL(`${backend}/sub`);
@@ -39,7 +35,7 @@ export class Confuse {
             return confuseUrl.toString();
         });
 
-        return { vpsMap };
+        return parser;
     }
 
     /**

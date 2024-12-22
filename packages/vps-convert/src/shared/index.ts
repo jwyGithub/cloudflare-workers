@@ -9,6 +9,34 @@ export class ConfuseUtil {
     readonly #maxPort = 65535;
 
     /**
+     * @description 获取随机uuid
+     * @returns {crypto.UUID} crypto.UUID
+     */
+    private getUUID(): string {
+        return crypto.randomUUID();
+    }
+
+    /**
+     * @description 获取随机username
+     * @returns {string} username
+     */
+    protected getUsername(): string {
+        return this.getUUID();
+    }
+
+    /**
+     * @description 获取随机password
+     * @returns {string} crypto.UUID
+     */
+    protected getPassword(): string {
+        return this.getUUID();
+    }
+
+    protected getHost(): string {
+        return `${this.getHostName()}:${this.getPort()}`;
+    }
+
+    /**
      * @description 获取随机hostname
      * @returns {string} hostname
      */
@@ -25,93 +53,10 @@ export class ConfuseUtil {
     }
 
     /**
-     * @description 获取随机password
-     * @returns {string} crypto.UUID
-     */
-    protected getPassword(): string {
-        return crypto.randomUUID();
-    }
-
-    /**
-     * @description 获取随机uuid
-     * @returns {crypto.UUID} crypto.UUID
-     */
-    protected getUUID(): string {
-        return crypto.randomUUID();
-    }
-
-    /**
      * @description 获取随机 SS协议的加密类型
      */
     protected getEncrtptionProtocol(): string {
         return this.#encryptionProtocol[Math.floor(Math.random() * this.#encryptionProtocol.length)];
-    }
-}
-
-export class Store<T> extends ConfuseUtil {
-    /** * @description vps原始配置 */
-    #originConfig: Partial<T> = {};
-
-    /** * @description 混淆配置 */
-    #confuseConfig: Partial<T> = {};
-
-    /** * @description 原始备注 */
-    #originPs: string = '';
-
-    /** * @description 混淆备注 */
-    #confusePs: string = '';
-
-    constructor() {
-        super();
-        this.#confusePs = this.getUUID();
-    }
-
-    /**
-     * @description 设置原始配置
-     * @param {Partial<T>} config
-     */
-    protected setConfuseConfig(config: Partial<T>): void {
-        this.#confuseConfig = config;
-    }
-
-    /**
-     * @description 设置混淆配置
-     * @param {Partial<T>} config
-     * @param {string} ps
-     */
-    protected setOriginConfig(config: Partial<T>, ps: string): void {
-        this.#originConfig = config;
-        this.#originPs = decodeURIComponent(ps);
-    }
-
-    /**
-     * @description 原始备注
-     * @example '#originPs'
-     */
-    get originPs(): string {
-        return this.#originPs;
-    }
-
-    /**
-     * @description 原始配置
-     */
-    get originConfig(): Partial<T> {
-        return this.#originConfig;
-    }
-
-    /**
-     * @description 混淆备注
-     * @example 'confusePs'
-     */
-    get confusePs(): string {
-        return this.#confusePs;
-    }
-
-    /**
-     * @description 混淆配置
-     */
-    get confuseConfig(): Partial<T> {
-        return this.#confuseConfig;
     }
 }
 

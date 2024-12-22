@@ -1,5 +1,5 @@
 import type { ConvertTarget } from '../types';
-import { base64Decode } from '@jiangweiye/worker-shared';
+import { base64Decode } from 'cloudflare-tools';
 
 export * from './Confuse';
 export * from './Origin';
@@ -12,10 +12,7 @@ export class Convert {
      */
     static base64(subs: string): string[] {
         const content = base64Decode(subs);
-        return content
-            .split('\n')
-            .filter(Boolean)
-            .map(item => decodeURIComponent(item));
+        return content.split('\n').filter(Boolean);
     }
 
     /**

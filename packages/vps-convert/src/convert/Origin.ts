@@ -1,4 +1,3 @@
-import type { SS, Trojan, Vless, Vmess } from '../parser';
 import type { ClashType, SingboxOutboundType, SingboxType, VpsMap } from '../types';
 import { PsUtil } from '../shared';
 
@@ -25,10 +24,7 @@ export class OriginClash {
         }
     }
 
-    #restoreProxies(
-        proxies: Array<Record<string, string>>,
-        vpsMap: Map<string, Vless | Vmess | Trojan | SS>
-    ): Array<Record<string, string>> {
+    #restoreProxies(proxies: Array<Record<string, string>>, vpsMap: VpsMap): Array<Record<string, string>> {
         try {
             const result: Array<Record<string, string>> = [];
             for (const proxy of proxies) {
