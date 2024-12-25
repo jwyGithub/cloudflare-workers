@@ -1,7 +1,8 @@
 import type { VlessConfig } from '../types';
-import { ConfuseUtil, PsUtil } from '../../../shared/index';
+import { PsUtil } from '../../../shared/ps';
+import { Confuse } from '../../confuse';
 
-export class VlessParser extends ConfuseUtil {
+export class VlessParser extends Confuse {
     /** * @description 原始链接 */
     #originLink: string = '';
 
@@ -40,6 +41,17 @@ export class VlessParser extends ConfuseUtil {
     }
 
     /**
+     * @description 更新原始配置
+     * @param {string} ps
+     */
+    public updateOriginConfig(ps: string): void {
+        this.#originConfig.hash = ps;
+        this.#originPs = ps;
+        this.#originLink = this.#originConfig.href!;
+        this.setConfuseConfig(this.#originLink);
+    }
+
+    /**
      * @description 设置混淆配置
      * @param {string} v
      */
@@ -54,7 +66,6 @@ export class VlessParser extends ConfuseUtil {
     }
 
     public restoreClash(proxy: Record<string, string | number>, ps: string): Record<string, string | number> {
-        console.log('proxy', proxy);
         proxy.name = ps;
         proxy.server = this.originConfig.hostname ?? '';
         proxy.port = Number(this.originConfig?.port ?? 0);

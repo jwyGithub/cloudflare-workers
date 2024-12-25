@@ -1,9 +1,9 @@
-import type { ClashType, SingboxType, VpsMap } from '../types';
+import type { ClashType, SingboxType } from '../types';
 import { fetchWithRetry } from 'cloudflare-tools';
 import { ClashClient } from '../client/Clash';
 import { Singbox } from '../client/Singbox';
 import { Parser } from '../core/parser';
-import { getUrlGroup, processVps } from '../shared';
+import { getUrlGroup } from '../shared';
 
 export class Confuse {
     static #confuseUrls: string[];
@@ -23,7 +23,7 @@ export class Confuse {
 
         const parser = new Parser(vps);
 
-        await parser.parse(processVps(vps));
+        await parser.parse(vps);
 
         const urlGroups = getUrlGroup(Array.from(parser.urls), Number(chunkCount));
 

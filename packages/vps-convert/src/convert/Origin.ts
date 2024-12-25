@@ -1,5 +1,5 @@
 import type { ClashType, SingboxOutboundType, SingboxType, VpsMap } from '../types';
-import { PsUtil } from '../shared';
+import { PsUtil } from '../shared/ps';
 
 export class OriginClash {
     /**

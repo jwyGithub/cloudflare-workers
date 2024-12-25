@@ -1,7 +1,8 @@
 import type { SsConfig } from '../types';
-import { ConfuseUtil, PsUtil } from '../../../shared/index';
+import { PsUtil } from '../../../shared/ps';
+import { Confuse } from '../../confuse';
 
-export class SsParser extends ConfuseUtil {
+export class SsParser extends Confuse {
     /** * @description 原始链接 */
     #originLink: string = '';
 
@@ -37,6 +38,17 @@ export class SsParser extends ConfuseUtil {
         this.#originLink = v;
         this.#originConfig = new URL(v);
         this.#originPs = this.#originConfig.hash ?? '';
+    }
+
+    /**
+     * @description 更新原始配置
+     * @param {string} ps
+     */
+    public updateOriginConfig(ps: string): void {
+        this.#originConfig.hash = ps;
+        this.#originPs = ps;
+        this.#originLink = this.#originConfig.href!;
+        this.setConfuseConfig(this.#originLink);
     }
 
     /**

@@ -1,5 +1,5 @@
 import type { SingboxOutboundType, SingboxType } from '../types';
-import { PsUtil } from '../shared';
+import { PsUtil } from '../shared/ps';
 
 export class Singbox {
     #singboxConfig: SingboxType = {};

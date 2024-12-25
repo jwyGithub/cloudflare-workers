@@ -1,8 +1,9 @@
 import type { VmessConfig } from '../types';
 import { base64Decode, base64Encode } from 'cloudflare-tools';
-import { ConfuseUtil, PsUtil } from '../../../shared/index';
+import { PsUtil } from '../../../shared/ps';
+import { Confuse } from '../../confuse';
 
-export class VmessParser extends ConfuseUtil {
+export class VmessParser extends Confuse {
     /** * @description 原始链接 */
     #originLink: string = '';
 
@@ -39,6 +40,17 @@ export class VmessParser extends ConfuseUtil {
         this.#originLink = v;
         this.#originConfig = JSON.parse(base64Decode(config));
         this.#originPs = this.#originConfig.ps ?? '';
+    }
+
+    /**
+     * @description 更新原始配置
+     * @param {string} ps
+     */
+    public updateOriginConfig(ps: string): void {
+        this.#originConfig.ps = ps;
+        this.#originPs = ps;
+        this.#originLink = `vmess://${base64Encode(JSON.stringify(this.#originConfig))}`;
+        this.setConfuseConfig();
     }
 
     /**
