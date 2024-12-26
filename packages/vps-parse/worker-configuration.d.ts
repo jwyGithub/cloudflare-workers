@@ -11,4 +11,13 @@ interface Env {
 
     TG_TOKEN?: string;
     TG_ID?: string;
+
+    KV_API_TOKEN: string;
+    KV_NAMESPACE_ID: string;
+    ACCOUNT_ID: string;
+    ACCOUNT_EMAIL: string;
+
+    SUB: string;
+    SUB_CONFIG: string;
+    SUB_URLS: string;
 }

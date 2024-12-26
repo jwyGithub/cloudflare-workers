@@ -1,6 +1,7 @@
 import { fetchWithRetry, notifyTelegram, tryBase64Decode, tryBase64Encode, tryUrlDecode } from 'cloudflare-tools';
 import { HTML_PAGE } from './page';
 import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
+import { sync } from './sync';
 
 let ws: WebSocket | null = null;
 
@@ -336,6 +337,15 @@ async function init(env: Env): Promise<Response> {
                 `vmess: ${telegramMessageConfig.vmessPushStatus} (${telegramMessageConfig.vmessCount})`
             ]
         });
+
+        await sync(env);
+
+        await sendMessage(
+            JSON.stringify({
+                type: 'success',
+                content: '同步完成！'
+            })
+        );
 
         return Response.json({
             vless: { status: 'fulfilled', value: results.vless },
