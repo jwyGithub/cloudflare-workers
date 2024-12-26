@@ -16710,8 +16710,8 @@ G.fileFromPath = hg;
   s.V4PagePagination = mt, s.V4PagePaginationArray = A, s.CursorPagination = Ld, s.CursorLimitPagination = Zd, s.SinglePage = w, s.Accounts = fe, s.OriginCACertificates = Jg, s.IPs = jg, s.Memberships = Kg, s.User = qo, s.Zones = wl, s.LoadBalancers = Ys, s.Cache = We, s.SSL = Qc, s.Subscriptions = nf, s.ACM = ee, s.Argo = Fe, s.Plans = Xg, s.RatePlans = tf, s.CertificateAuthorities = qe, s.ClientCertificates = Fg, s.CustomCertificates = ln, s.CustomHostnames = hn, s.CustomNameservers = Mg, s.DNS = Un, s.DNSSECResource = Yg, s.EmailRouting = Zn, s.Filters = Hg, s.Firewall = Wn, s.Healthchecks = Jn, s.KeylessCertificates = Gg, s.Logpush = Xs, s.Logs = cr, s.OriginTLSClientAuth = Or, s.Pagerules = Vr, s.RateLimits = qg, s.SecondaryDNS = io, s.WaitingRooms = aa, s.Web3 = _a, s.Workers = za, s.KV = Zs, s.DurableObjects = An, s.Queues = Gr, s.APIGateway = _e, s.ManagedHeaders = Wg, s.PageShield = Cr, s.Rulesets = Mc, s.URLNormalization = sf, s.Spectrum = wo, s.Addressing = Ie, s.AuditLogs = Vg, s.Billing = Be, s.BrandProtection = Ng, s.Diagnostics = Sn, s.Images = hs, s.Intel = Os, s.MagicTransit = Ur, s.MagicNetworkMonitoring = _r, s.MTLSCertificates = ar, s.Pages = Yr, s.PCAPs = Ir, s.Registrar = Rc, s.RequestTracers = kc, s.Rules = Cc, s.Storage = Uo, s.Stream = No, s.Alerting = Ve, s.D1Resource = pn, s.R2 = Qr, s.WARPConnector = rf, s.WorkersForPlatforms = Ca, s.ZeroTrust = dl, s.Challenges = en, s.HyperdriveResource = es, s.RUM = ti, s.Vectorize = ea, s.URLScanner = Bo, s.Radar = Oc, s.BotManagement = Dg, s.OriginPostQuantumEncryption = Qg, s.Speed = Po, s.DCVDelegation = Bg, s.Hostnames = qn, s.Snippets = ao, s.Calls = Qe, s.CloudforceOne = an, s.EventNotifications = Vn, s.AIGateway = se, s.IAM = rs, s.CloudConnector = sn;
 })(G || (G = {}));
 function em(s) {
-  const t = new URLSearchParams(s.SUB);
-  return t.set("target", "clash"), t.set("new_name", "true"), t.set("insert", "false"), t.set("config", s.SUB_CONFIG), t.set("url", s.SUB_URLS), t.set("filename", "sub"), t.set("emoji", "true"), t.set("list", "false"), t.set("tfo", "false"), t.set("scv", "false"), t.set("fdn", "false"), t.set("sort", "false"), t.toString();
+  const t = new URL(`https://${s.SUB}/sub`), e = new URLSearchParams();
+  return e.set("target", "clash"), e.set("new_name", "true"), e.set("insert", "false"), e.set("config", s.SUB_CONFIG), e.set("url", s.SUB_URLS), e.set("filename", "sub"), e.set("emoji", "true"), e.set("list", "false"), e.set("tfo", "false"), e.set("scv", "false"), e.set("fdn", "false"), e.set("sort", "false"), `${t.toString()}?${e.toString()}`;
 }
 async function nm(s) {
   const t = new G({
@@ -16720,10 +16720,10 @@ async function nm(s) {
   }), e = em(s), n = await qt(e);
   if (n.ok) {
     const r = await n.data.text();
-    await t.kv.namespaces.values.update(s.KV_NAMESPACE_ID, "sub.yaml", {
+    await t.kv.namespaces.values.update(s.KV_NAMESPACE_ID, "sub.yml", {
       account_id: s.ACCOUNT_ID,
       metadata: JSON.stringify({
-        name: "sub.yaml",
+        name: "sub.yml",
         type: "text"
       }),
       value: r
