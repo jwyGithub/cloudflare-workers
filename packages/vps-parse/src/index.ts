@@ -1,7 +1,8 @@
+import { Cloudflare } from 'cloudflare';
 import { fetchWithRetry, notifyTelegram, tryBase64Decode, tryBase64Encode, tryUrlDecode } from 'cloudflare-tools';
 import { HTML_PAGE } from './page';
 import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
-import { sync } from './sync';
+import { getSubConfig, sync } from './sync';
 
 let ws: WebSocket | null = null;
 
@@ -241,6 +242,11 @@ async function pushGithub(content: string[], path: string, env: Env): Promise<st
 }
 
 async function init(env: Env): Promise<Response> {
+    const cloudflare = new Cloudflare({
+        apiToken: env.KV_API_TOKEN,
+        apiEmail: env.ACCOUNT_EMAIL
+    });
+
     try {
         await sendMessage(
             JSON.stringify({
@@ -338,7 +344,7 @@ async function init(env: Env): Promise<Response> {
             ]
         });
 
-        await sync(env);
+        await sync(env, cloudflare);
 
         await sendMessage(
             JSON.stringify({
@@ -424,6 +430,21 @@ export default {
                 return new Response(null, {
                     status: 101,
                     webSocket: client
+                });
+            }
+
+            if (request.method === 'GET' && request.url.includes('/sub.yml')) {
+                const config = await getSubConfig(
+                    env,
+                    new Cloudflare({
+                        apiToken: env.KV_API_TOKEN,
+                        apiEmail: env.ACCOUNT_EMAIL
+                    })
+                );
+                return new Response(config, {
+                    headers: new Headers({
+                        'content-type': 'text/yaml;charset=UTF-8'
+                    })
                 });
             }
 

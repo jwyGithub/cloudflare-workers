@@ -1,4 +1,4 @@
-import { Cloudflare } from 'cloudflare';
+import type { Cloudflare } from 'cloudflare';
 import { fetchWithRetry } from 'cloudflare-tools';
 
 function getClashConfig(env: Env): string {
@@ -19,11 +19,7 @@ function getClashConfig(env: Env): string {
     return `${url.toString()}?${urlParams.toString()}`;
 }
 
-export async function sync(env: Env): Promise<void> {
-    const cloudflare = new Cloudflare({
-        apiToken: env.KV_API_TOKEN,
-        apiEmail: env.ACCOUNT_EMAIL
-    });
+export async function sync(env: Env, cloudflare: Cloudflare): Promise<void> {
     const url = getClashConfig(env);
     const response = await fetchWithRetry(url);
     if (response.ok) {
@@ -37,4 +33,14 @@ export async function sync(env: Env): Promise<void> {
             value: config
         });
     }
+}
+
+export async function getSubConfig(env: Env, cloudflare: Cloudflare): Promise<string> {
+    const result = await cloudflare.kv.namespaces.values.get(env.KV_NAMESPACE_ID, 'sub.yml', {
+        account_id: env.ACCOUNT_ID
+    });
+    if (result.ok) {
+        return result.text();
+    }
+    return '';
 }
