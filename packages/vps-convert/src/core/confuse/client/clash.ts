@@ -1,13 +1,20 @@
-import type { ClashType } from '../types';
+import type { ClashType } from '../../../types';
+import { fetchWithRetry } from 'cloudflare-tools';
 import { load } from 'js-yaml';
 
 export class ClashClient {
-    #clashConfig: ClashType;
+    public async getConfig(urls: string[]): Promise<ClashType> {
+        try {
+            const result = await Promise.all(urls.map(url => fetchWithRetry(url, { retries: 3 }).then(r => r.data.text())));
+            return this.setClashConfig(result);
+        } catch (error: any) {
+            throw new Error(error.message || error);
+        }
+    }
 
-    constructor(configs: string[] = []) {
+    private setClashConfig(configs: string[]): ClashType {
         const clashConfigs = configs.map(config => load(config) as ClashType);
-        const mergeConfig = this.#mergeClashConfig(clashConfigs);
-        this.#clashConfig = mergeConfig;
+        return this.mergeClashConfig(clashConfigs);
     }
 
     /**
@@ -15,7 +22,7 @@ export class ClashClient {
      * @param {ClashType[]} configs
      * @returns {ClashType} mergedConfig
      */
-    #mergeClashConfig(configs: ClashType[] = []): ClashType {
+    private mergeClashConfig(configs: ClashType[] = []): ClashType {
         if (!configs.length) {
             return {} as ClashType;
         }
@@ -91,9 +98,5 @@ export class ClashClient {
         mergedConfig.proxies = mergedConfig.proxies.filter((_, i) => proxyIndices[i] !== -1);
 
         return mergedConfig;
-    }
-
-    get clashConfig(): ClashType {
-        return this.#clashConfig;
     }
 }

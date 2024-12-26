@@ -16,6 +16,7 @@ export interface BaseConfig {
     search: string;
     searchParams: URLSearchParams;
     hash: string;
+    [key: string]: any;
 }
 
 export interface VmessConfig {
@@ -34,6 +35,7 @@ export interface VmessConfig {
     sni: string;
     alpn: string;
     fp: string;
+    [key: string]: any;
 }
 
 export interface VlessConfig extends BaseConfig {}

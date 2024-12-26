@@ -7,4 +7,3 @@ export type ConvertTarget = 'clash' | 'clashr' | 'singbox' | (string & {});
 
 export * from './Clash';
 export * from './Singbox';
-export * from './Surge';

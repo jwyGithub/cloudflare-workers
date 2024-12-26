@@ -1,8 +1,8 @@
 import type { VlessConfig } from '../types';
+import { Faker } from '../../../shared/faker';
 import { PsUtil } from '../../../shared/ps';
-import { Confuse } from '../../confuse';
 
-export class VlessParser extends Confuse {
+export class VlessParser extends Faker {
     /** * @description 原始链接 */
     #originLink: string = '';
 
@@ -21,7 +21,7 @@ export class VlessParser extends Confuse {
     /** * @description 混淆备注 */
     #confusePs: string = '';
 
-    public constructor(v: string) {
+    constructor(v: string) {
         super();
         this.#confusePs = crypto.randomUUID();
         // 设置原始配置

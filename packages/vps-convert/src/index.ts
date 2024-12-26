@@ -1,6 +1,6 @@
 import { dump } from 'js-yaml';
-import { Confuse, Convert } from './convert';
-import { originClash, originSingbox } from './convert/Origin';
+import { Confuse } from './core/confuse';
+import { Restore } from './core/restore';
 import { DEFAULT_CONFIG, showPage } from './page';
 
 export default {
@@ -8,23 +8,20 @@ export default {
         try {
             const { pathname, origin } = new URL(request.url);
             if (pathname === '/sub') {
-                const { vpsMap } = await Confuse.getConfuseUrl(
-                    request.url,
-                    env.BACKEND ?? DEFAULT_CONFIG.BACKEND,
-                    env.CHUNK_COUNT ?? DEFAULT_CONFIG.CHUNK_COUNT
-                );
-
-                const convertType = Convert.getConvertType(request.url);
+                const confuse = new Confuse(env);
+                await confuse.setSubUrls(request);
+                const convertType = new URL(request.url).searchParams.get('target');
 
                 // 如果客户端类型不支持
                 if (!convertType) {
                     return new Response('Unsupported client type', { status: 400 });
                 }
 
+                const restore = new Restore(confuse);
+
                 // 如果客户端类型是Clash
                 if (['clash', 'clashr'].includes(convertType)) {
-                    const confuseConfig = await Confuse.getClashConfuseConfig();
-                    const originConfig = originClash.getOriginConfig(confuseConfig, vpsMap);
+                    const originConfig = await restore.getClashConfig();
                     return new Response(dump(originConfig, { indent: 2, lineWidth: 200 }), {
                         headers: new Headers({
                             'Content-Type': 'text/yaml; charset=UTF-8',
@@ -35,8 +32,7 @@ export default {
 
                 // 如果是客户端类型是singbox
                 if (convertType === 'singbox') {
-                    const confuseConfig = await Confuse.getSingboxConfuseConfig();
-                    const originConfig = originSingbox.getOriginConfig(confuseConfig, vpsMap);
+                    const originConfig = await restore.getSingboxConfig();
                     return new Response(JSON.stringify(originConfig), {
                         headers: new Headers({
                             'Content-Type': 'text/plain; charset=UTF-8',

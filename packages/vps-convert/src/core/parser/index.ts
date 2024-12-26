@@ -1,8 +1,8 @@
+import type { SubType } from '../../types';
 import type { ParserType } from './types';
-import { fetchWithRetry } from 'cloudflare-tools';
-import { Convert } from '../../convert';
-import { getSubType } from '../../shared';
-import { Format } from '../../shared/format';
+import { base64Decode, fetchWithRetry } from 'cloudflare-tools';
+import { load } from 'js-yaml';
+import { Convert } from '../convert';
 import { SsParser } from './protocol/ss';
 import { TrojanParser } from './protocol/trojan';
 import { VlessParser } from './protocol/vless';
@@ -13,7 +13,7 @@ export * from './protocol/trojan';
 export * from './protocol/vless';
 export * from './protocol/vmess';
 
-export class Parser extends Format {
+export class Parser extends Convert {
     private urlSet: Set<string> = new Set<string>();
     private vpsStore: Map<string, ParserType> = new Map();
     private originUrls: Set<string> = new Set<string>();
@@ -49,10 +49,11 @@ export class Parser extends Format {
 
             if (v.startsWith('https://') || v.startsWith('http://')) {
                 const subContent = await fetchWithRetry(v, { retries: 3 }).then(r => r.data.text());
-                const subType = getSubType(subContent);
+                const subType = this.getSubType(subContent);
                 if (subType === 'base64') {
                     this.updateExist(Array.from(this.originUrls));
-                    await this.parse(Convert.base64(subContent));
+                    const content = base64Decode(subContent);
+                    await this.parse(content.split('\n').filter(Boolean));
                 }
             }
         }
@@ -62,6 +63,25 @@ export class Parser extends Format {
         this.urlSet.add(parser.confuseLink);
         this.originUrls.add(v);
         this.vpsStore.set(parser.confusePs, parser);
+    }
+
+    private getSubType(content: string): SubType {
+        try {
+            base64Decode(content);
+            return 'base64';
+        } catch {
+            try {
+                load(content);
+                return 'yaml';
+            } catch {
+                try {
+                    JSON.parse(content);
+                    return 'json';
+                } catch {
+                    return 'unknown';
+                }
+            }
+        }
     }
 
     public get urls(): string[] {

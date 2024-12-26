@@ -1,7 +1,7 @@
-import type { ParserType } from '../core/parser/types';
-import { SsParser, TrojanParser, VlessParser, VmessParser } from '../core/parser';
+import type { ParserType } from '../parser/types';
+import { SsParser, TrojanParser, VlessParser, VmessParser } from '../parser';
 
-export class Format {
+export class FormatPs {
     private existVps: string[] = [];
 
     private existVpsMap: Map<string, number> = new Map();

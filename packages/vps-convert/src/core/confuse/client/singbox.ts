@@ -1,15 +1,20 @@
-import type { SingboxOutboundType, SingboxType } from '../types';
-import { PsUtil } from '../shared/ps';
+import type { SingboxOutboundType, SingboxType } from '../../../types';
+import { fetchWithRetry } from 'cloudflare-tools';
+import { PsUtil } from '../../../shared/ps';
 
-export class Singbox {
-    #singboxConfig: SingboxType = {};
-
-    constructor(configs: SingboxType[] = []) {
-        const mergeConfig = this.#mergeConfig(configs);
-        this.#singboxConfig = mergeConfig;
+export class SingboxClient {
+    public async getConfig(urls: string[]): Promise<SingboxType> {
+        try {
+            const result = await Promise.all(
+                urls.map(url => fetchWithRetry(url, { retries: 3 }).then(r => r.data.json())) as SingboxType[]
+            );
+            return this.mergeConfig(result);
+        } catch (error: any) {
+            throw new Error(error.message || error);
+        }
     }
 
-    #mergeConfig(configs: SingboxType[]): SingboxType {
+    private mergeConfig(configs: SingboxType[]): SingboxType {
         if (configs.length === 0) {
             return {};
         }
@@ -79,9 +84,5 @@ export class Singbox {
 
         baseConfig.outbounds = mergedOutbounds;
         return baseConfig;
-    }
-
-    get singboxConfig(): SingboxType {
-        return this.#singboxConfig;
     }
 }

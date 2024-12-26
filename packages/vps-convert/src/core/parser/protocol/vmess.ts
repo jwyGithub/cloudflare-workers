@@ -1,9 +1,9 @@
 import type { VmessConfig } from '../types';
 import { base64Decode, base64Encode } from 'cloudflare-tools';
+import { Faker } from '../../../shared/faker';
 import { PsUtil } from '../../../shared/ps';
-import { Confuse } from '../../confuse';
 
-export class VmessParser extends Confuse {
+export class VmessParser extends Faker {
     /** * @description 原始链接 */
     #originLink: string = '';
 
