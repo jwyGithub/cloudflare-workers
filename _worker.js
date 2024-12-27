@@ -1,8 +1,8 @@
-var $n = Object.defineProperty;
+var Gn = Object.defineProperty;
 var qe = (e) => {
   throw TypeError(e);
 };
-var Vn = (e, n, i) => n in e ? $n(e, n, { enumerable: !0, configurable: !0, writable: !0, value: i }) : e[n] = i;
+var Vn = (e, n, i) => n in e ? Gn(e, n, { enumerable: !0, configurable: !0, writable: !0, value: i }) : e[n] = i;
 var E = (e, n, i) => Vn(e, typeof n != "symbol" ? n + "" : n, i), Ie = (e, n, i) => n.has(e) || qe("Cannot " + i);
 var a = (e, n, i) => (Ie(e, n, "read from private field"), i ? i.call(e) : n.get(e)), w = (e, n, i) => n.has(e) ? qe("Cannot add the same private member more than once") : n instanceof WeakSet ? n.add(e) : n.set(e, i), C = (e, n, i, r) => (Ie(e, n, "write to private field"), r ? r.call(e, i) : n.set(e, i), i), Qe = (e, n, i) => (Ie(e, n, "access private method"), i);
 /*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
@@ -455,12 +455,12 @@ var Ki = new _("tag:yaml.org,2002:timestamp", {
   instanceOf: Date,
   represent: ji
 });
-function Gi(e) {
+function $i(e) {
   return e === "<<" || e === null;
 }
-var $i = new _("tag:yaml.org,2002:merge", {
+var Gi = new _("tag:yaml.org,2002:merge", {
   kind: "scalar",
-  resolve: Gi
+  resolve: $i
 }), Ke = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=
 \r`;
 function Vi(e) {
@@ -557,7 +557,7 @@ var fr = new _("tag:yaml.org,2002:set", {
 }), xn = Bi.extend({
   implicit: [
     Ki,
-    $i
+    Gi
   ],
   explicit: [
     Xi,
@@ -675,7 +675,7 @@ function oe(e, n, i, r, o, l, t, s, u) {
     }) : n[o] = l, delete i[o];
   return n;
 }
-function Ge(e) {
+function $e(e) {
   var n;
   n = e.input.charCodeAt(e.position), n === 10 ? e.position++ : n === 13 ? (e.position++, e.input.charCodeAt(e.position) === 10 && e.position++) : d(e, "a line break is expected"), e.line += 1, e.lineStart = e.position, e.firstTabInLine = -1;
 }
@@ -688,7 +688,7 @@ function v(e, n, i) {
         o = e.input.charCodeAt(++e.position);
       while (o !== 10 && o !== 13 && o !== 0);
     if (D(o))
-      for (Ge(e), o = e.input.charCodeAt(e.position), r++, e.lineIndent = 0; o === 32; )
+      for ($e(e), o = e.input.charCodeAt(e.position), r++, e.lineIndent = 0; o === 32; )
         e.lineIndent++, o = e.input.charCodeAt(++e.position);
     else
       break;
@@ -699,7 +699,7 @@ function Le(e) {
   var n = e.position, i;
   return i = e.input.charCodeAt(n), !!((i === 45 || i === 46) && i === e.input.charCodeAt(n + 1) && i === e.input.charCodeAt(n + 2) && (n += 3, i = e.input.charCodeAt(n), i === 0 || k(i)));
 }
-function $e(e, n) {
+function Ge(e, n) {
   n === 1 ? e.result += " " : n > 1 && (e.result += b.repeat(`
 `, n - 1));
 }
@@ -726,7 +726,7 @@ function Ar(e, n, i) {
           break;
         }
     }
-    s && (j(e, l, t, !1), $e(e, e.line - u), l = t = e.position, s = !1), ee(p) || (t = e.position + 1), p = e.input.charCodeAt(++e.position);
+    s && (j(e, l, t, !1), Ge(e, e.line - u), l = t = e.position, s = !1), ee(p) || (t = e.position + 1), p = e.input.charCodeAt(++e.position);
   }
   return j(e, l, t, !1), e.result ? !0 : (e.kind = c, e.result = g, !1);
 }
@@ -740,7 +740,7 @@ function wr(e, n) {
         r = e.position, e.position++, o = e.position;
       else
         return !0;
-    else D(i) ? (j(e, r, o, !0), $e(e, v(e, !1, n)), r = o = e.position) : e.position === e.lineStart && Le(e) ? d(e, "unexpected end of the document within a single quoted scalar") : (e.position++, o = e.position);
+    else D(i) ? (j(e, r, o, !0), Ge(e, v(e, !1, n)), r = o = e.position) : e.position === e.lineStart && Le(e) ? d(e, "unexpected end of the document within a single quoted scalar") : (e.position++, o = e.position);
   d(e, "unexpected end of the stream within a single quoted scalar");
 }
 function yr(e, n) {
@@ -762,7 +762,7 @@ function yr(e, n) {
       } else
         d(e, "unknown escape sequence");
       i = r = e.position;
-    } else D(s) ? (j(e, i, r, !0), $e(e, v(e, !1, n)), i = r = e.position) : e.position === e.lineStart && Le(e) ? d(e, "unexpected end of the document within a double quoted scalar") : (e.position++, r = e.position);
+    } else D(s) ? (j(e, i, r, !0), Ge(e, v(e, !1, n)), i = r = e.position) : e.position === e.lineStart && Le(e) ? d(e, "unexpected end of the document within a double quoted scalar") : (e.position++, r = e.position);
   }
   d(e, "unexpected end of the stream within a double quoted scalar");
 }
@@ -806,7 +806,7 @@ function br(e, n) {
       while (!D(c) && c !== 0);
   }
   for (; c !== 0; ) {
-    for (Ge(e), e.lineIndent = 0, c = e.input.charCodeAt(e.position); (!t || e.lineIndent < s) && c === 32; )
+    for ($e(e), e.lineIndent = 0, c = e.input.charCodeAt(e.position); (!t || e.lineIndent < s) && c === 32; )
       e.lineIndent++, c = e.input.charCodeAt(++e.position);
     if (!t && e.lineIndent > s && (s = e.lineIndent), D(c)) {
       u++;
@@ -953,7 +953,7 @@ function Tr(e) {
         t = e.input.charCodeAt(++e.position);
       o.push(e.input.slice(i, e.position));
     }
-    t !== 0 && Ge(e), K.call(en, r) ? en[r](e, r, o) : Ee(e, 'unknown document directive "' + r + '"');
+    t !== 0 && $e(e), K.call(en, r) ? en[r](e, r, o) : Ee(e, 'unknown document directive "' + r + '"');
   }
   if (v(e, !0, -1), e.lineIndent === 0 && e.input.charCodeAt(e.position) === 45 && e.input.charCodeAt(e.position + 1) === 45 && e.input.charCodeAt(e.position + 2) === 45 ? (e.position += 3, v(e, !0, -1)) : l && d(e, "directives end mark is expected"), ce(e, e.lineIndent - 1, Se, !1, !0), v(e, !0, -1), e.checkLineBreaks && hr.test(e.input.slice(n, e.position)) && Ee(e, "non-ASCII line breaks are interpreted as content"), e.documents.push(e.result), e.position === e.lineStart && Le(e)) {
     e.input.charCodeAt(e.position) === 46 && (e.position += 3, v(e, !0, -1));
@@ -993,7 +993,7 @@ function Fr(e, n) {
 var Lr = kr, Nr = Fr, Ir = {
   loadAll: Lr,
   load: Nr
-}, En = Object.prototype.toString, On = Object.prototype.hasOwnProperty, Ve = 65279, Pr = 9, pe = 10, Rr = 13, Dr = 32, Mr = 33, Ur = 34, Ue = 35, Br = 37, Hr = 38, Yr = 39, jr = 42, Tn = 44, Kr = 45, Oe = 58, Gr = 61, $r = 62, Vr = 63, Wr = 64, kn = 91, Fn = 93, qr = 96, Ln = 123, Qr = 124, Nn = 125, S = {};
+}, En = Object.prototype.toString, On = Object.prototype.hasOwnProperty, Ve = 65279, Pr = 9, pe = 10, Rr = 13, Dr = 32, Mr = 33, Ur = 34, Ue = 35, Br = 37, Hr = 38, Yr = 39, jr = 42, Tn = 44, Kr = 45, Oe = 58, $r = 61, Gr = 62, Vr = 63, Wr = 64, kn = 91, Fn = 93, qr = 96, Ln = 123, Qr = 124, Nn = 125, S = {};
 S[0] = "\\0";
 S[7] = "\\a";
 S[8] = "\\b";
@@ -1088,7 +1088,7 @@ function ln(e, n, i) {
   );
 }
 function ro(e) {
-  return de(e) && e !== Ve && !Te(e) && e !== Kr && e !== Vr && e !== Oe && e !== Tn && e !== kn && e !== Fn && e !== Ln && e !== Nn && e !== Ue && e !== Hr && e !== jr && e !== Mr && e !== Qr && e !== Gr && e !== $r && e !== Yr && e !== Ur && e !== Br && e !== Wr && e !== qr;
+  return de(e) && e !== Ve && !Te(e) && e !== Kr && e !== Vr && e !== Oe && e !== Tn && e !== kn && e !== Fn && e !== Ln && e !== Nn && e !== Ue && e !== Hr && e !== jr && e !== Mr && e !== Qr && e !== $r && e !== Gr && e !== Yr && e !== Ur && e !== Br && e !== Wr && e !== qr;
 }
 function oo(e) {
   return !Te(e) && e !== Oe;
@@ -1316,7 +1316,7 @@ function wo(e, n) {
 function yo(e, n) {
   return e.replace("'#{DISABLED_BACKEND}'", n ? "true" : "false");
 }
-const G = {
+const $ = {
   PAGE_URL: "https://github.08050611.xyz/https://raw.githubusercontent.com/jwyGithub/subconverter-cloudflare/main/index.html",
   BACKEND: "https://url.v1.mk",
   LOCK_BACKEND: !1,
@@ -1497,7 +1497,7 @@ class Ne {
   }
 }
 me = new WeakMap(), xe = new WeakMap(), Ce = new WeakMap(), ke = new WeakMap();
-var $, V;
+var G, V;
 const L = class L {
   /**
    * @description 获取备注
@@ -1505,7 +1505,7 @@ const L = class L {
    * @returns {[string, string]} [origin, confuse]
    */
   static getPs(n) {
-    const i = n.split(a(L, $));
+    const i = n.split(a(L, G));
     return [i[0], i[1]];
   }
   /**
@@ -1515,7 +1515,7 @@ const L = class L {
    * @returns {string} origin^LINK_TO^confuse
    */
   static setPs(n, i) {
-    return [n, i].join(a(L, $));
+    return [n, i].join(a(L, G));
   }
   /**
    * @description 获取前缀（带缓存）
@@ -1523,7 +1523,7 @@ const L = class L {
    * @returns {string|null} prefix
    */
   static getPrefix(n) {
-    if (!(n != null && n.includes(a(L, $)))) return null;
+    if (!(n != null && n.includes(a(L, G)))) return null;
     if (a(L, V).has(n))
       return a(L, V).get(n);
     const [i] = L.getPs(n);
@@ -1534,14 +1534,14 @@ const L = class L {
     return null;
   }
   static isConfigType(n) {
-    return n.includes(a(this, $));
+    return n.includes(a(this, G));
   }
   // 清除缓存
   static clearCache() {
     a(this, V).clear();
   }
 };
-$ = new WeakMap(), V = new WeakMap(), w(L, $, "^LINK_TO^"), w(L, V, /* @__PURE__ */ new Map());
+G = new WeakMap(), V = new WeakMap(), w(L, G, "^LINK_TO^"), w(L, V, /* @__PURE__ */ new Map());
 let F = L;
 var W, Ae, B, N, q, te;
 class Un extends Ne {
@@ -2073,12 +2073,12 @@ let Oo = class {
 class ko {
   constructor(n) {
     E(this, "urls", []);
-    E(this, "chunkCount", Number(G.CHUNK_COUNT));
-    E(this, "backend", G.BACKEND);
+    E(this, "chunkCount", Number($.CHUNK_COUNT));
+    E(this, "backend", $.BACKEND);
     E(this, "parser", null);
     E(this, "clashClient", new Oo());
     E(this, "singboxClient", new To());
-    this.chunkCount = Number(n.CHUNK_COUNT ?? G.CHUNK_COUNT), this.backend = n.BACKEND ?? G.BACKEND, this.parser = null;
+    this.chunkCount = Number(n.CHUNK_COUNT ?? $.CHUNK_COUNT), this.backend = n.BACKEND ?? $.BACKEND, this.parser = null;
   }
   async setSubUrls(n) {
     const { searchParams: i } = new URL(n.url), o = i.get("url").split(/\||\n/).filter(Boolean);
@@ -2199,14 +2199,14 @@ async function Kn(e, n) {
   var i;
   return await ((i = e.KV) == null ? void 0 : i.get(n));
 }
-async function Gn(e, n, i) {
+async function $n(e, n, i) {
   var t;
   const r = Math.random().toString(36).substring(2, 7);
   if (await Kn(e, r))
-    return Gn(e, n, i);
+    return $n(e, n, i);
   await ((t = e.KV) == null ? void 0 : t.put(r, n));
-  const l = new URL(i.url);
-  return l.pathname = `/${r}`, new Response(l.toString());
+  const { origin: l } = new URL(i.url);
+  return new Response(`${l}/${r}`);
 }
 const Do = {
   async fetch(e, n) {
@@ -2241,14 +2241,14 @@ const Do = {
       }
       if (i === "/")
         return vo({
-          url: n.PAGE_URL ?? G.PAGE_URL,
-          lockBackend: n.LOCK_BACKEND ?? G.LOCK_BACKEND,
-          remoteConfig: n.REMOTE_CONFIG ?? G.REMOTE_CONFIG,
+          url: n.PAGE_URL ?? $.PAGE_URL,
+          lockBackend: n.LOCK_BACKEND ?? $.LOCK_BACKEND,
+          remoteConfig: n.REMOTE_CONFIG ?? $.REMOTE_CONFIG,
           origin: r
         });
       if (i === "/set_short_url") {
         const l = new URL(e.url).searchParams.get("sub_url");
-        return l ? await Gn(n, l, e) : new Response("Sub URL not found", { status: 400 });
+        return l ? await $n(n, l, e) : new Response("Sub URL not found", { status: 400 });
       }
       if (!n.KV)
         return new Response("KV not found", { status: 500 });
