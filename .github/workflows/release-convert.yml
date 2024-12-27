@@ -70,28 +70,23 @@ jobs:
                   # 配置 Git
                   git config --global user.name 'github-actions[bot]'
                   git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-                  
+
                   # 克隆目标仓库
                   git clone https://${{ secrets.DEPLOY_TOKEN }}@github.com/jwyGithub/sub-convert.git target-repo
-                  
-                  # 清理目标仓库（保留 .git 目录）
+
+                  # 清理目标仓库的 src 目录
                   cd target-repo
-                  find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+                  rm -rf src
                   cd ..
-                  
-                  # 复制当前 package 到目标仓库（排除不需要的文件）
-                  rsync -av --progress packages/vps-convert/ target-repo/ \
-                      --exclude '.git' \
-                      --exclude 'node_modules' \
-                      --exclude 'dist' \
-                      --exclude '.turbo' \
-                      --exclude 'coverage'
-                  
+
+                  # 只复制 src 目录
+                  cp -r packages/vps-convert/src target-repo/
+
                   # 提交更改
                   cd target-repo
                   if [[ -n $(git status -s) ]]; then
                       git add .
-                      git commit -m "chore: sync from main repository [skip ci]" || true
+                      git commit -m "chore: sync src directory from main repository" || true
                       git push origin main
                   else
                       echo "No changes to commit"
