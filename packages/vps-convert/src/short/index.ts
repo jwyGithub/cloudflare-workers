@@ -11,7 +11,6 @@ export async function setShortUrl(env: Env, subUrl: string, request: Request): P
     }
     await env.KV?.put(pathname, subUrl);
 
-    const url = new URL(request.url);
-    url.pathname = `/${pathname}`;
-    return new Response(url.toString());
+    const { origin } = new URL(request.url);
+    return new Response(`${origin}/${pathname}`);
 }
