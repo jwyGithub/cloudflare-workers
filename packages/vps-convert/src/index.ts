@@ -12,14 +12,12 @@ export default {
                 await confuse.setSubUrls(request);
                 const convertType = new URL(request.url).searchParams.get('target');
 
-                // 如果客户端类型不支持
                 if (!convertType) {
                     return new Response('Unsupported client type', { status: 400 });
                 }
 
                 const restore = new Restore(confuse);
 
-                // 如果客户端类型是Clash
                 if (['clash', 'clashr'].includes(convertType)) {
                     const originConfig = await restore.getClashConfig();
                     return new Response(dump(originConfig, { indent: 2, lineWidth: 200 }), {
@@ -30,7 +28,6 @@ export default {
                     });
                 }
 
-                // 如果是客户端类型是singbox
                 if (convertType === 'singbox') {
                     const originConfig = await restore.getSingboxConfig();
                     return new Response(JSON.stringify(originConfig), {

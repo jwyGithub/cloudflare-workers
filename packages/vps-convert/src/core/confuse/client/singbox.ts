@@ -31,7 +31,7 @@ export class SingboxClient {
             }
         >();
 
-        // 第一次遍历：收集所有配置
+        // 收集所有配置
         for (const config of configs) {
             if (!config.outbounds?.length) continue;
 

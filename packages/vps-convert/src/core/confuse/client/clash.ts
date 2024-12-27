@@ -27,7 +27,6 @@ export class ClashClient {
             return {} as ClashType;
         }
 
-        // 使用第一个配置作为基准
         const baseConfig = structuredClone(configs[0]);
 
         // 如果只有一个配置，直接返回
