@@ -7,6 +7,8 @@ interface Env {
     REMOTE_CONFIG?: string;
     PAGE_URL?: string;
     CHUNK_COUNT?: string;
+
+    KV?: KVNamespace;
 }
 
 declare module '*.html' {
