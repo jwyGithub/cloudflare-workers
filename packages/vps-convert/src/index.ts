@@ -1,3 +1,4 @@
+import { base64Decode } from 'cloudflare-tools';
 import { dump } from 'js-yaml';
 import { Confuse } from './core/confuse';
 import { Restore } from './core/restore';
@@ -65,7 +66,7 @@ export default {
 
             const shortUrl = await getShortUrl(env, pathname);
             if (shortUrl) {
-                return Response.redirect(shortUrl);
+                return Response.redirect(base64Decode(shortUrl));
             }
 
             return new Response('Short URL not found', { status: 404 });
