@@ -3,11 +3,13 @@ import type { ParserType } from './types';
 import { base64Decode, fetchWithRetry } from 'cloudflare-tools';
 import { load } from 'js-yaml';
 import { Convert } from '../convert';
+import { Hysteria2Parser } from './protocol/hysteria2';
 import { SsParser } from './protocol/ss';
 import { TrojanParser } from './protocol/trojan';
 import { VlessParser } from './protocol/vless';
 import { VmessParser } from './protocol/vmess';
 
+export * from './protocol/hysteria2';
 export * from './protocol/ss';
 export * from './protocol/trojan';
 export * from './protocol/vless';
@@ -40,6 +42,8 @@ export class Parser extends Convert {
                     parser = new TrojanParser(processVps);
                 } else if (processVps.startsWith('ss://')) {
                     parser = new SsParser(processVps);
+                } else if (this.isHysteria2(processVps)) {
+                    parser = new Hysteria2Parser(processVps);
                 }
 
                 if (parser) {
@@ -82,6 +86,10 @@ export class Parser extends Convert {
                 }
             }
         }
+    }
+
+    private isHysteria2(vps: string): boolean {
+        return vps.startsWith('hysteria2://') || vps.startsWith('hysteria://') || vps.startsWith('hy2://');
     }
 
     public get urls(): string[] {

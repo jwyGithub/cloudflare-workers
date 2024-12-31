@@ -1,9 +1,7 @@
-import { base64Decode } from 'cloudflare-tools';
 import { dump } from 'js-yaml';
 import { Confuse } from './core/confuse';
 import { Restore } from './core/restore';
 import { DEFAULT_CONFIG, showPage } from './page';
-import { getShortUrl, setShortUrl } from './short';
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
@@ -43,33 +41,12 @@ export default {
                 return new Response('Unsupported client type, support list: clash, clashr', { status: 400 });
             }
 
-            if (pathname === '/') {
-                return showPage({
-                    url: env.PAGE_URL ?? DEFAULT_CONFIG.PAGE_URL,
-                    lockBackend: env.LOCK_BACKEND ?? DEFAULT_CONFIG.LOCK_BACKEND,
-                    remoteConfig: env.REMOTE_CONFIG ?? DEFAULT_CONFIG.REMOTE_CONFIG,
-                    origin
-                });
-            }
-
-            if (pathname === '/set_short_url') {
-                const subUrl = new URL(request.url).searchParams.get('sub_url');
-                if (!subUrl) {
-                    return new Response('Sub URL not found', { status: 400 });
-                }
-                return await setShortUrl(env, subUrl, request);
-            }
-
-            if (!env.KV) {
-                return new Response('KV not found', { status: 500 });
-            }
-
-            const shortUrl = await getShortUrl(env, pathname);
-            if (shortUrl) {
-                return Response.redirect(base64Decode(shortUrl));
-            }
-
-            return new Response('Short URL not found', { status: 404 });
+            return showPage({
+                url: env.PAGE_URL ?? DEFAULT_CONFIG.PAGE_URL,
+                lockBackend: env.LOCK_BACKEND ?? DEFAULT_CONFIG.LOCK_BACKEND,
+                remoteConfig: env.REMOTE_CONFIG ?? DEFAULT_CONFIG.REMOTE_CONFIG,
+                origin
+            });
         } catch (error: any) {
             return new Response(error.message || error);
         }
