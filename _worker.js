@@ -1,79 +1,79 @@
 var l = Object.defineProperty;
-var p = (n, r, e) => r in n ? l(n, r, { enumerable: !0, configurable: !0, writable: !0, value: e }) : n[r] = e;
-var i = (n, r, e) => p(n, typeof r != "symbol" ? r + "" : r, e);
-class s {
-  static json(r, e = 200) {
-    return new Response(JSON.stringify(r), {
-      status: e,
+var p = (s, e, r) => e in s ? l(s, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : s[e] = r;
+var i = (s, e, r) => p(s, typeof e != "symbol" ? e + "" : e, r);
+class n {
+  static json(e, r = 200) {
+    return new Response(JSON.stringify(e), {
+      status: r,
       headers: {
         "Content-Type": "application/json"
       }
     });
   }
-  static error(r, e = 400) {
-    return this.json({ error: r }, e);
+  static error(e, r = 400) {
+    return this.json({ error: e }, r);
   }
-  static success(r) {
-    return this.json({ data: r });
+  static success(e) {
+    return this.json({ data: e });
   }
 }
 class u {
-  constructor(r) {
-    this.service = r;
+  constructor(e) {
+    this.service = e;
   }
-  async add(r) {
+  async add(e) {
     try {
-      const { long_url: e, serve: o } = await r.json();
-      if (!e)
-        return s.error("Missing long_url");
-      const t = new URL(r.url), a = o || `${t.protocol}//${t.host}`, d = await this.service.add(e, a);
-      return s.success(d);
-    } catch (e) {
-      return s.error(e.message || "Invalid request");
+      const { long_url: r, serve: o } = await e.json();
+      if (!r)
+        return n.error("Missing long_url");
+      const t = new URL(e.url), a = o || `${t.protocol}//${t.host}`, d = await this.service.add(r, a);
+      return n.success(d);
+    } catch (r) {
+      return n.error(r.message || "Invalid request");
     }
   }
-  async delete(r) {
+  async delete(e) {
     try {
-      const o = new URL(r.url).searchParams.get("code");
-      return o ? (await this.service.deleteByCode(o), s.success({ deleted: !0 })) : s.error("Missing code");
-    } catch (e) {
-      return s.error(e.message || "Invalid request");
+      const o = new URL(e.url).searchParams.get("code");
+      return o ? (await this.service.deleteByCode(o), n.success({ deleted: !0 })) : n.error("Missing code");
+    } catch (r) {
+      return n.error(r.message || "Invalid request");
     }
   }
-  async queryByCode(r) {
+  async queryByCode(e) {
     try {
-      const o = new URL(r.url).searchParams.get("code");
+      const o = new URL(e.url).searchParams.get("code");
       if (!o)
-        return s.error("Missing code");
+        return n.error("Missing code");
       const t = await this.service.getByCode(o);
-      return t ? s.success(t) : s.error("Not found", 404);
-    } catch (e) {
-      return s.error(e.message || "Invalid request");
+      return t ? n.success(t) : n.error("Not found", 404);
+    } catch (r) {
+      return n.error(r.message || "Invalid request");
     }
   }
-  async queryList(r) {
+  async queryList(e) {
     try {
-      const e = new URL(r.url), o = Number.parseInt(e.searchParams.get("page") || "1"), t = Number.parseInt(e.searchParams.get("pageSize") || "10"), a = await this.service.getList(o, t);
-      return s.success(a);
-    } catch (e) {
-      return s.error(e.message || "Invalid request");
+      const r = new URL(e.url), o = Number.parseInt(r.searchParams.get("page") || "1"), t = Number.parseInt(r.searchParams.get("pageSize") || "10"), a = await this.service.getList(o, t);
+      return n.success(a);
+    } catch (r) {
+      return n.error(r.message || "Invalid request");
     }
   }
-  async redirect(r) {
-    var e;
+  async redirect(e) {
+    var r;
     try {
-      const o = (e = r.params) == null ? void 0 : e.code;
+      const o = (r = e.params) == null ? void 0 : r.code;
       if (!o)
-        return s.error("Invalid short URL");
+        return n.error("Invalid short URL");
       const t = await this.service.getByCode(o);
-      return t ? Response.redirect(t.long_url, 302) : s.error("Not found", 404);
+      return t ? Response.redirect(t.long_url, 302) : n.error("Not found", 404);
     } catch (o) {
-      return s.error(o.message || "Invalid request");
+      return n.error(o.message || "Invalid request");
     }
   }
 }
 function h() {
-  const n = `<!DOCTYPE html>
+  const s = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -809,7 +809,7 @@ function h() {
     <\/script>
 </body>
 </html>`;
-  return new Response(n, {
+  return new Response(s, {
     headers: {
       "content-type": "text/html;charset=UTF-8"
     }
@@ -819,83 +819,90 @@ class g {
   constructor() {
     i(this, "routes", []);
   }
-  get(r, e) {
-    return this.add("GET", r, e), this;
+  get(e, r) {
+    return this.add("GET", e, r), this;
   }
-  post(r, e) {
-    return this.add("POST", r, e), this;
+  post(e, r) {
+    return this.add("POST", e, r), this;
   }
-  put(r, e) {
-    return this.add("PUT", r, e), this;
+  put(e, r) {
+    return this.add("PUT", e, r), this;
   }
-  delete(r, e) {
-    return this.add("DELETE", r, e), this;
+  delete(e, r) {
+    return this.add("DELETE", e, r), this;
   }
-  add(r, e, o) {
-    const t = e.replace(/:(\w+)/g, "/:$1");
+  add(e, r, o) {
+    const t = r.replace(/:(\w+)/g, "/:$1");
     this.routes.push({
       pattern: new URLPattern({ pathname: t }),
-      handler: async (a, d) => a.method !== r ? new Response("Method Not Allowed", { status: 405 }) : o(a, d)
+      handler: async (a, d) => a.method !== e ? new Response("Method Not Allowed", { status: 405 }) : o(a, d)
     });
   }
-  async handle(r, e) {
-    const o = new URL(r.url);
+  async handle(e, r) {
+    const o = new URL(e.url);
     for (const t of this.routes) {
       const a = t.pattern.exec(o);
       if (a) {
         const d = a.pathname.groups;
-        return Object.defineProperty(r, "params", {
+        return Object.defineProperty(e, "params", {
           value: d,
           writable: !1
-        }), t.handler(r, e);
+        }), t.handler(e, r);
       }
     }
     return new Response("Not Found", { status: 404 });
   }
 }
 class b {
-  constructor(r) {
-    this.db = r;
+  constructor(e) {
+    this.db = e;
   }
-  async add(r, e) {
-    const o = this.generateShortCode(), t = `${e}/${o}`, a = await this.db.prepare("INSERT INTO short_url (short_code, short_url, long_url) VALUES (?, ?, ?) RETURNING id").bind(o, t, r).first();
+  async add(e, r) {
+    const o = this.generateShortCode(), t = `${r}/${o}`, a = await this.db.prepare("INSERT INTO short_url (short_code, short_url, long_url) VALUES (?, ?, ?) RETURNING id").bind(o, t, e).first();
     if (!(a != null && a.id))
       throw new Error("Failed to create short URL");
-    return { id: a.id, short_code: o, short_url: t, long_url: r };
+    return { id: a.id, short_code: o, short_url: t, long_url: e };
   }
-  async delete(r) {
-    await this.db.prepare("DELETE FROM short_url WHERE id = ?").bind(r).run();
+  async delete(e) {
+    await this.db.prepare("DELETE FROM short_url WHERE id = ?").bind(e).run();
   }
-  async getById(r) {
-    return await this.db.prepare("SELECT id, short_url, long_url FROM short_url WHERE id = ?").bind(r).first();
+  async getById(e) {
+    return await this.db.prepare("SELECT id, short_url, long_url FROM short_url WHERE id = ?").bind(e).first();
   }
-  async getList(r = 1, e = 10) {
-    const o = (r - 1) * e, [t, a] = await Promise.all([
+  async getList(e = 1, r = 10) {
+    const o = (e - 1) * r, [t, a] = await Promise.all([
       this.db.prepare("SELECT COUNT(*) as count FROM short_url").first(),
-      this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url LIMIT ? OFFSET ?").bind(e, o).all()
+      this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url LIMIT ? OFFSET ?").bind(r, o).all()
     ]);
     return {
       total: (t == null ? void 0 : t.count) || 0,
       items: (a == null ? void 0 : a.results) || []
     };
   }
-  async getByShortUrl(r) {
-    return await this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url WHERE short_url = ?").bind(r).first();
+  async getByShortUrl(e) {
+    return await this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url WHERE short_url = ?").bind(e).first();
   }
-  async getByCode(r) {
-    return await this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url WHERE short_code = ?").bind(r).first();
+  async getByCode(e) {
+    return await this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url WHERE short_code = ?").bind(e).first();
   }
-  async deleteByCode(r) {
-    await this.db.prepare("DELETE FROM short_url WHERE short_code = ?").bind(r).run();
+  async deleteByCode(e) {
+    await this.db.prepare("DELETE FROM short_url WHERE short_code = ?").bind(e).run();
   }
   generateShortCode() {
     return crypto.randomUUID().substring(0, 8);
   }
 }
 const c = new g(), x = {
-  async fetch(n, r) {
-    const e = new b(r.DB), o = new u(e);
-    return c.get("/", () => h()).post("/api/add", (t) => o.add(t)).delete("/api/delete", (t) => o.delete(t)).get("/api/queryByCode", (t) => o.queryByCode(t)).get("/api/queryList", (t) => o.queryList(t)).get("/:code", (t) => o.redirect(t)), c.handle(n, r);
+  async fetch(s, e) {
+    const r = new b(e.DB), o = new u(r);
+    return s.headers.set("Access-Control-Allow-Origin", "*"), s.headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE"), s.headers.set("Access-Control-Allow-Headers", "Content-Type"), s.method === "OPTIONS" ? new Response(null, {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, DELETE",
+        "Access-Control-Allow-Headers": "Content-Type"
+      }
+    }) : (c.get("/", () => h()).post("/api/add", (t) => o.add(t)).delete("/api/delete", (t) => o.delete(t)).get("/api/queryByCode", (t) => o.queryByCode(t)).get("/api/queryList", (t) => o.queryList(t)).get("/:code", (t) => o.redirect(t)), c.handle(s, e));
   }
 };
 export {
