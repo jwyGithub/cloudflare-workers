@@ -1,20 +1,31 @@
 var l = Object.defineProperty;
-var p = (n, e, r) => e in n ? l(n, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : n[e] = r;
-var i = (n, e, r) => p(n, typeof e != "symbol" ? e + "" : e, r);
+var p = (n, e, t) => e in n ? l(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t;
+var i = (n, e, t) => p(n, typeof e != "symbol" ? e + "" : e, t);
 class s {
-  static json(e, r = 200) {
+  static json(e, t = 200) {
     return new Response(JSON.stringify(e), {
-      status: r,
+      status: t,
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
       }
     });
   }
-  static error(e, r = 400) {
-    return this.json({ error: e }, r);
+  static error(e, t = 400) {
+    return this.json({ error: e }, t);
   }
   static success(e) {
     return this.json({ data: e });
+  }
+  static cors(e) {
+    const t = new Headers(e.headers);
+    return t.set("Access-Control-Allow-Origin", "*"), t.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"), t.set("Access-Control-Allow-Headers", "Content-Type"), new Response(e.body, {
+      status: e.status,
+      statusText: e.statusText,
+      headers: t
+    });
   }
 }
 class u {
@@ -23,52 +34,52 @@ class u {
   }
   async add(e) {
     try {
-      const { long_url: r, serve: o } = await e.json();
-      if (!r)
+      const { long_url: t, serve: r } = await e.json();
+      if (!t)
         return s.error("Missing long_url");
-      const t = new URL(e.url), a = o || `${t.protocol}//${t.host}`, d = await this.service.add(r, a);
+      const a = new URL(e.url), o = r || `${a.protocol}//${a.host}`, d = await this.service.add(t, o);
       return s.success(d);
-    } catch (r) {
-      return s.error(r.message || "Invalid request");
+    } catch (t) {
+      return s.error(t.message || "Invalid request");
     }
   }
   async delete(e) {
     try {
-      const o = new URL(e.url).searchParams.get("code");
-      return o ? (await this.service.deleteByCode(o), s.success({ deleted: !0 })) : s.error("Missing code");
-    } catch (r) {
-      return s.error(r.message || "Invalid request");
+      const r = new URL(e.url).searchParams.get("code");
+      return r ? (await this.service.deleteByCode(r), s.success({ deleted: !0 })) : s.error("Missing code");
+    } catch (t) {
+      return s.error(t.message || "Invalid request");
     }
   }
   async queryByCode(e) {
     try {
-      const o = new URL(e.url).searchParams.get("code");
-      if (!o)
+      const r = new URL(e.url).searchParams.get("code");
+      if (!r)
         return s.error("Missing code");
-      const t = await this.service.getByCode(o);
-      return t ? s.success(t) : s.error("Not found", 404);
-    } catch (r) {
-      return s.error(r.message || "Invalid request");
+      const a = await this.service.getByCode(r);
+      return a ? s.success(a) : s.error("Not found", 404);
+    } catch (t) {
+      return s.error(t.message || "Invalid request");
     }
   }
   async queryList(e) {
     try {
-      const r = new URL(e.url), o = Number.parseInt(r.searchParams.get("page") || "1"), t = Number.parseInt(r.searchParams.get("pageSize") || "10"), a = await this.service.getList(o, t);
-      return s.success(a);
-    } catch (r) {
-      return s.error(r.message || "Invalid request");
+      const t = new URL(e.url), r = Number.parseInt(t.searchParams.get("page") || "1"), a = Number.parseInt(t.searchParams.get("pageSize") || "10"), o = await this.service.getList(r, a);
+      return s.success(o);
+    } catch (t) {
+      return s.error(t.message || "Invalid request");
     }
   }
   async redirect(e) {
-    var r;
+    var t;
     try {
-      const o = (r = e.params) == null ? void 0 : r.code;
-      if (!o)
+      const r = (t = e.params) == null ? void 0 : t.code;
+      if (!r)
         return s.error("Invalid short URL");
-      const t = await this.service.getByCode(o);
-      return t ? Response.redirect(t.long_url, 302) : s.error("Not found", 404);
-    } catch (o) {
-      return s.error(o.message || "Invalid request");
+      const a = await this.service.getByCode(r);
+      return a ? Response.redirect(a.long_url, 302) : s.error("Not found", 404);
+    } catch (r) {
+      return s.error(r.message || "Invalid request");
     }
   }
 }
@@ -819,35 +830,35 @@ class g {
   constructor() {
     i(this, "routes", []);
   }
-  get(e, r) {
-    return this.add("GET", e, r), this;
+  get(e, t) {
+    return this.add("GET", e, t), this;
   }
-  post(e, r) {
-    return this.add("POST", e, r), this;
+  post(e, t) {
+    return this.add("POST", e, t), this;
   }
-  put(e, r) {
-    return this.add("PUT", e, r), this;
+  put(e, t) {
+    return this.add("PUT", e, t), this;
   }
-  delete(e, r) {
-    return this.add("DELETE", e, r), this;
+  delete(e, t) {
+    return this.add("DELETE", e, t), this;
   }
-  add(e, r, o) {
-    const t = r.replace(/:(\w+)/g, "/:$1");
+  add(e, t, r) {
+    const a = t.replace(/:(\w+)/g, "/:$1");
     this.routes.push({
-      pattern: new URLPattern({ pathname: t }),
-      handler: async (a, d) => a.method !== e ? new Response("Method Not Allowed", { status: 405 }) : o(a, d)
+      pattern: new URLPattern({ pathname: a }),
+      handler: async (o, d) => o.method !== e ? new Response("Method Not Allowed", { status: 405 }) : r(o, d)
     });
   }
-  async handle(e, r) {
-    const o = new URL(e.url);
-    for (const t of this.routes) {
-      const a = t.pattern.exec(o);
-      if (a) {
-        const d = a.pathname.groups;
+  async handle(e, t) {
+    const r = new URL(e.url);
+    for (const a of this.routes) {
+      const o = a.pattern.exec(r);
+      if (o) {
+        const d = o.pathname.groups;
         return Object.defineProperty(e, "params", {
           value: d,
           writable: !1
-        }), t.handler(e, r);
+        }), a.handler(e, t);
       }
     }
     return new Response("Not Found", { status: 404 });
@@ -857,11 +868,11 @@ class b {
   constructor(e) {
     this.db = e;
   }
-  async add(e, r) {
-    const o = this.generateShortCode(), t = `${r}/${o}`, a = await this.db.prepare("INSERT INTO short_url (short_code, short_url, long_url) VALUES (?, ?, ?) RETURNING id").bind(o, t, e).first();
-    if (!(a != null && a.id))
+  async add(e, t) {
+    const r = this.generateShortCode(), a = `${t}/${r}`, o = await this.db.prepare("INSERT INTO short_url (short_code, short_url, long_url) VALUES (?, ?, ?) RETURNING id").bind(r, a, e).first();
+    if (!(o != null && o.id))
       throw new Error("Failed to create short URL");
-    return { id: a.id, short_code: o, short_url: t, long_url: e };
+    return { id: o.id, short_code: r, short_url: a, long_url: e };
   }
   async delete(e) {
     await this.db.prepare("DELETE FROM short_url WHERE id = ?").bind(e).run();
@@ -869,14 +880,14 @@ class b {
   async getById(e) {
     return await this.db.prepare("SELECT id, short_url, long_url FROM short_url WHERE id = ?").bind(e).first();
   }
-  async getList(e = 1, r = 10) {
-    const o = (e - 1) * r, [t, a] = await Promise.all([
+  async getList(e = 1, t = 10) {
+    const r = (e - 1) * t, [a, o] = await Promise.all([
       this.db.prepare("SELECT COUNT(*) as count FROM short_url").first(),
-      this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url LIMIT ? OFFSET ?").bind(r, o).all()
+      this.db.prepare("SELECT id, short_code, short_url, long_url FROM short_url LIMIT ? OFFSET ?").bind(t, r).all()
     ]);
     return {
-      total: (t == null ? void 0 : t.count) || 0,
-      items: (a == null ? void 0 : a.results) || []
+      total: (a == null ? void 0 : a.count) || 0,
+      items: (o == null ? void 0 : o.results) || []
     };
   }
   async getByShortUrl(e) {
@@ -894,14 +905,18 @@ class b {
 }
 const c = new g(), x = {
   async fetch(n, e) {
-    const r = new b(e.DB), o = new u(r);
-    return n.method === "OPTIONS" ? new Response(null, {
-      status: 200,
-      headers: new Headers({
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, DELETE"
-      })
-    }) : (c.get("/", () => h()).post("/api/add", (t) => o.add(t)).delete("/api/delete", (t) => o.delete(t)).get("/api/queryByCode", (t) => o.queryByCode(t)).get("/api/queryList", (t) => o.queryList(t)).get("/:code", (t) => o.redirect(t)), c.handle(n, e));
+    if (n.method === "OPTIONS")
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type"
+        }
+      });
+    const t = new b(e.DB), r = new u(t);
+    c.get("/", () => h()).post("/api/add", (o) => r.add(o)).delete("/api/delete", (o) => r.delete(o)).get("/api/queryByCode", (o) => r.queryByCode(o)).get("/api/queryList", (o) => r.queryList(o)).get("/:code", (o) => r.redirect(o));
+    const a = await c.handle(n, e);
+    return s.cors(a);
   }
 };
 export {
