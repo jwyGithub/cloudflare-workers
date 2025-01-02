@@ -28,7 +28,7 @@ export class Router {
     }
 
     private add(method: string, path: string, handler: Handler): void {
-        const patternPath = path.replace(/:(\w+)/g, '/:$1');
+        const patternPath = path.startsWith('/') ? path : `/${path}`;
 
         this.routes.push({
             pattern: new URLPattern({ pathname: patternPath }),
