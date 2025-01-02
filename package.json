@@ -29,7 +29,10 @@
         "pages:parse": "pnpm --dir packages/vps-parse run pages",
         "dev:convert": "pnpm --dir packages/vps-convert run dev",
         "deploy:convert": "pnpm --dir packages/vps-convert run deploy",
-        "pages:convert": "pnpm --dir packages/vps-convert run pages"
+        "pages:convert": "pnpm --dir packages/vps-convert run pages",
+        "dev:short-url": "pnpm --dir packages/short-url run dev",
+        "deploy:short-url": "pnpm --dir packages/short-url run deploy",
+        "pages:short-url": "pnpm --dir packages/short-url run pages"
     },
     "dependencies": {
         "cloudflare": "^3.5.0",

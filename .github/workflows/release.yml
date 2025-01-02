@@ -35,6 +35,8 @@ jobs:
                       echo "type=download" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^feat: ]]; then
                       echo "type=feat" >> $GITHUB_OUTPUT
+                  elif [[ "$commit_message" =~ ^short: ]]; then
+                      echo "type=short" >> $GITHUB_OUTPUT
                   else
                       echo "type=unknown" >> $GITHUB_OUTPUT
                   fi
@@ -82,6 +84,13 @@ jobs:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'download' || needs.determine_release_type.outputs.release_type == 'feat'
         uses: ./.github/workflows/release-download.yml
+        secrets:
+            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+    run_short_release:
+        needs: determine_release_type
+        if: needs.determine_release_type.outputs.release_type == 'short' || needs.determine_release_type.outputs.release_type == 'feat'
+        uses: ./.github/workflows/release-short.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
