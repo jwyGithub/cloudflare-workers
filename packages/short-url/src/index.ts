@@ -10,19 +10,13 @@ export default {
         const service = new UrlService(env.DB);
         const controller = new UrlController(service);
 
-        // 添加cors请求头
-        request.headers.set('Access-Control-Allow-Origin', '*');
-        request.headers.set('Access-Control-Allow-Methods', 'GET, POST, DELETE');
-        request.headers.set('Access-Control-Allow-Headers', 'Content-Type');
-
         if (request.method === 'OPTIONS') {
             return new Response(null, {
                 status: 200,
-                headers: {
+                headers: new Headers({
                     'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, DELETE',
-                    'Access-Control-Allow-Headers': 'Content-Type'
-                }
+                    'Access-Control-Allow-Methods': 'GET, POST, DELETE'
+                })
             });
         }
 
