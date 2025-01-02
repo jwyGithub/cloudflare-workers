@@ -1,5 +1,5 @@
 import type { ClashType, SingboxType, VpsMap } from '../../types';
-import { DEFAULT_CONFIG } from '../../page';
+import { DEFAULT_CONFIG } from '../../config';
 import { getUrlGroup } from '../../shared';
 import { Parser } from '../parser';
 import { ClashClient } from './client/clash';

@@ -1,12 +1,12 @@
 import { dump } from 'js-yaml';
 import { Confuse } from './core/confuse';
 import { Restore } from './core/restore';
-import { DEFAULT_CONFIG, showPage } from './page';
+import { showPage } from './page/page';
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         try {
-            const { pathname, origin } = new URL(request.url);
+            const { pathname } = new URL(request.url);
             if (pathname === '/sub') {
                 const confuse = new Confuse(env);
                 await confuse.setSubUrls(request);
@@ -41,12 +41,7 @@ export default {
                 return new Response('Unsupported client type, support list: clash, clashr', { status: 400 });
             }
 
-            return showPage({
-                url: env.PAGE_URL ?? DEFAULT_CONFIG.PAGE_URL,
-                lockBackend: env.LOCK_BACKEND ?? DEFAULT_CONFIG.LOCK_BACKEND,
-                remoteConfig: env.REMOTE_CONFIG ?? DEFAULT_CONFIG.REMOTE_CONFIG,
-                origin
-            });
+            return showPage(request, env);
         } catch (error: any) {
             return new Response(error.message || error);
         }

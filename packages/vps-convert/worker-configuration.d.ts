@@ -5,11 +5,6 @@ interface Env {
     BACKEND?: string;
     LOCK_BACKEND?: boolean;
     REMOTE_CONFIG?: string;
-    PAGE_URL?: string;
     CHUNK_COUNT?: string;
-}
-
-declare module '*.html' {
-    const html: string;
-    export default html;
+    SHORT_SERVER?: string;
 }

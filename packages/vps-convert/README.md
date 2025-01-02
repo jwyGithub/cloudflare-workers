@@ -37,11 +37,12 @@ a small tool that provides confusion conversion subscriptions
 
 ### 环境变量配置
 
-| 变量名          | 说明                             | 默认值              | 必填 |
-| --------------- | -------------------------------- | ------------------- | ---- |
-| `BACKEND`       | 转换后端服务地址                 | `https://url.v1.mk` | ❌   |
-| `LOCK_BACKEND`  | 是否锁定后端服务                 | `false`             | ❌   |
-| `REMOTE_CONFIG` | 自定义远程配置<br>(支持多行配置) | `https://xxxxx1`    | ❌   |
+| 变量名          | 说明                             | 默认值                      | 必填 | 备注   |
+| --------------- | -------------------------------- | --------------------------- | ---- | ------ |
+| `BACKEND`       | 转换后端服务地址                 | `https://url.v1.mk`         | ❌   |        |
+| `LOCK_BACKEND`  | 是否锁定后端服务                 | `false`                     | ❌   |        |
+| `REMOTE_CONFIG` | 自定义远程配置<br>(支持多行配置) | `https://xxxxx1`            | ❌   |        |
+| `SHORT_SERVER`  | 自定义短链服务                   | `https://short.looby.us.kg` | ❌   | 测试中 |
 
 ## 📝 使用说明
 
@@ -85,6 +86,12 @@ a small tool that provides confusion conversion subscriptions
 - Worker 部署：`https://your-worker-name.your-subdomain.workers.dev`
 - Pages 部署：`https://your-project-name.pages.dev`
 
+### 🔗 自部署短链服务(测试中)
+
+短链服务用于将较长的订阅链接转换为简短的 URL，便于分享和使用。
+
+[短链服务部署文档](https://github.com/jwyGithub/cloudflare-workers/tree/main/packages/short-url)
+
 ## 🤝 贡献指南
 
 欢迎提交 Issue 和 Pull Request！
@@ -111,7 +118,7 @@ a small tool that provides confusion conversion subscriptions
 
     - 优化用户界面
 
-- 🔗 短链功能
+- 🔗 短链功能(测试中)
 
     - 支持订阅链接转短链
     - 自定义短链别名
