@@ -1,7 +1,7 @@
 var l = Object.defineProperty;
-var p = (s, e, r) => e in s ? l(s, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : s[e] = r;
-var i = (s, e, r) => p(s, typeof e != "symbol" ? e + "" : e, r);
-class n {
+var p = (n, e, r) => e in n ? l(n, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : n[e] = r;
+var i = (n, e, r) => p(n, typeof e != "symbol" ? e + "" : e, r);
+class s {
   static json(e, r = 200) {
     return new Response(JSON.stringify(e), {
       status: r,
@@ -25,38 +25,38 @@ class u {
     try {
       const { long_url: r, serve: o } = await e.json();
       if (!r)
-        return n.error("Missing long_url");
+        return s.error("Missing long_url");
       const t = new URL(e.url), a = o || `${t.protocol}//${t.host}`, d = await this.service.add(r, a);
-      return n.success(d);
+      return s.success(d);
     } catch (r) {
-      return n.error(r.message || "Invalid request");
+      return s.error(r.message || "Invalid request");
     }
   }
   async delete(e) {
     try {
       const o = new URL(e.url).searchParams.get("code");
-      return o ? (await this.service.deleteByCode(o), n.success({ deleted: !0 })) : n.error("Missing code");
+      return o ? (await this.service.deleteByCode(o), s.success({ deleted: !0 })) : s.error("Missing code");
     } catch (r) {
-      return n.error(r.message || "Invalid request");
+      return s.error(r.message || "Invalid request");
     }
   }
   async queryByCode(e) {
     try {
       const o = new URL(e.url).searchParams.get("code");
       if (!o)
-        return n.error("Missing code");
+        return s.error("Missing code");
       const t = await this.service.getByCode(o);
-      return t ? n.success(t) : n.error("Not found", 404);
+      return t ? s.success(t) : s.error("Not found", 404);
     } catch (r) {
-      return n.error(r.message || "Invalid request");
+      return s.error(r.message || "Invalid request");
     }
   }
   async queryList(e) {
     try {
       const r = new URL(e.url), o = Number.parseInt(r.searchParams.get("page") || "1"), t = Number.parseInt(r.searchParams.get("pageSize") || "10"), a = await this.service.getList(o, t);
-      return n.success(a);
+      return s.success(a);
     } catch (r) {
-      return n.error(r.message || "Invalid request");
+      return s.error(r.message || "Invalid request");
     }
   }
   async redirect(e) {
@@ -64,16 +64,16 @@ class u {
     try {
       const o = (r = e.params) == null ? void 0 : r.code;
       if (!o)
-        return n.error("Invalid short URL");
+        return s.error("Invalid short URL");
       const t = await this.service.getByCode(o);
-      return t ? Response.redirect(t.long_url, 302) : n.error("Not found", 404);
+      return t ? Response.redirect(t.long_url, 302) : s.error("Not found", 404);
     } catch (o) {
-      return n.error(o.message || "Invalid request");
+      return s.error(o.message || "Invalid request");
     }
   }
 }
 function h() {
-  const s = `<!DOCTYPE html>
+  const n = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -809,7 +809,7 @@ function h() {
     <\/script>
 </body>
 </html>`;
-  return new Response(s, {
+  return new Response(n, {
     headers: {
       "content-type": "text/html;charset=UTF-8"
     }
@@ -893,16 +893,15 @@ class b {
   }
 }
 const c = new g(), x = {
-  async fetch(s, e) {
+  async fetch(n, e) {
     const r = new b(e.DB), o = new u(r);
-    return s.headers.set("Access-Control-Allow-Origin", "*"), s.headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE"), s.headers.set("Access-Control-Allow-Headers", "Content-Type"), s.method === "OPTIONS" ? new Response(null, {
+    return n.method === "OPTIONS" ? new Response(null, {
       status: 200,
-      headers: {
+      headers: new Headers({
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, DELETE",
-        "Access-Control-Allow-Headers": "Content-Type"
-      }
-    }) : (c.get("/", () => h()).post("/api/add", (t) => o.add(t)).delete("/api/delete", (t) => o.delete(t)).get("/api/queryByCode", (t) => o.queryByCode(t)).get("/api/queryList", (t) => o.queryList(t)).get("/:code", (t) => o.redirect(t)), c.handle(s, e));
+        "Access-Control-Allow-Methods": "GET, POST, DELETE"
+      })
+    }) : (c.get("/", () => h()).post("/api/add", (t) => o.add(t)).delete("/api/delete", (t) => o.delete(t)).get("/api/queryByCode", (t) => o.queryByCode(t)).get("/api/queryList", (t) => o.queryList(t)).get("/:code", (t) => o.redirect(t)), c.handle(n, e));
   }
 };
 export {
