@@ -1,5 +1,6 @@
 import { UrlController } from './controllers/url.controller';
 import { handlePageRequest } from './core/page';
+import { ResponseUtil } from './core/response';
 import { Router } from './core/router';
 import { UrlService } from './services/url.service';
 
@@ -7,18 +8,18 @@ const router = new Router();
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
-        const service = new UrlService(env.DB);
-        const controller = new UrlController(service);
-
         if (request.method === 'OPTIONS') {
             return new Response(null, {
-                status: 200,
-                headers: new Headers({
+                headers: {
                     'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, DELETE'
-                })
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                }
             });
         }
+
+        const service = new UrlService(env.DB);
+        const controller = new UrlController(service);
 
         router
             .get('/', () => handlePageRequest())
@@ -28,6 +29,7 @@ export default {
             .get('/api/queryList', req => controller.queryList(req))
             .get('/:code', req => controller.redirect(req));
 
-        return router.handle(request, env);
+        const response = await router.handle(request, env);
+        return ResponseUtil.cors(response);
     }
 } satisfies ExportedHandler<Env>;
