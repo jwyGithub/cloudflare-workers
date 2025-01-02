@@ -944,7 +944,7 @@ class g {
     return this.add("DELETE", e, t), this;
   }
   add(e, t, r) {
-    const a = t.replace(/:(\w+)/g, "/:$1");
+    const a = t.startsWith("/") ? t : `/${t}`;
     this.routes.push({
       pattern: new URLPattern({ pathname: a }),
       handler: async (o, d) => o.method !== e ? new Response("Method Not Allowed", { status: 405 }) : r(o, d)
