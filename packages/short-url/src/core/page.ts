@@ -434,6 +434,101 @@ export function handlePageRequest(): Response {
         .toast-icon.error {
             color: var(--error);
         }
+
+        .table-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        th {
+            background: #fafafa;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.85);
+        }
+
+        td {
+            color: rgba(0, 0, 0, 0.65);
+        }
+
+        .col-id {
+            width: 60px;
+        }
+
+        .col-short {
+            width: 280px;
+        }
+
+        .col-long {
+            width: calc(100% - 440px);  /* 总宽度减去其他列的宽度 */
+        }
+
+        .col-action {
+            width: 100px;
+            text-align: center;
+        }
+
+        td a {
+            color: #1677ff;
+            text-decoration: none;
+            word-break: break-all;
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        td a:hover {
+            color: #4096ff;
+        }
+
+        .btn-delete {
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid #ff4d4f;
+            border-radius: 4px;
+            color: #ff4d4f;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #fff1f0;
+        }
+
+        /* 添加链接悬浮提示 */
+        .url-cell {
+            position: relative;
+        }
+
+        .url-cell:hover::after {
+            content: attr(data-url);
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: normal;
+            word-break: break-all;
+            max-width: 300px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -450,17 +545,19 @@ export function handlePageRequest(): Response {
                 <h3>短链接列表</h3>
                 <button onclick="showAddModal()">新增</button>
             </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>短链接</th>
-                        <th>原始链接</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="urlList"></tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-id">ID</th>
+                            <th class="col-short">短链接</th>
+                            <th class="col-long">原始链接</th>
+                            <th class="col-action">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="urlList"></tbody>
+                </table>
+            </div>
             <div id="pagination"></div>
         </div>
     </div>
@@ -520,10 +617,14 @@ export function handlePageRequest(): Response {
             tbody.innerHTML = items.map(item => \`
                 <tr>
                     <td>\${item.id}</td>
-                    <td><a href="\${item.short_url}" target="_blank">\${item.short_url || '-'}</a></td>
-                    <td><a href="\${item.long_url}" target="_blank">\${item.long_url || '-'}</a></td>
-                    <td class="actions">
-                        <button onclick="deleteUrl('\${item.short_code}')" class="btn-delete">删除</button>
+                    <td class="url-cell" data-url="\${item.short_url}">
+                        <a href="\${item.short_url}" target="_blank">\${item.short_url || '-'}</a>
+                    </td>
+                    <td class="url-cell" data-url="\${item.long_url}">
+                        <a href="\${item.long_url}" target="_blank">\${item.long_url || '-'}</a>
+                    </td>
+                    <td class="col-action">
+                        <button class="btn-delete" onclick="deleteUrl('\${item.short_code}')">删除</button>
                     </td>
                 </tr>
             \`).join('');
