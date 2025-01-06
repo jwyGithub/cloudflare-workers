@@ -206,8 +206,8 @@ export function showPage(request: Request, env: Env): Response {
 
                     class Sub {
                         #model = {
-                            target: 'clash',
-                            config: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online.ini',
+                            target: '${targetConfig[0].value}',
+                            config: '${remoteConfig[0].value}',
                             backend: '${backendConfig[0].value}',
                             advanced: ['emoji', 'new_name'],
                             shortServe: '',
