@@ -2,7 +2,7 @@
 name = "vps-convert"
 main = "src/index.ts"
 compatibility_date = "2023-05-18"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat_v2"]
 
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/

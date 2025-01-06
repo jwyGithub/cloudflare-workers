@@ -1,758 +1,392 @@
-import { DEFAULT_CONFIG } from '../config';
-import backendConfig from './backendConfig';
-import remoteConfig from './remoteConfig';
-import shortUrlConfig from './shortUrlConfig';
-import targetConfig from './targetConfig';
-
-function getRemoteConfig(envConfig = ''): { label: string; value: string }[] {
-    const envConfigArr = envConfig.split('\n').filter(Boolean);
-    return envConfigArr.reduce<{ label: string; value: string }[]>((acc, cur) => {
-        acc.unshift({
-            label: cur,
-            value: cur
-        });
-        return acc;
-    }, remoteConfig);
-}
-
-function getBackendOptions(origin: string): { label: string; value: string }[] {
-    return [{ label: origin, value: origin }, ...backendConfig];
-}
-
-function getShortUrlOptions(shortServer: string): { label: string; value: string }[] {
-    const shortServerArr = shortServer.split('\n').filter(Boolean);
-    return shortServerArr.reduce<{ label: string; value: string }[]>((acc, cur) => {
-        acc.push({ label: cur, value: cur });
-        return acc;
-    }, shortUrlConfig);
-}
+import { SubButton, SubCheckbox, SubForm, SubFormItem, SubInput, SubMessage, SubSelect, SubTextarea } from './components';
+import { getAdvancedConfig, getBackendConfig, getRemoteConfig, getShortUrlConfig, getTargetConfig } from './config';
+import { theme } from './script/theme';
+import { layout } from './style/layout';
+import { style } from './style/style';
 
 export function showPage(request: Request, env: Env): Response {
-    const remoteConfig = getRemoteConfig(env.REMOTE_CONFIG || DEFAULT_CONFIG.REMOTE_CONFIG);
-    const shortUrlOptions = getShortUrlOptions(env.SHORT_SERVER || DEFAULT_CONFIG.SHORT_SERVER);
-    const backendOptions = getBackendOptions(new URL(request.url).origin);
-    const html = `
-        <!doctype html>
-        <html>
+    const remoteConfig = getRemoteConfig(env);
+    const backendConfig = getBackendConfig(request, env);
+    const shortUrlConfig = getShortUrlConfig(env);
+    const targetConfig = getTargetConfig();
+    const advancedConfig = getAdvancedConfig();
+
+    const html = `  
+    <!DOCTYPE html>
+        <html lang="en" theme="dark">
             <head>
                 <meta charset="UTF-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>订阅转换</title>
+                <title>Sub Converter</title>
+
+                ${style()}
+                ${layout()}
+
                 <style>
-                    :root {
-                        --primary: #1677ff;
-                        --error: #ff4d4f;
-                        --text: #000000d9;
-                        --text-secondary: #00000073;
-                        --border: #d9d9d9;
-                        --component-bg: #ffffff;
-                    }
-
-                    body {
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                        margin: 0;
-                        padding: 24px;
-                        background: #f5f5f5;
-                    }
-
-                    .container {
-                        max-width: 80%;
-                        margin: 0 auto;
-                        background: var(--component-bg);
-                        padding: 24px;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-                    }
-
-                    .form-item {
-                        margin-bottom: 24px;
-                        display: flex;
-                        align-items: flex-start;
-                    }
-
-                    .form-label {
-                        width: 100px;
-                        flex-shrink: 0;
-                        text-align: right;
-                        padding: 5px 12px 0 0;
-                        color: var(--text);
-                        font-size: 14px;
-                        line-height: 1.5715;
-                    }
-
-                    .form-content {
-                        flex: 1;
-                        min-width: 0;
-                    }
-
-                    .form-input {
-                        width: 100%;
-                        padding: 4px 11px;
-                        border: 1px solid var(--border);
-                        border-radius: 6px;
-                        transition: all 0.3s;
-                        min-height: 32px;
-                        box-sizing: border-box;
-                    }
-
-                    textarea.form-input {
-                        min-height: 100px;
-                        resize: vertical;
-                    }
-
-                    .form-input:hover {
-                        border-color: var(--primary);
-                    }
-
-                    .form-input:focus {
-                        border-color: var(--primary);
-                        outline: none;
-                        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-                    }
-
-                    .btn {
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        padding: 4px 15px;
-                        font-size: 14px;
-                        border-radius: 6px;
-                        border: 1px solid var(--border);
-                        background: var(--component-bg);
-                        color: var(--text);
-                        cursor: pointer;
-                        transition: all 0.3s;
-                        height: 32px;
-                        white-space: nowrap;
-                        width: 100%;
-                        position: relative;
-                    }
-
-                    .btn:hover {
-                        color: var(--primary);
-                        border-color: var(--primary);
-                    }
-
-                    .btn .text {
-                        flex: 1;
-                        text-align: center;
-                    }
-
-                    .btn .icon {
-                        margin-left: 4px;
-                        color: var(--text-secondary);
-                    }
-
-                    .btn .icon svg {
-                        width: 14px;
-                        height: 14px;
-                        transition: transform 0.3s;
-                    }
-
-                    .btn .icon svg path {
-                        fill: currentColor;
-                    }
-
-                    .btn.expanded .icon {
-                        color: var(--primary);
-                    }
-
-                    .btn.expanded .icon svg {
-                        transform: rotate(180deg);
-                    }
-
-                    .btn:hover .icon {
-                        color: var(--primary);
-                    }
-
-                    .collapse-content {
-                        display: none;
-                        opacity: 0;
-                        transition: opacity 0.3s;
-                    }
-
-                    .collapse-content.show {
-                        display: block;
-                        opacity: 1;
-                    }
-
-                    .options-grid {
-                        display: grid;
-                        grid-template-columns: repeat(3, 1fr);
-                        gap: 12px;
-                        padding: 16px;
-                        background: #fafafa;
-                        border-radius: 6px;
-                    }
-
-                    .checkbox-item {
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        font-size: 14px;
-                        color: var(--text);
-                        cursor: pointer;
-                    }
-
-                    .checkbox-item:has(input:checked) {
-                        color: var(--primary);
-                    }
-
-                    .checkbox-item input[type='checkbox'] {
-                        width: 16px;
-                        height: 16px;
-                        margin: 0;
-                        cursor: pointer;
-                        accent-color: var(--primary);
-                    }
-
-                    .checkbox-item:hover {
-                        color: var(--primary);
-                    }
-
-                    .btn {
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        padding: 4px 15px;
-                        font-size: 14px;
-                        border-radius: 6px;
-                        border: 1px solid var(--border);
-                        background: var(--component-bg);
-                        color: var(--text);
-                        cursor: pointer;
-                        transition: all 0.3s;
-                        height: 32px;
-                        white-space: nowrap;
-                    }
-
-                    .btn:hover {
-                        color: var(--primary);
-                        border-color: var(--primary);
-                    }
-
-                    .select-wrapper {
-                        position: relative;
-                        width: 100%;
-                    }
-
-                    .select-input {
-                        height: 20px;
-                        padding: 4px 11px;
-                        background: #fff;
-                        border: 1px solid var(--border);
-                        border-radius: 6px;
-                        cursor: pointer;
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        user-select: none;
-                    }
-
-                    .select-input:hover {
-                        border-color: var(--primary);
-                    }
-
-                    .select-value {
-                        color: var(--text);
-                        font-size: 14px;
-                    }
-
-                    .select-arrow {
-                        width: 14px;
-                        height: 14px;
-                        transition: transform 0.3s;
-                        color: var(--text-secondary);
-                    }
-
-                    .select-wrapper.open .select-arrow {
-                        transform: rotate(180deg);
-                        color: var(--primary);
-                    }
-
-                    .select-options {
-                        position: absolute;
-                        top: 100%;
-                        left: 0;
-                        right: 0;
-                        margin-top: 4px;
-                        background: white;
-                        border-radius: 6px;
-                        box-shadow: 0 3px 6px -4px rgba(0,0,0,.12), 0 6px 16px 0 rgba(0,0,0,.08);
-                        max-height: 256px;
-                        overflow-y: auto;
-                        z-index: 1000;
-                        display: none;
-                        padding: 4px 0;
-                    }
-
-                    .select-wrapper.open .select-options {
-                        display: block;
-                    }
-
-                    .select-option {
-                        padding: 8px 12px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        color: var(--text);
-                        transition: all 0.2s;
-                        display: flex;
-                        align-items: center;
-                    }
-
-                    .select-option:hover {
-                        background: #f5f5f5;
-                        color: var(--primary);
-                    }
-
-                    .select-option.selected {
-                        color: var(--primary);
-                        font-weight: 500;
-                        background: #e6f4ff;
-                    }
-
-                    .select-option.selected:hover {
-                        background: #bae0ff;
-                    }
-
                     .input-group {
                         display: flex;
                         align-items: center;
                         gap: 8px;
                     }
 
-                    .input-group .form-input {
+                    .input-group input {
+                        width: 100%;
+                        padding: 4px 11px;
+                        border: 1px solid var(--border-color);
+                        border-radius: var(--radius);
+                        transition: var(--transition);
+                        min-height: 32px;
+                        box-sizing: border-box;
                         flex: 1;
-                        background-color: #fafafa;
-                        color: var(--text-secondary);
+                        background-color: var(--background);
+                        color: var(--text-disabled);
                         cursor: not-allowed;
                     }
 
-                    .input-group .form-input:disabled {
-                        border-color: var(--border);
-                        -webkit-text-fill-color: var(--text-secondary);
+                    .input-group input:disabled {
+                        border-color: var(--border-color);
+                        background-color: var(--background-disabled);
+                        color: var(--text-disabled);
                         opacity: 1;
                     }
 
-                    .input-group .form-input:disabled:hover {
-                        border-color: var(--border);
-                    }
-
-                    .copy-btn {
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 4px;
-                        padding: 4px 15px;
-                        height: 32px;
-                        background: white;
-                        border: 1px solid var(--border);
-                        border-radius: 6px;
-                        color: var(--text);
-                        font-size: 14px;
-                        cursor: pointer;
-                        transition: all 0.3s;
-                    }
-
-                    .copy-btn:hover {
-                        color: var(--primary);
-                        border-color: var(--primary);
-                    }
-
-                    .copy-btn svg {
-                        width: 14px;
-                        height: 14px;
-                    }
-
-                    .button-group {
+                    .sub-form-item__actions {
                         display: flex;
-                        gap: 12px;
                         justify-content: center;
-                        max-width: 400px;
-                        margin: 0 auto;
-                    }
-
-                    .submit-btn {
-                        min-width: 120px;
-                        height: 32px;
-                        padding: 4px 15px;
-                        border-radius: 6px;
-                        font-size: 14px;
-                        cursor: pointer;
-                        border: 1px solid var(--border);
-                        background: white;
-                        color: var(--text);
-                        transition: all 0.3s;
-                        flex: 0 1 auto;
-                    }
-
-                    .submit-btn:hover {
-                        color: var(--primary);
-                        border-color: var(--primary);
-                    }
-
-                    .submit-btn.primary {
-                        background: var(--primary);
-                        color: white;
-                        border-color: var(--primary);
-                    }
-
-                    .submit-btn.primary:hover {
-                        opacity: 0.8;
-                        color: white;
-                    }
-
-                    .submit-btn:disabled {
-                        background: #f5f5f5;
-                        border-color: var(--border);
-                        color: rgba(0, 0, 0, 0.25);
-                        cursor: not-allowed;
-                    }
-
-                    .submit-btn.primary:disabled {
-                        background: #f5f5f5;
-                        border-color: var(--border);
-                        color: rgba(0, 0, 0, 0.25);
-                    }
-
-                    .submit-btn:disabled:hover {
-                        background: #f5f5f5;
-                        border-color: var(--border);
-                        color: rgba(0, 0, 0, 0.25);
+                        align-items: center;
+                        gap: 20px;
+                        margin-top: 24px;
+                        padding-right: 100px;
                     }
                 </style>
             </head>
             <body>
-                <div class="container">
+                ${theme()}
 
+                <main>
                     <header>
-                        <h2 style="text-align: center;">订阅转换</h2>
+                        <span class="header__icon">
+                            <svg
+                                t="1735896323200"
+                                class="icon"
+                                viewBox="0 0 1024 1024"
+                                version="1.1"
+                                xmlns="http://www.w3.org/2000/svg"
+                                p-id="1626"
+                            >
+                                <path
+                                    d="M512 42.666667A464.64 464.64 0 0 0 42.666667 502.186667 460.373333 460.373333 0 0 0 363.52 938.666667c23.466667 4.266667 32-9.813333 32-22.186667v-78.08c-130.56 27.733333-158.293333-61.44-158.293333-61.44a122.026667 122.026667 0 0 0-52.053334-67.413333c-42.666667-28.16 3.413333-27.733333 3.413334-27.733334a98.56 98.56 0 0 1 71.68 47.36 101.12 101.12 0 0 0 136.533333 37.973334 99.413333 99.413333 0 0 1 29.866667-61.44c-104.106667-11.52-213.333333-50.773333-213.333334-226.986667a177.066667 177.066667 0 0 1 47.36-124.16 161.28 161.28 0 0 1 4.693334-121.173333s39.68-12.373333 128 46.933333a455.68 455.68 0 0 1 234.666666 0c89.6-59.306667 128-46.933333 128-46.933333a161.28 161.28 0 0 1 4.693334 121.173333A177.066667 177.066667 0 0 1 810.666667 477.866667c0 176.64-110.08 215.466667-213.333334 226.986666a106.666667 106.666667 0 0 1 32 85.333334v125.866666c0 14.933333 8.533333 26.88 32 22.186667A460.8 460.8 0 0 0 981.333333 502.186667 464.64 464.64 0 0 0 512 42.666667"
+                                    fill="#231F20"
+                                    p-id="1627"
+                                ></path>
+                            </svg>
+                        </span>
+
+                        <span class="header__title">订阅转换</span>
+
+                        <button class="header__theme"></button>
                     </header>
-                
-                    <form id="convertForm">
-                        <div class="form-item">
-                            <label class="form-label">订阅链接:</label>
-                            <div class="form-content">
-                                <textarea class="form-input" name="url" placeholder="支持各种订阅链接或单节点链接，多个链接每行一个或用 | 分隔"></textarea>
-                            </div>
-                        </div>
-                        <!-- 生成类型 -->
-                        <div class="form-item form-target"> </div>
-                        <!-- 远程配置 -->
-                        <div class="form-item form-config"> </div>
-                        <!-- 后端地址 -->
-                        <div class="form-item form-backend"> </div>
 
-                        <div class="form-item">
-                            <label class="form-label">高级功能:</label>
-                            <div class="form-content">
-                                <button type="button" class="btn" onclick="toggleCollapse(this)">
-                                    <span class="text">点击显示/隐藏</span>
-                                    <span class="icon">
-                                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+                    <section>
+                        <sub-form id="sub-convert-form" label-width="100px">
+                            <sub-form-item label="订阅链接">
+                                <sub-textarea
+                                    key="url"
+                                    placeholder="支持各种订阅链接或单节点链接，多个链接每行一个或用 | 分隔"
+                                    rows="4"
+                                ></sub-textarea>
+                            </sub-form-item>
+
+                            <sub-form-item label="生成类型">
+                                <sub-select key="target"></sub-select>
+                            </sub-form-item>
+
+                            <sub-form-item label="远程配置">
+                                <sub-select key="config"></sub-select>
+                            </sub-form-item>
+
+                            <sub-form-item label="后端地址">
+                                <sub-select key="backend"></sub-select>
+                            </sub-form-item>
+
+                            <sub-form-item label="高级选项">
+                                <sub-checkbox key="advanced" span="5"></sub-checkbox>
+                            </sub-form-item>
+
+                            <sub-form-item label="短链地址">
+                                <sub-select key="shortServe"></sub-select>
+                            </sub-form-item>
+
+                            <sub-form-item label="定制订阅">
+                                <div class="input-group">
+                                    <input type="text" value="" disabled id="form-subscribe" />
+                                    <sub-button type="default" onclick="sub.copySubUrl('form-subscribe')">
+                                        <svg
+                                            viewBox="64 64 896 896"
+                                            focusable="false"
+                                            data-icon="copy"
+                                            width="1em"
+                                            height="1em"
+                                            fill="currentColor"
+                                            aria-hidden="true"
+                                        >
                                             <path
-                                                d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"
-                                            />
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="collapse-content">
-                            <div class="form-item form-short-url"> </div>
-                            <div class="form-item">
-                                <label class="form-label">高级选项:</label>
-                                <div class="form-content">
-                                    <div class="options-grid">
-                                        <label class="checkbox-item">
-                                            <input type="checkbox" name="options" value="emoji" checked />
-                                            <span>Emoji</span>
-                                        </label>
-                                        <label class="checkbox-item">
-                                            <input type="checkbox" name="options" value="new_name" checked />
-                                            <span>Clash New Field</span>
-                                        </label>
-
-                                        <label class="checkbox-item">
-                                            <input type="checkbox" name="options" value="udp" />
-                                            <span>启用 UDP</span>
-                                        </label>
-
-                                        <label class="checkbox-item">
-                                            <input type="checkbox" name="options" value="sort"  />
-                                            <span>排序节点</span>
-                                        </label>
-
-                                        <label class="checkbox-item">
-                                            <input type="checkbox" name="options" value="tfo" />
-                                            <span>启用TFO</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-item form-subscribe">
-                            <label class="form-label">定制订阅:</label>
-                            <div class="form-content">
-                                <div class="input-group">
-                                    <input type="text" 
-                                           class="form-input" 
-                                           value="" 
-                                           disabled>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('form-subscribe')">
-                                        <svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentColor" aria-hidden="true">
-                                            <path d="M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"></path>
+                                                d="M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"
+                                            ></path>
                                         </svg>
                                         复制
-                                    </button>
+                                    </sub-button>
                                 </div>
-                            </div>
-                        </div>
+                            </sub-form-item>
 
-                        <div class="form-item form-short-url">
-                            <label class="form-label">订阅短链:</label>
-                            <div class="form-content">
+                            <sub-form-item label="订阅短链">
                                 <div class="input-group">
-                                    <input type="text" 
-                                           class="form-input" 
-                                           disabled>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('form-short-url')">
-                                        <svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentColor" aria-hidden="true">
-                                            <path d="M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"></path>
+                                    <input type="text" value="" disabled id="form-short-url" />
+                                    <sub-button type="default" onclick="sub.copySubUrl('form-short-url')">
+                                        <svg
+                                            viewBox="64 64 896 896"
+                                            focusable="false"
+                                            data-icon="copy"
+                                            width="1em"
+                                            height="1em"
+                                            fill="currentColor"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"
+                                            ></path>
                                         </svg>
                                         复制
-                                    </button>
+                                    </sub-button>
                                 </div>
-                            </div>
-                        </div>
+                            </sub-form-item>
 
-                        <div class="form-item">
-                            <label class="form-label"></label>
-                            <div class="form-content">
-                                <div class="button-group">
-                                    <button type="button" class="submit-btn primary" id="generateBtn" disabled>生成订阅链接</button>
-                                    <button type="button" class="submit-btn" id="shortUrlBtn" disabled>生成短链接</button>
+                            <sub-form-item>
+                                <div class="sub-form-item__actions">
+                                    <sub-button disabled id="generate-sub-btn" type="default">生成订阅链接</sub-button>
+                                    <sub-button disabled id="generate-short-url-btn" type="default">生成短链</sub-button>
                                 </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                            </sub-form-item>
+                        </sub-form>
+                    </section>
+                </main>
+
+                ${SubInput()}
+                ${SubTextarea()}
+                ${SubSelect()}
+                ${SubCheckbox()}
+                ${SubFormItem()}
+                ${SubForm()}
+                ${SubButton()}
+                ${SubMessage()}
 
                 <script>
-                    function createSelect(label, key, options, rootNode) {
-                        const defaultLabel = options[0]?.label || '';
-                        const defaultValue = options[0]?.value || '';
-                        rootNode.innerHTML = \`
-                            <label class="form-label" data-key="\${key}">\${label}:</label>
-                            <div class="form-content">
-                                <div class="select-wrapper">
-                                    <div class="select-input" onclick="toggleSelect(this)">
-                                        <span class="select-value" data-value="\${defaultValue}">\${defaultLabel}</span>
-                                        <span class="select-arrow">
-                                            <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"
-                                                    fill="currentColor"
-                                                />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                    <div class="select-options">
-                                        \${options.map(option => \`<div class="select-option" data-value="\${option.value}" onclick="selectOption(this, '\${option.label}', '\${option.value}')">\${option.label}</div>\`).join('')}
-                                    </div>
-                                </div>
-                            </div>
-                        \`;
-                    }
+                    const formConfig = {
+                        target: {
+                            type: 'sub-select',
+                            options: ${JSON.stringify(targetConfig)}
+                        },
+                        config: {
+                            type: 'sub-select',
+                            options: ${JSON.stringify(remoteConfig)}
+                        },
+                        backend: {
+                            type: 'sub-select',
+                            options: ${JSON.stringify(backendConfig)}
+                        },
+                        advanced: {
+                            type: 'sub-checkbox',
+                            options: ${JSON.stringify(advancedConfig)}
+                        },
+                        shortServe: {
+                            type: 'sub-select',
+                            options: ${JSON.stringify(shortUrlConfig)}
+                        }
+                    };
 
-                    createSelect('生成类型', 'target', ${JSON.stringify(targetConfig)}, document.querySelector('.form-target'));
-                    createSelect('远程配置', 'config', ${JSON.stringify(remoteConfig)}, document.querySelector('.form-config'));
-                    createSelect('后端地址', 'backend', ${JSON.stringify(backendOptions)}, document.querySelector('.form-backend'));
-                    createSelect('短链服务', 'short_url', ${JSON.stringify(shortUrlOptions)}, document.querySelector('.form-short-url'));
+                    class Sub {
+                        #model = {
+                            target: 'clash',
+                            config: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online.ini',
+                            backend: 'http://localhost:8787',
+                            advanced: ['emoji', 'new_name'],
+                            shortServe: '',
 
-                    function toggleCollapse(btn) {
-                        const content = btn.closest('.form-item').nextElementSibling;
-                        btn.classList.toggle('expanded');
-                        content.classList.toggle('show');
-                    }
+                            subUrl: '',
+                            shortUrl: ''
+                        };
 
-                    function toggleSelect(input) {
-                        const wrapper = input.closest('.select-wrapper');
-                        wrapper.classList.toggle('open');
+                        #formSubscribe = this.#$('#form-subscribe');
+                        #formShortUrl = this.#$('#form-short-url');
 
-                        // 关闭其他打开的下拉框
-                        document.querySelectorAll('.select-wrapper.open').forEach(el => {
-                            if (el !== wrapper) {
-                                el.classList.remove('open');
+                        #generateSubBtn = this.#$('#generate-sub-btn');
+                        #generateShortUrlBtn = this.#$('#generate-short-url-btn');
+
+                        #form = this.#$('#sub-convert-form');
+                        #formItems = this.#form.querySelectorAll('sub-form-item');
+
+                        constructor() {
+                            this.#init();
+                            this.#bindEvents();
+                        }
+
+                        #init() {
+                            this.#formItems.forEach(item => {
+                                const formItem = item.querySelector('[key]');
+                                if (formItem) {
+                                    const formItemKey = formItem.getAttribute('key');
+                                    const type = formConfig[formItemKey]?.type;
+                                    if (type && ['sub-select', 'sub-checkbox'].includes(type)) {
+                                        formItem.setAttribute('options', JSON.stringify(formConfig[formItemKey].options));
+                                    }
+                                    formItem.setAttribute('placeholder', formConfig[formItemKey]?.placeholder ?? '');
+                                    if (formConfig[formItemKey]?.disabled) {
+                                        formItem.setAttribute('disabled', '');
+                                    }
+                                }
+                            });
+
+                            this.#form.setAttribute('model', JSON.stringify(this.#model));
+                        }
+
+                        #bindEvents() {
+                            this.#form.addEventListener('form:change', e => {
+                                this.#model[e.detail.key] = e.detail.value;
+                                this.#form.setAttribute('model', JSON.stringify(this.#model));
+
+                                if (this.#model.url) {
+                                    this.#generateSubBtn.removeAttribute('disabled');
+                                } else {
+                                    this.#generateSubBtn.setAttribute('disabled', '');
+                                }
+                            });
+
+                            this.#generateSubBtn.addEventListener('click', () => {
+                                const url = new URL(this.#model.backend + '/sub');
+                                url.searchParams.set('target', this.#model.target);
+                                url.searchParams.set('url', this.#model.url);
+                                url.searchParams.set('insert', 'false');
+                                url.searchParams.set('config', this.#model.config);
+                                url.searchParams.set('list', false);
+                                url.searchParams.set('scv', false);
+                                url.searchParams.set('fdn', false);
+
+                                const advancedOptions = this.#getAdvancedOptions(this.#model);
+
+                                advancedOptions.forEach(option => {
+                                    url.searchParams.set(option.label, option.value);
+                                });
+
+                                const subUrl = url.toString();
+                                this.#formSubscribe.value = subUrl;
+                                this.#model.subUrl = subUrl;
+
+                                this.#generateShortUrlBtn.removeAttribute('disabled');
+                            });
+
+
+
+                            this.#generateShortUrlBtn.addEventListener('click', async () => {
+                                if (!this.#model.shortServe) {
+                                    notification.error('短链服务不存在');
+                                    return;
+                                }
+
+                                // 构建请求数据
+                                const requestData = {
+                                    serve: this.#model.shortServe,
+                                    long_url: this.#model.subUrl
+                                };
+
+                                // 发送请求
+                                const response = await fetch(\`\${this.#model.shortServe}/api/add\`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(requestData)
+                                });
+
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    this.#formShortUrl.value = data.data.short_url;
+                                    this.#model.shortUrl = data.data.short_url;
+                                    notification.success('生成短链接成功');
+                                } else {
+                                    notification.error('生成短链接失败');
+                                }
+                            });
+                        }
+
+                        #getAdvancedOptions(model) {
+                            return formConfig.advanced.options.map(option => {
+                                return {
+                                    label: option.value,
+                                    value: model.advanced.includes(option.value)
+                                };
+                            });
+                        }
+
+                        /**
+                         * 获取元素
+                         * @param {string} selector
+                         * @returns {HTMLElement}
+                         */
+                        #$(selector) {
+                            return document.querySelector(selector);
+                        }
+
+                        async copySubUrl(dom) {
+                            const text = this.#$(\`#\${dom}\`).value;
+                            if (!text) {
+                                notification.error('复制内容不能为空');
+                                return;
                             }
-                        });
-                    }
 
-                    function selectOption(option, label, value) {
-                        const options = option.closest('.select-wrapper').querySelectorAll('.select-option');
-                        const wrapper = option.closest('.select-wrapper');
-                        const valueSpan = wrapper.querySelector('.select-value');
+                            const success = await this.copyToClipboard(text);
+                            if (success) {
+                                notification.success('复制成功');
+                            }
+                        }
 
-                        valueSpan.setAttribute('data-value', value);
-                        valueSpan.textContent = label;
+                        async copyToClipboard(text) {
+                            try {
+                                if (navigator.clipboard && window.isSecureContext) {
+                                    // 优先使用 Clipboard API
+                                    await navigator.clipboard.writeText(text);
+                                    return true;
+                                } else {
+                                    // 降级使用 document.execCommand
+                                    const textArea = document.createElement('textarea');
+                                    textArea.value = text;
+                                    textArea.style.position = 'fixed';
+                                    textArea.style.left = '-999999px';
+                                    textArea.style.top = '-999999px';
+                                    document.body.appendChild(textArea);
+                                    textArea.focus();
+                                    textArea.select();
 
-                        // 更新选中状态的样式
-                        options.forEach(opt => opt.classList.remove('selected'));
-                        option.classList.add('selected');
-                        
-                        // 关闭下拉框
-                        wrapper.classList.remove('open');
+                                    const success = document.execCommand('copy');
+                                    textArea.remove();
 
-                        // 如果是短链服务的选择，检查短链按钮状态
-                        if (wrapper.closest('.form-short-url')) {
-                            checkShortUrlButtonState();
+                                    if (!success) {
+                                        throw new Error('复制失败');
+                                    }
+                                    return true;
+                                }
+                            } catch (error) {
+                                notification.error('复制失败: ' + (error.message || '未知错误'));
+                                return false;
+                            }
                         }
                     }
 
-                    // 点击外部关闭下拉框
-                    document.addEventListener('click', e => {
-                        if (!e.target.closest('.select-wrapper')) {
-                            document.querySelectorAll('.select-wrapper').forEach(wrapper => {
-                                wrapper.classList.remove('open');
-                            });
-                        }
-                    });
+                    const sub = new Sub();
 
-                    function copyToClipboard(form) {
-                        const input = document.querySelector(\`.\${form} .form-input\`);
-                        input.select();
-                        input.setSelectionRange(0, 99999);
-                        navigator.clipboard.writeText(input.value);
-
-                        const btn = document.querySelector(\`.\${form} .copy-btn\`);
-                        btn.textContent = '已复制';
-                        setTimeout(() => {
-                            btn.textContent = '复制';
-                        }, 1000);
-                    }
-
-                    // 监听订阅链接输入框的变化
-                    document.querySelector('textarea[name="url"]').addEventListener('input', function(e) {
-                        const generateBtn = document.getElementById('generateBtn');
-                        const hasValue = !!e.target.value.trim();
-                        generateBtn.disabled = !hasValue;
-                        
-                        // 检查短链按钮状态
-                        checkShortUrlButtonState();
-                    });
-
-                    // 检查短链按钮是否可用
-                    function checkShortUrlButtonState() {
-                        const shortUrlBtn = document.getElementById('shortUrlBtn');
-                        const subscribeInput = document.querySelector('.form-subscribe .form-input');
-                        const shortUrlSelect = document.querySelector('.form-short-url .select-value');
-                        
-                        // 只有当订阅链接已生成且选择了短链服务时才可点击
-                        const hasSubscribeUrl = !!subscribeInput.value.trim();
-                        const hasShortUrlService = shortUrlSelect && shortUrlSelect.getAttribute('data-value') !== 'none';
-                        
-                        shortUrlBtn.disabled = !hasSubscribeUrl || !hasShortUrlService;
-                    }
-
-                    // 生成订阅链接
-                    function generateSubscribe() {
-                        // 获取表单元素
-                        const form = document.getElementById('convertForm');
-                        const formData = new FormData(form);
-                        
-                        // 获取基本表单数据
-                        const data = {
-                            url: formData.get('url'),
-                            target: document.querySelector('.form-target .select-value').getAttribute('data-value'),
-                            config: document.querySelector('.form-config .select-value').getAttribute('data-value'),
-                            backend: document.querySelector('.form-backend .select-value').getAttribute('data-value'),
-                        };
-
-                        // 获取高级选项的复选框值
-                        const options = [];
-                        document.querySelectorAll('input[name="options"]').forEach(checkbox => {
-                            options.push({
-                                key: checkbox.value,
-                                value: checkbox.checked
-                            });
-                        });
-                        data.options = options;
-
-                        // 获取短链服务
-                        const shortUrlValue = document.querySelector('.form-short-url .select-value').getAttribute('data-value');
-                        if (shortUrlValue && shortUrlValue !== '不使用') {
-                            data.shortUrl = shortUrlValue;
-                        }
-
-                        const url = new URL(data.backend + '/sub');
-                        url.searchParams.set('target', data.target);
-                        url.searchParams.set('url', data.url);
-                        url.searchParams.set('insert', 'false');
-                        url.searchParams.set('config', data.config);
-                        url.searchParams.set('list', false);
-                        url.searchParams.set('scv', false);
-                        url.searchParams.set('fdn', false);
-
-                        data.options.forEach(option => {
-                            url.searchParams.set(option.key, option.value);
-                        });
-                        
-                        const subUrl = url.toString();
-
-                        const subscribeInput = document.querySelector('.form-subscribe .form-input');
-                        subscribeInput.value = subUrl;
-
-                        // 生成订阅链接后检查短链按钮状态
-                        checkShortUrlButtonState();
-                    }
-
-                    // 修改按钮添加点击事件
-                    document.getElementById('generateBtn').onclick = generateSubscribe;
-
-                    async function generateShortUrl() {
-                        // 获取生成的订阅链接
-                        const subscribeInput = document.querySelector('.form-subscribe .form-input');
-                        const longUrl = subscribeInput.value;
-
-                        // 获取选中的短链服务
-                        const shortUrlService = document.querySelector('.form-short-url .select-value').getAttribute('data-value');
-
-                        // 构建请求数据
-                        const requestData = {
-                            serve: shortUrlService,
-                            long_url: longUrl
-                        };
-
-                        // 发送请求
-                        const response = await fetch(\`\${shortUrlService}/api/add\`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(requestData)
-                        })
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            const shortUrlInput = document.querySelector('.form-short-url .form-input');
-                            shortUrlInput.value = data.data.short_url;
-                        } else {
-                            alert('生成短链接失败');
-                        }
-                    }
-
-                    // 添加按钮点击事件
-                    document.getElementById('shortUrlBtn').onclick = generateShortUrl;
-
-                    // 监听短链服务选择变化
-                    document.querySelector('.form-short-url').addEventListener('click', function(e) {
-                        if (e.target.closest('.select-option')) {
-                            // 当选择变化时检查短链按钮状态
-                            setTimeout(checkShortUrlButtonState, 0);
-                        }
-                    });
                 </script>
+
+        
+
             </body>
         </html>
     `;
