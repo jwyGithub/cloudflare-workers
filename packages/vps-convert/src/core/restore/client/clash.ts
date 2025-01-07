@@ -24,8 +24,12 @@ export class ClashClient {
         }
     }
 
-    private restoreProxies(proxies: Array<Record<string, string>>, vpsMap: VpsMap): Array<Record<string, string>> {
+    private restoreProxies(proxies: Array<Record<string, string>> | null, vpsMap: VpsMap): Array<Record<string, string>> {
         try {
+            if (!proxies) {
+                return [];
+            }
+
             const result: Array<Record<string, string>> = [];
             for (const proxy of proxies) {
                 const [originPs, confusePs] = PsUtil.getPs(proxy.name);
