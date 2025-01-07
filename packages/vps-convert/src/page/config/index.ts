@@ -1,7 +1,7 @@
 import { getAdvancedConfig } from './advancedConfig';
 import { getBackendConfig } from './backendConfig';
 import { getRemoteConfig } from './remoteConfig';
-import { getShortUrlConfig } from './shortUrlConfig';
+import { getShortServeConfig } from './shortServeConfig';
 import { getTargetConfig } from './targetConfig';
 
-export { getAdvancedConfig, getBackendConfig, getRemoteConfig, getShortUrlConfig, getTargetConfig };
+export { getAdvancedConfig, getBackendConfig, getRemoteConfig, getShortServeConfig, getTargetConfig };

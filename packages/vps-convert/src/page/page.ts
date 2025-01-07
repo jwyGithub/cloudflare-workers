@@ -1,5 +1,5 @@
 import { SubButton, SubCheckbox, SubForm, SubFormItem, SubInput, SubMessage, SubSelect, SubTextarea } from './components';
-import { getAdvancedConfig, getBackendConfig, getRemoteConfig, getShortUrlConfig, getTargetConfig } from './config';
+import { getAdvancedConfig, getBackendConfig, getRemoteConfig, getShortServeConfig, getTargetConfig } from './config';
 import { theme } from './script/theme';
 import { layout } from './style/layout';
 import { style } from './style/style';
@@ -7,7 +7,7 @@ import { style } from './style/style';
 export function showPage(request: Request, env: Env): Response {
     const remoteConfig = getRemoteConfig(env);
     const backendConfig = getBackendConfig(request, env);
-    const shortUrlConfig = getShortUrlConfig(env);
+    const shortServeConfig = getShortServeConfig(env);
     const targetConfig = getTargetConfig();
     const advancedConfig = getAdvancedConfig();
 
@@ -200,7 +200,7 @@ export function showPage(request: Request, env: Env): Response {
                         },
                         shortServe: {
                             type: 'sub-select',
-                            options: ${JSON.stringify(shortUrlConfig)}
+                            options: ${JSON.stringify(shortServeConfig)}
                         }
                     };
 
@@ -210,7 +210,7 @@ export function showPage(request: Request, env: Env): Response {
                             config: '${remoteConfig[0].value}',
                             backend: '${backendConfig[0].value}',
                             advanced: ['emoji', 'new_name'],
-                            shortServe: '',
+                            shortServe: '${shortServeConfig[0]?.value ?? ''}',
 
                             subUrl: '',
                             shortUrl: ''
