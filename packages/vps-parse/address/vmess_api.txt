@@ -1,39 +1,40 @@
-92.242.220.22:37885其他1-欧洲地区
-183.236.51.23:52112美国3
-8.222.180.229:443其他4-挪威
-5.39.252.204:10881英国4
+183.236.51.23:52112美国2
+120.198.71.214:34493澳大利亚1
+5.39.254.196:23169英国1
+172.67.165.53:2086其他3-未识别
 5.75.197.221:8080伊朗1
-8.219.254.97:443其他8-挪威
-120.234.102.229:52908美国16
-8.222.178.214:6666SG>美国 Cedar Knolls
-8.219.3.213:41074SG>美国 Cedar Knolls
-223.16.138.113:12457HK>美国 Cedar Knolls
-8.218.36.133:9010HK>美国 Cedar Knolls
-193.122.115.67:4434KR>美国 Cedar Knolls
-14.39.254.65:50000KR>美国 Cedar Knolls
-175.117.167.94:30037KR>美国 Cedar Knolls
-175.212.197.193:30005KR>美国 Cedar Knolls
-204.110.220.9:80US>美国 Cedar Knolls
-52.32.90.142:80US>美国 Cedar Knolls
-129.153.199.107:9710US>美国 Cedar Knolls
-185.238.249.98:88US>美国 Cedar Knolls
-138.2.109.101:443SG>美国 Cedar Knolls
-168.138.166.22:443SG>美国 Cedar Knolls
-193.123.254.53:443KR>美国 Cedar Knolls
-217.163.76.36:443GB>美国 Cedar Knolls
-63.141.128.25:443US>美国 Cedar Knolls
-141.147.187.174:443JP>美国 Cedar Knolls
-20.235.105.146:443IN>美国 Cedar Knolls
-212.183.88.181:443AT>美国 Cedar Knolls
-8.222.236.216:443SG>美国 Cedar Knolls
-130.250.137.73:443US>美国 Cedar Knolls
-129.154.195.132:443KR>美国 Cedar Knolls
-217.29.23.169:443KG>美国 Cedar Knolls
-160.79.105.36:443US>美国 Cedar Knolls
-8.219.185.178:443SG>美国 Cedar Knolls
-160.123.255.100:443ZA>美国 Cedar Knolls
-154.9.249.242:443US>美国 Cedar Knolls
-129.146.240.62:443US>美国 Cedar Knolls
+8.219.254.97:443其他10-挪威
+8.222.180.229:443其他11-挪威
+132.145.124.43:12509JP>美国 Cedar Knolls
+180.17.144.27:10333JP>美国 Cedar Knolls
+168.138.178.6:19990SG>美国 Cedar Knolls
+158.178.240.232:23559SG>美国 Cedar Knolls
+61.239.234.5:35500HK>美国 Cedar Knolls
+103.61.39.116:20000HK>美国 Cedar Knolls
+121.143.196.49:30001KR>美国 Cedar Knolls
+61.81.181.169:14985KR>美国 Cedar Knolls
+116.47.10.236:10912KR>美国 Cedar Knolls
+211.105.35.130:30012KR>美国 Cedar Knolls
+195.123.240.40:81US>美国 Cedar Knolls
+107.172.235.55:1024US>美国 Cedar Knolls
+204.110.220.161:80US>美国 Cedar Knolls
+154.17.30.48:33322US>美国 Cedar Knolls
+45.67.215.147:443RU>美国 Cedar Knolls
+192.0.63.164:443US>美国 Cedar Knolls
+185.16.110.91:443FR>美国 Cedar Knolls
+8.222.154.153:443SG>美国 Cedar Knolls
+63.141.128.158:443US>美国 Cedar Knolls
+45.67.215.217:443RU>美国 Cedar Knolls
+158.224.90.175:443US>美国 Cedar Knolls
+194.76.18.99:443KZ>美国 Cedar Knolls
+135.84.76.120:443US>美国 Cedar Knolls
+8.222.254.245:443SG>美国 Cedar Knolls
+185.133.35.108:443BR>美国 Cedar Knolls
+210.186.12.244:443MY>美国 Cedar Knolls
+130.250.137.107:443US>美国 Cedar Knolls
+135.84.76.83:443US>美国 Cedar Knolls
+172.93.165.228:443HK>美国 Cedar Knolls
+192.0.63.1:443US>美国 Cedar Knolls
 129.150.51.134:443SG>美国 Cedar Knolls
 129.151.198.3:8443SE>美国 Cedar Knolls
 129.151.204.91:443SE>美国 Cedar Knolls
@@ -57,21 +58,19 @@
 141.148.220.141:443IN>美国 Cedar Knolls
 144.24.200.164:443FR>美国 Cedar Knolls
 144.24.20.92:8443US>美国 Cedar Knolls
-146.56.101.141:443KR>美国 Cedar Knolls
 149.129.8.215:443KR>美国 Cedar Knolls
 150.230.42.80:443US>美国 Cedar Knolls
-150.230.7.216:443JP>美国 Cedar Knolls
 152.67.102.137:443AU>美国 Cedar Knolls
 152.67.190.105:443IN>美国 Cedar Knolls
 152.69.219.32:443SG>美国 Cedar Knolls
 152.70.57.182:443NL>美国 Cedar Knolls
 154.17.21.134:18446US>美国 Cedar Knolls
+156.230.12.71:443CN>美国 Cedar Knolls
 158.101.199.249:8443NL>美国 Cedar Knolls
 158.180.230.4:2053IT>美国 Cedar Knolls
 168.138.13.201:443AU>美国 Cedar Knolls
 168.138.177.109:443SG>美国 Cedar Knolls
 192.9.158.188:443US>美国 Cedar Knolls
-192.9.180.162:443AU>美国 Cedar Knolls
 193.122.58.158:443DE>美国 Cedar Knolls
 193.123.81.105:443AE>美国 Cedar Knolls
 204.216.105.106:8443CA>美国 Cedar Knolls
@@ -83,12 +82,8 @@
 47.253.100.59:443US>美国 Cedar Knolls
 47.253.105.131:443US>美国 Cedar Knolls
 47.253.223.200:443US>美国 Cedar Knolls
-47.57.14.118:443HK>美国 Cedar Knolls
-47.57.245.232:443HK>美国 Cedar Knolls
-47.88.24.237:443US>美国 Cedar Knolls
 47.90.141.204:443US>美国 Cedar Knolls
 64.110.104.30:443JP>美国 Cedar Knolls
-8.210.171.28:443SG>美国 Cedar Knolls
 8.210.19.23:8443HK>美国 Cedar Knolls
 8.213.217.254:443TH>美国 Cedar Knolls
 8.220.204.23:443KR>美国 Cedar Knolls
