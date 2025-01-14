@@ -29,14 +29,10 @@ jobs:
                       echo "type=cargo" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^parse: ]]; then
                       echo "type=parse" >> $GITHUB_OUTPUT
-                  elif [[ "$commit_message" =~ ^convert: ]]; then
-                      echo "type=convert" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^download: ]]; then
                       echo "type=download" >> $GITHUB_OUTPUT
                   elif [[ "$commit_message" =~ ^feat: ]]; then
                       echo "type=feat" >> $GITHUB_OUTPUT
-                  elif [[ "$commit_message" =~ ^short: ]]; then
-                      echo "type=short" >> $GITHUB_OUTPUT
                   else
                       echo "type=unknown" >> $GITHUB_OUTPUT
                   fi
@@ -73,24 +69,10 @@ jobs:
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
-    run_convert_release:
-        needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'convert' || needs.determine_release_type.outputs.release_type == 'feat'
-        uses: ./.github/workflows/release-convert.yml
-        secrets:
-            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
     run_download_release:
         needs: determine_release_type
         if: needs.determine_release_type.outputs.release_type == 'download' || needs.determine_release_type.outputs.release_type == 'feat'
         uses: ./.github/workflows/release-download.yml
-        secrets:
-            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
-    run_short_release:
-        needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'short' || needs.determine_release_type.outputs.release_type == 'feat'
-        uses: ./.github/workflows/release-short.yml
         secrets:
             DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 

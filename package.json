@@ -26,13 +26,7 @@
         "pages:download": "pnpm --dir packages/download-proxy run pages",
         "dev:parse": "pnpm --dir packages/vps-parse run dev",
         "deploy:parse": "pnpm --dir packages/vps-parse run deploy",
-        "pages:parse": "pnpm --dir packages/vps-parse run pages",
-        "dev:convert": "pnpm --dir packages/vps-convert run dev",
-        "deploy:convert": "pnpm --dir packages/vps-convert run deploy",
-        "pages:convert": "pnpm --dir packages/vps-convert run pages",
-        "dev:short": "pnpm --dir packages/short-url run dev",
-        "deploy:short": "pnpm --dir packages/short-url run deploy",
-        "pages:short": "pnpm --dir packages/short-url run pages"
+        "pages:parse": "pnpm --dir packages/vps-parse run pages"
     },
     "dependencies": {
         "cloudflare": "^3.5.0",
