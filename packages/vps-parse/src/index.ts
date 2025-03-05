@@ -1,7 +1,7 @@
 import { Cloudflare } from 'cloudflare';
 import { fetchWithRetry, notifyTelegram, tryBase64Decode, tryBase64Encode, tryUrlDecode } from 'cloudflare-tools';
 import { HTML_PAGE } from './page';
-import { getTime, getTrojan, getVless, getVmess, sleep } from './shared';
+import { getSS, getSSR, getTime, getTrojan, getVless, getVmess, sleep } from './shared';
 import { getSubConfig, sync } from './sync';
 
 let ws: WebSocket | null = null;
@@ -19,17 +19,26 @@ const telegramMessageConfig = {
     trojanCount: 0,
     vlessCount: 0,
     vmessCount: 0,
+    ssCount: 0,
+    ssrCount: 0,
     vlessPushStatus: 'error',
     trojanPushStatus: 'error',
-    vmessPushStatus: 'error'
+    vmessPushStatus: 'error',
+    ssPushStatus: 'error',
+    ssrPushStatus: 'error'
 };
 
-async function getVps(links: string[], retry: number): Promise<{ trojan: string[]; vless: string[]; vmess: string[] }> {
+async function getVps(
+    links: string[],
+    retry: number
+): Promise<{ trojan: string[]; vless: string[]; vmess: string[]; ss: string[]; ssr: string[] }> {
     try {
         const result: string[] = [];
         const trojanVps: string[] = [];
         const vlessVps: string[] = [];
         const vmessVps: string[] = [];
+        const ssVps: string[] = [];
+        const ssrVps: string[] = [];
 
         await sendMessage(
             JSON.stringify({
@@ -103,24 +112,32 @@ async function getVps(links: string[], retry: number): Promise<{ trojan: string[
                 vlessVps.push(item);
             } else if (item.trim().startsWith('vmess://')) {
                 vmessVps.push(item);
+            } else if (item.trim().startsWith('ss://')) {
+                ssVps.push(item);
+            } else if (item.trim().startsWith('ssr://')) {
+                ssrVps.push(item);
             }
         }
 
         telegramMessageConfig.trojanCount = trojanVps.length;
         telegramMessageConfig.vlessCount = vlessVps.length;
         telegramMessageConfig.vmessCount = vmessVps.length;
+        telegramMessageConfig.ssCount = ssVps.length;
+        telegramMessageConfig.ssrCount = ssrVps.length;
 
         await sendMessage(
             JSON.stringify({
                 type: 'success',
-                content: `数据分类完成：\ntrojan: ${trojanVps.length}条\nvless: ${vlessVps.length}条\nvmess: ${vmessVps.length}条`
+                content: `数据分类完成：\ntrojan: ${trojanVps.length}条\nvless: ${vlessVps.length}条\nvmess: ${vmessVps.length}条\nss: ${ssVps.length}条\nssr: ${ssrVps.length}条`
             })
         );
 
         return {
             trojan: trojanVps,
             vless: vlessVps,
-            vmess: vmessVps
+            vmess: vmessVps,
+            ss: ssVps,
+            ssr: ssrVps
         };
     } catch (error: any) {
         await sendMessage(
@@ -257,7 +274,7 @@ async function init(env: Env): Promise<Response> {
 
         const links = env.LINKS?.split(',') ?? [];
 
-        const { trojan, vless, vmess } = await getVps(links, Number(env.RETRY ?? '3'));
+        const { trojan, vless, vmess, ss, ssr } = await getVps(links, Number(env.RETRY ?? '3'));
 
         await sendMessage(
             JSON.stringify({
@@ -269,6 +286,8 @@ async function init(env: Env): Promise<Response> {
         const vlessVps = getVless(vless.filter(Boolean));
         const trojanVps = getTrojan(trojan.filter(Boolean));
         const vmessVps = getVmess(vmess.filter(Boolean));
+        const ssVps = getSS(ss.filter(Boolean));
+        const ssrVps = getSSR(ssr.filter(Boolean));
 
         await sendMessage(
             JSON.stringify({
@@ -293,6 +312,20 @@ async function init(env: Env): Promise<Response> {
 
         await sendMessage(
             JSON.stringify({
+                type: 'success',
+                content: `ss count: ${ssVps.length}`
+            })
+        );
+
+        await sendMessage(
+            JSON.stringify({
+                type: 'success',
+                content: `ssr count: ${ssrVps.length}`
+            })
+        );
+
+        await sendMessage(
+            JSON.stringify({
                 type: 'info',
                 content: '开始推送到GitHub...'
             })
@@ -302,7 +335,9 @@ async function init(env: Env): Promise<Response> {
         const results = {
             vless: '',
             trojan: '',
-            vmess: ''
+            vmess: '',
+            ss: '',
+            ssr: ''
         };
 
         try {
@@ -318,6 +353,14 @@ async function init(env: Env): Promise<Response> {
             results.vmess = await pushGithub(vmessVps, getPath('vmess_api.txt'), env);
             telegramMessageConfig.vmessPushStatus = 'success';
             await sleep(2000); // 等待2秒
+
+            results.ss = await pushGithub(ssVps, getPath('ss_api.txt'), env);
+            telegramMessageConfig.ssPushStatus = 'success';
+            await sleep(2000); // 等待2秒
+
+            results.ssr = await pushGithub(ssrVps, getPath('ssr_api.txt'), env);
+            telegramMessageConfig.ssrPushStatus = 'success';
+            await sleep(2000);
         } catch (error: any) {
             await sendMessage(
                 JSON.stringify({
@@ -340,7 +383,9 @@ async function init(env: Env): Promise<Response> {
             message: [
                 `vless: ${telegramMessageConfig.vlessPushStatus} (${telegramMessageConfig.vlessCount})`,
                 `trojan: ${telegramMessageConfig.trojanPushStatus} (${telegramMessageConfig.trojanCount})`,
-                `vmess: ${telegramMessageConfig.vmessPushStatus} (${telegramMessageConfig.vmessCount})`
+                `vmess: ${telegramMessageConfig.vmessPushStatus} (${telegramMessageConfig.vmessCount})`,
+                `ss: ${telegramMessageConfig.ssPushStatus} (${telegramMessageConfig.ssCount})`,
+                `ssr: ${telegramMessageConfig.ssrPushStatus} (${telegramMessageConfig.ssrCount})`
             ]
         });
 
@@ -356,7 +401,9 @@ async function init(env: Env): Promise<Response> {
         return Response.json({
             vless: { status: 'fulfilled', value: results.vless },
             trojan: { status: 'fulfilled', value: results.trojan },
-            vmess: { status: 'fulfilled', value: results.vmess }
+            vmess: { status: 'fulfilled', value: results.vmess },
+            ss: { status: 'fulfilled', value: results.ss },
+            ssr: { status: 'fulfilled', value: results.ssr }
         });
     } catch (error: any) {
         await sendMessage(

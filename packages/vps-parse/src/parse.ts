@@ -24,6 +24,22 @@ export interface VmessLink {
     remark: string;
 }
 
+export interface SSLink {
+    type: 'ss';
+    host: string;
+    port: number;
+    id: string;
+    remark: string;
+}
+
+export interface SSRLink {
+    type: 'ssr';
+    host: string;
+    port: number;
+    id: string;
+    remark: string;
+}
+
 export interface Vmess {
     v: string;
     ps: string;
@@ -84,5 +100,35 @@ export function parseVmessLink(link: string): VmessLink {
         };
     } catch (error: any) {
         throw new Error(`error on parseVmessLink: ${error.message || error} -> ${link}`);
+    }
+}
+
+export function parseSSLink(url: URL, link: string): SSLink {
+    try {
+        const ssLink: SSLink = {
+            type: 'ss',
+            host: url.hostname,
+            port: Number.parseInt(url.port),
+            id: url.username,
+            remark: tryUrlDecode(url.hash)
+        };
+        return ssLink;
+    } catch (error: any) {
+        throw new Error(`error on parseSSLink: ${error.message || error} -> ${link}`);
+    }
+}
+
+export function parseSSRLink(url: URL, link: string): SSRLink {
+    try {
+        const ssrLink: SSRLink = {
+            type: 'ssr',
+            host: url.hostname,
+            port: Number.parseInt(url.port),
+            id: url.username,
+            remark: tryUrlDecode(url.hash)
+        };
+        return ssrLink;
+    } catch (error: any) {
+        throw new Error(`error on parseSSRLink: ${error.message || error} -> ${link}`);
     }
 }
