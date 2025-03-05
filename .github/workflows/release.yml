@@ -1,4 +1,4 @@
-name: Release Workflow
+name: registry release
 
 on:
     push:
@@ -11,49 +11,60 @@ on:
             - packages/**/*.txt
             - LICENSE
 
+    workflow_call:
+        secrets:
+            DEPLOY_TOKEN:
+                required: true
+
+    workflow_dispatch:
+
 jobs:
-    determine_release_type:
+    build:
         runs-on: ubuntu-latest
-        outputs:
-            release_type: ${{ steps.set_release_type.outputs.type }}
         steps:
-            - name: Determine release type
-              id: set_release_type
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: latest
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: latest
+            - run: pnpm install --no-frozen-lockfile
+            - run: pnpm run pages:registry
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build-registry
+                  path: packages/registry-proxy/pages
+
+    deploy:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - uses: actions/checkout@v4
+            - name: Download artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-registry
+                  path: packages/registry-proxy/pages
+            - name: Zip pages folder
               run: |
-                  commit_message="${{ github.event.head_commit.message }}"
-                  if [[ "$commit_message" =~ ^registry: ]]; then
-                      echo "type=registry" >> $GITHUB_OUTPUT
-                  elif [[ "$commit_message" =~ ^parse: ]]; then
-                      echo "type=parse" >> $GITHUB_OUTPUT
-                  elif [[ "$commit_message" =~ ^feat: ]]; then
-                      echo "type=feat" >> $GITHUB_OUTPUT
-                  else
-                      echo "type=unknown" >> $GITHUB_OUTPUT
+                  cd packages/registry-proxy
+                  worker_file=$(find pages -name '*worker*.js' -type f)
+                  if [ -z "$worker_file" ]; then
+                      echo "Error: No worker file found"
+                      exit 1
                   fi
-
-            - name: Print release type
-              run: |
-                  echo "Release type: ${{ steps.set_release_type.outputs.type }}"
-
-    run_registry_release:
-        needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'registry' || needs.determine_release_type.outputs.release_type == 'feat'
-        uses: ./.github/workflows/release-registry.yml
-        secrets:
-            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
-    run_parse_release:
-        needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'parse' || needs.determine_release_type.outputs.release_type == 'feat'
-        uses: ./.github/workflows/release-parse.yml
-        secrets:
-            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
-    unknown_release_type:
-        needs: determine_release_type
-        if: needs.determine_release_type.outputs.release_type == 'unknown'
-        runs-on: ubuntu-latest
-        steps:
-            - run: |
-                  echo "Unknown release type. No action taken."
-                  exit 1
+                  echo "Found worker file: $worker_file"
+                  zip -j _worker.zip "$worker_file"
+                  mv _worker.zip pages/
+            - name: List contents of pages directory
+              run: ls -al packages/registry-proxy/pages
+            - name: Deploy to GitHub Pages
+              uses: peaceiris/actions-gh-pages@v4
+              with:
+                  github_token: ${{ secrets.DEPLOY_TOKEN }}
+                  publish_dir: packages/registry-proxy/pages
+                  publish_branch: release-registry
+                  keep_files: false
+                  enable_jekyll: true

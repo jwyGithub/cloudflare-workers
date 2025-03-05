@@ -14,24 +14,16 @@
     "scripts": {
         "dev:registry": "pnpm --dir packages/registry-proxy run dev",
         "deploy:registry": "pnpm --dir packages/registry-proxy run deploy",
-        "pages:registry": "pnpm --dir packages/registry-proxy run pages",
-        "dev:parse": "pnpm --dir packages/vps-parse run dev",
-        "deploy:parse": "pnpm --dir packages/vps-parse run deploy",
-        "pages:parse": "pnpm --dir packages/vps-parse run pages"
+        "pages:registry": "pnpm --dir packages/registry-proxy run pages"
     },
     "dependencies": {
-        "cloudflare": "^3.5.0",
-        "cloudflare-tools": "^0.1.1",
-        "ini": "^5.0.0",
-        "js-yaml": "^4.1.0"
+        "cloudflare-tools": "^0.1.1"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20241127.0",
         "@jiangweiye/eslint-config": "0.1.13",
         "@jiangweiye/prettier-config": "^0.0.18",
         "@jiangweiye/tsconfig": "^0.0.11",
-        "@types/ini": "^4.1.1",
-        "@types/js-yaml": "^4.0.9",
         "@types/node": "^22.10.1",
         "eslint": "^9.10.0",
         "prettier": "^3.4.1",
