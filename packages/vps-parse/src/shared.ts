@@ -88,9 +88,7 @@ export function getSSR(links: string[]): string[] {
     try {
         const ssrLinks: Array<{ host: string; port: number; remark: string }> = [];
         for (const link of links) {
-            const parsedUrl = tryParseUrl(link);
-            if (parsedUrl === null) continue;
-            const { host, port, remark } = parseSSRLink(parsedUrl, link);
+            const { host, port, remark } = parseSSRLink(link.replace('ssr://', ''));
             if (!host.startsWith('127') && !/^[a-z]/i.test(host) && !hasHost(host, ssrLinks)) {
                 ssrLinks.push({ host, port, remark: remark.replace('|', '-') });
             }

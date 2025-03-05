@@ -118,17 +118,27 @@ export function parseSSLink(url: URL, link: string): SSLink {
     }
 }
 
-export function parseSSRLink(url: URL, link: string): SSRLink {
+const ip_port_reg = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})/;
+const remarks = /remarks=([^&]+)/;
+
+export function parseSSRLink(link: string): SSRLink {
+    const content = tryBase64Decode(link);
+    const match = content.match(ip_port_reg);
+    if (!match) {
+        throw new Error(`error on parseSSRLink: ${link}`);
+    }
+    const [_, host, port] = match;
+    const [__, base64] = content.match(remarks) || [];
     try {
         const ssrLink: SSRLink = {
             type: 'ssr',
-            host: url.hostname,
-            port: Number.parseInt(url.port),
-            id: url.username,
-            remark: tryUrlDecode(url.hash)
+            host,
+            port: Number.parseInt(port),
+            id: crypto.randomUUID(),
+            remark: tryBase64Decode(base64).replace('|', '-')
         };
         return ssrLink;
     } catch (error: any) {
-        throw new Error(`error on parseSSRLink: ${error.message || error} -> ${link}`);
+        throw new Error(`error on parseSSLink: ${error.message || error} -> ${link}`);
     }
 }
