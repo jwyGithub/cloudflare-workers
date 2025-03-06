@@ -1,9 +1,7 @@
-name: registry release
+name: subs release
 
 on:
     push:
-        branches:
-            - main
         paths-ignore:
             - addressesapi.txt
             - README.md
@@ -30,12 +28,12 @@ jobs:
               with:
                   node-version: latest
             - run: pnpm install --no-frozen-lockfile
-            - run: pnpm run pages:registry
+            - run: pnpm run pages:collect-subs
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: build-registry
-                  path: packages/registry-proxy/pages
+                  name: build-subs
+                  path: packages/collect-subs/pages
 
     deploy:
         runs-on: ubuntu-latest
@@ -45,11 +43,11 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
-                  name: build-registry
-                  path: packages/registry-proxy/pages
+                  name: build-subs
+                  path: packages/collect-subs/pages
             - name: Zip pages folder
               run: |
-                  cd packages/registry-proxy
+                  cd packages/collect-subs
                   worker_file=$(find pages -name '*worker*.js' -type f)
                   if [ -z "$worker_file" ]; then
                       echo "Error: No worker file found"
@@ -59,12 +57,12 @@ jobs:
                   zip -j _worker.zip "$worker_file"
                   mv _worker.zip pages/
             - name: List contents of pages directory
-              run: ls -al packages/registry-proxy/pages
+              run: ls -al packages/collect-subs/pages
             - name: Deploy to GitHub Pages
               uses: peaceiris/actions-gh-pages@v4
               with:
                   github_token: ${{ secrets.DEPLOY_TOKEN }}
-                  publish_dir: packages/registry-proxy/pages
-                  publish_branch: release-registry
+                  publish_dir: packages/collect-subs/pages
+                  publish_branch: release-subs
                   keep_files: false
                   enable_jekyll: true
