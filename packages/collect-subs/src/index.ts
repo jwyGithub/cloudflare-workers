@@ -3,7 +3,7 @@ import { fetchWithRetry } from 'cloudflare-tools';
 import { getClashConfig } from './config';
 import { DEFAULT_CONFIG } from './const';
 
-async function sync(env: Env, cloudflare: Cloudflare): Promise<void> {
+async function sync(env: Env, cloudflare: Cloudflare): Promise<string> {
     const mergeConfig = {
         ...DEFAULT_CONFIG,
         ...env
@@ -21,7 +21,9 @@ async function sync(env: Env, cloudflare: Cloudflare): Promise<void> {
             }),
             value: config
         });
+        return config;
     }
+    return '';
 }
 
 async function getSubConfig(env: Env, cloudflare: Cloudflare): Promise<string> {
@@ -57,8 +59,12 @@ export default {
             const cloudflare = await createCloudflare(env);
 
             if (pathname === '/') {
-                await sync(env, cloudflare);
-                return new Response('Synced');
+                const config = await sync(env, cloudflare);
+                return new Response(config, {
+                    headers: {
+                        'Content-Type': 'text/yaml'
+                    }
+                });
             } else if (pathname === '/sub.yml') {
                 return new Response(await getSubConfig(env, cloudflare), {
                     headers: {
