@@ -18085,15 +18085,16 @@ async function nd(r, e) {
   }, s = am(t), n = await cm(s, { retries: 3 });
   if (n.ok && r.KV_NAMESPACE_ID && r.ACCOUNT_ID) {
     const i = await n.data.text();
-    await e.kv.namespaces.values.update(r.KV_NAMESPACE_ID, "sub.yml", {
+    return await e.kv.namespaces.values.update(r.KV_NAMESPACE_ID, "sub.yml", {
       account_id: r.ACCOUNT_ID,
       metadata: JSON.stringify({
         name: "sub.yml",
         type: "text"
       }),
       value: i
-    });
+    }), i;
   }
+  return "";
 }
 async function um(r, e) {
   if (!r.KV_NAMESPACE_ID || !r.ACCOUNT_ID)
@@ -18116,7 +18117,14 @@ const aU = {
       if (!t || !s || !n)
         throw new Error("SUB_LIST_URL and KV_NAMESPACE_ID and ACCOUNT_ID are required");
       const c = await id(e);
-      return i === "/" ? (await nd(e, c), new Response("Synced")) : i === "/sub.yml" ? new Response(await um(e, c), {
+      if (i === "/") {
+        const o = await nd(e, c);
+        return new Response(o, {
+          headers: {
+            "Content-Type": "text/yaml"
+          }
+        });
+      } else return i === "/sub.yml" ? new Response(await um(e, c), {
         headers: {
           "Content-Type": "text/yaml"
         }
