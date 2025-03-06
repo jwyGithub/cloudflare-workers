@@ -26,7 +26,7 @@ async function sync(env: Env, cloudflare: Cloudflare): Promise<string> {
     return '';
 }
 
-async function getSubConfig(env: Env, cloudflare: Cloudflare): Promise<string> {
+async function getSubConfig(env: Env, cloudflare: Cloudflare): Promise<{ metadata: { name: string; type: string }; value: string } | null> {
     if (!env.KV_NAMESPACE_ID || !env.ACCOUNT_ID) {
         throw new Error('KV_NAMESPACE_ID and ACCOUNT_ID are required');
     }
@@ -34,9 +34,9 @@ async function getSubConfig(env: Env, cloudflare: Cloudflare): Promise<string> {
         account_id: env.ACCOUNT_ID
     });
     if (result.ok) {
-        return result.text();
+        return result.json();
     }
-    return '';
+    return null;
 }
 
 async function createCloudflare(env: Env): Promise<Cloudflare> {
@@ -66,10 +66,11 @@ export default {
                     }
                 });
             } else if (pathname === '/sub.yml') {
-                return new Response(await getSubConfig(env, cloudflare), {
-                    headers: {
-                        'Content-Type': 'text/yaml'
-                    }
+                const config = await getSubConfig(env, cloudflare);
+                return new Response(config?.value, {
+                    headers: new Headers({
+                        'Content-Type': 'text/yaml; charset=utf-8'
+                    })
                 });
             } else {
                 return new Response('Not Found', { status: 404 });
