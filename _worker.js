@@ -18102,7 +18102,7 @@ async function um(r, e) {
   const t = await e.kv.namespaces.values.get(r.KV_NAMESPACE_ID, "sub.yml", {
     account_id: r.ACCOUNT_ID
   });
-  return t.ok ? t.text() : "";
+  return t.ok ? t.json() : null;
 }
 async function id(r) {
   return new _({
@@ -18124,11 +18124,15 @@ const aU = {
             "Content-Type": "text/yaml"
           }
         });
-      } else return i === "/sub.yml" ? new Response(await um(e, c), {
-        headers: {
-          "Content-Type": "text/yaml"
-        }
-      }) : new Response("Not Found", { status: 404 });
+      } else if (i === "/sub.yml") {
+        const o = await um(e, c);
+        return new Response(o == null ? void 0 : o.value, {
+          headers: new Headers({
+            "Content-Type": "text/yaml; charset=utf-8"
+          })
+        });
+      } else
+        return new Response("Not Found", { status: 404 });
     } catch (t) {
       return new Response(t.message, { status: 500 });
     }
