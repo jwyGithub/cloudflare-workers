@@ -142,22 +142,22 @@ function ad(r, e, t, s, n, i, c, o, l, g, $, w, f, A, U, le, it, Ft) {
     const L = Object.keys(m);
     rt = $ ? L.sort($) : L;
   }
-  const Wl = o ? String(e).replace(/\./g, "%2E") : String(e), Nt = s && H(m) && m.length === 1 ? Wl + "[]" : Wl;
+  const Kl = o ? String(e).replace(/\./g, "%2E") : String(e), Nt = s && H(m) && m.length === 1 ? Kl + "[]" : Kl;
   if (n && H(m) && m.length === 0)
     return Nt + "[]";
   for (let L = 0; L < rt.length; ++L) {
-    const Re = rt[L], Kl = (
+    const Re = rt[L], Wl = (
       // @ts-ignore
       typeof Re == "object" && typeof Re.value < "u" ? Re.value : m[Re]
     );
-    if (c && Kl === null)
+    if (c && Wl === null)
       continue;
-    const bn = w && o ? Re.replace(/\./g, "%2E") : Re, Kw = H(m) ? typeof t == "function" ? t(Nt, bn) : Nt : Nt + (w ? "." + bn : "[" + bn + "]");
+    const bn = w && o ? Re.replace(/\./g, "%2E") : Re, Ww = H(m) ? typeof t == "function" ? t(Nt, bn) : Nt : Nt + (w ? "." + bn : "[" + bn + "]");
     Ft.set(r, Bt);
     const jl = /* @__PURE__ */ new WeakMap();
     jl.set(zn, Ft), cd(Un, ad(
-      Kl,
-      Kw,
+      Wl,
+      Ww,
       t,
       s,
       n,
@@ -650,7 +650,7 @@ class _$ {
     const i = {};
     s && (i["content-length"] = s);
     const c = this.defaultHeaders(e);
-    return td(i, c), td(i, t), Ql(e.body) && at !== "node" && delete i["content-type"], Wt(c, "x-stainless-retry-count") === void 0 && Wt(t, "x-stainless-retry-count") === void 0 && (i["x-stainless-retry-count"] = String(n)), Wt(c, "x-stainless-timeout") === void 0 && Wt(t, "x-stainless-timeout") === void 0 && e.timeout && (i["x-stainless-timeout"] = String(e.timeout)), this.validateHeaders(i, t), i;
+    return td(i, c), td(i, t), Ql(e.body) && at !== "node" && delete i["content-type"], Kt(c, "x-stainless-retry-count") === void 0 && Kt(t, "x-stainless-retry-count") === void 0 && (i["x-stainless-retry-count"] = String(n)), Kt(c, "x-stainless-timeout") === void 0 && Kt(t, "x-stainless-timeout") === void 0 && e.timeout && (i["x-stainless-timeout"] = String(e.timeout)), this.validateHeaders(i, t), i;
   }
   /**
    * Used as a callback for mutating the given `FinalRequestOptions` object.
@@ -955,7 +955,7 @@ function ot(r, ...e) {
 const x$ = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (r) => {
   const e = Math.random() * 16 | 0;
   return (r === "x" ? e : e & 3 | 8).toString(16);
-}), z$ = (r) => typeof (r == null ? void 0 : r.get) == "function", Wt = (r, e) => {
+}), z$ = (r) => typeof (r == null ? void 0 : r.get) == "function", Kt = (r, e) => {
   var s;
   const t = e.toLowerCase();
   if (z$(r)) {
@@ -1210,12 +1210,12 @@ class rs extends a {
    */
   list(e, t) {
     const { account_id: s, ...n } = e;
-    return this._client.getAPIList(`/accounts/${s}/ai/models/search`, Wn, { query: n, ...t });
+    return this._client.getAPIList(`/accounts/${s}/ai/models/search`, Kn, { query: n, ...t });
   }
 }
-class Wn extends p {
+class Kn extends p {
 }
-rs.ModelListResponsesV4PagePaginationArray = Wn;
+rs.ModelListResponsesV4PagePaginationArray = Kn;
 rs.Schema = Cd;
 let ne = class extends a {
   constructor() {
@@ -1246,8 +1246,8 @@ ne.AuthorListResponsesSinglePage = Fn;
 ne.Tasks = Gn;
 ne.TaskListResponsesSinglePage = Bn;
 ne.Models = rs;
-ne.ModelListResponsesV4PagePaginationArray = Wn;
-let Kn = class extends a {
+ne.ModelListResponsesV4PagePaginationArray = Kn;
+let Wn = class extends a {
   /**
    * Create a new Dataset
    */
@@ -1292,7 +1292,7 @@ let Kn = class extends a {
 };
 class jn extends p {
 }
-Kn.DatasetListResponsesV4PagePaginationArray = jn;
+Wn.DatasetListResponsesV4PagePaginationArray = jn;
 class Hn extends a {
   /**
    * List Evaluators
@@ -1396,7 +1396,7 @@ class ei extends p {
 qn.LogListResponsesV4PagePaginationArray = ei;
 class X extends a {
   constructor() {
-    super(...arguments), this.evaluationTypes = new Hn(this._client), this.logs = new qn(this._client), this.datasets = new Kn(this._client), this.evaluations = new Qn(this._client);
+    super(...arguments), this.evaluationTypes = new Hn(this._client), this.logs = new qn(this._client), this.datasets = new Wn(this._client), this.evaluations = new Qn(this._client);
   }
   /**
    * Create a new Gateway
@@ -1446,7 +1446,7 @@ X.EvaluationTypes = Hn;
 X.EvaluationTypeListResponsesV4PagePaginationArray = Xn;
 X.Logs = qn;
 X.LogListResponsesV4PagePaginationArray = ei;
-X.Datasets = Kn;
+X.Datasets = Wn;
 X.DatasetListResponsesV4PagePaginationArray = jn;
 X.Evaluations = Qn;
 X.EvaluationListResponsesV4PagePaginationArray = Jn;
@@ -1834,7 +1834,7 @@ class Md extends a {
     return this._client.get(`/accounts/${n}/roles/${e}`, s)._thenUnwrap((i) => i.result);
   }
 }
-let Wd = class extends a {
+let Kd = class extends a {
   /**
    * Creates an account subscription.
    */
@@ -1911,7 +1911,7 @@ class _i extends h {
 }
 as.PermissionGroupListResponsesSinglePage = hi;
 as.PermissionGroupGetResponsesSinglePage = _i;
-let Kd = class extends a {
+let Wd = class extends a {
   /**
    * Roll the Account Owned API token secret.
    */
@@ -1924,7 +1924,7 @@ let Kd = class extends a {
   }
 }, Ie = class extends a {
   constructor() {
-    super(...arguments), this.permissionGroups = new as(this._client), this.value = new Kd(this._client);
+    super(...arguments), this.permissionGroups = new as(this._client), this.value = new Wd(this._client);
   }
   /**
    * Create a new Account Owned API token.
@@ -1975,10 +1975,10 @@ let Kd = class extends a {
 Ie.PermissionGroups = as;
 Ie.PermissionGroupListResponsesSinglePage = hi;
 Ie.PermissionGroupGetResponsesSinglePage = _i;
-Ie.Value = Kd;
+Ie.Value = Wd;
 let fe = class extends a {
   constructor() {
-    super(...arguments), this.members = new Nd(this._client), this.roles = new Md(this._client), this.subscriptions = new Wd(this._client), this.tokens = new Ie(this._client), this.logs = new cs(this._client);
+    super(...arguments), this.members = new Nd(this._client), this.roles = new Md(this._client), this.subscriptions = new Kd(this._client), this.tokens = new Ie(this._client), this.logs = new cs(this._client);
   }
   /**
    * Create an account (only available for tenant admins at this time)
@@ -2017,7 +2017,7 @@ class v$ extends p {
 }
 fe.Members = Nd;
 fe.Roles = Md;
-fe.Subscriptions = Wd;
+fe.Subscriptions = Kd;
 fe.Tokens = Ie;
 fe.Logs = cs;
 class jd extends a {
@@ -3393,7 +3393,7 @@ class Q extends a {
    * List Requests
    */
   list(e, t, s) {
-    return this._client.getAPIList(`/accounts/${e}/cloudforce-one/requests`, Wi, { body: t, method: "post", ...s });
+    return this._client.getAPIList(`/accounts/${e}/cloudforce-one/requests`, Ki, { body: t, method: "post", ...s });
   }
   /**
    * Delete a Request
@@ -3423,15 +3423,15 @@ class Q extends a {
    * Get Request Types
    */
   types(e, t) {
-    return this._client.getAPIList(`/accounts/${e}/cloudforce-one/requests/types`, Ki, t);
+    return this._client.getAPIList(`/accounts/${e}/cloudforce-one/requests/types`, Wi, t);
   }
-}
-class Wi extends h {
 }
 class Ki extends h {
 }
-Q.ListItemsSinglePage = Wi;
-Q.RequestTypesResponsesSinglePage = Ki;
+class Wi extends h {
+}
+Q.ListItemsSinglePage = Ki;
+Q.RequestTypesResponsesSinglePage = Wi;
 Q.MessageResource = Ni;
 Q.MessagesSinglePage = Mi;
 Q.PriorityResource = $h;
@@ -3444,8 +3444,8 @@ class gt extends a {
   }
 }
 gt.Requests = Q;
-gt.ListItemsSinglePage = Wi;
-gt.RequestTypesResponsesSinglePage = Ki;
+gt.ListItemsSinglePage = Ki;
+gt.RequestTypesResponsesSinglePage = Wi;
 class pt extends a {
   /**
    * Add custom scan expressions for Content Scanning
@@ -5320,7 +5320,7 @@ class Nr extends a {
 class Mr extends p {
 }
 Nr.AccessRuleListResponsesV4PagePaginationArray = Mr;
-class Wr extends a {
+class Kr extends a {
   /**
    * Creates a new Zone Lockdown rule.
    */
@@ -5344,7 +5344,7 @@ class Wr extends a {
    */
   list(e, t) {
     const { zone_id: s, ...n } = e;
-    return this._client.getAPIList(`/zones/${s}/firewall/lockdowns`, Kr, {
+    return this._client.getAPIList(`/zones/${s}/firewall/lockdowns`, Wr, {
       query: n,
       ...t
     });
@@ -5364,9 +5364,9 @@ class Wr extends a {
     return this._client.get(`/zones/${n}/firewall/lockdowns/${e}`, s)._thenUnwrap((i) => i.result);
   }
 }
-class Kr extends p {
+class Wr extends p {
 }
-Wr.LockdownsV4PagePaginationArray = Kr;
+Kr.LockdownsV4PagePaginationArray = Wr;
 let fs = class extends a {
   /**
    * Create one or more firewall rules.
@@ -5707,11 +5707,11 @@ Te.Packages = be;
 Te.PackageListResponsesV4PagePaginationArray = nc;
 class V extends a {
   constructor() {
-    super(...arguments), this.lockdowns = new Wr(this._client), this.rules = new fs(this._client), this.accessRules = new Nr(this._client), this.uaRules = new Hr(this._client), this.waf = new Te(this._client);
+    super(...arguments), this.lockdowns = new Kr(this._client), this.rules = new fs(this._client), this.accessRules = new Nr(this._client), this.uaRules = new Hr(this._client), this.waf = new Te(this._client);
   }
 }
-V.Lockdowns = Wr;
-V.LockdownsV4PagePaginationArray = Kr;
+V.Lockdowns = Kr;
+V.LockdownsV4PagePaginationArray = Wr;
 V.Rules = fs;
 V.FirewallRulesSinglePage = $e;
 V.FirewallRulesV4PagePaginationArray = jr;
@@ -6185,7 +6185,7 @@ let Mh = class extends a {
 class wc extends F {
 }
 Mh.DNSV4PagePagination = wc;
-class Wh extends a {
+class Kh extends a {
   /**
    * Gets historical security threat and content categories currently and previously
    * assigned to a domain.
@@ -6210,7 +6210,7 @@ class $c extends a {
 class mc extends h {
 }
 $c.IPListsSinglePage = mc;
-let Kh = class extends a {
+let Wh = class extends a {
   /**
    * Gets the geolocation, ASN, infrastructure type of the ASN, and any security
    * threat categories of an IP address.
@@ -6475,14 +6475,14 @@ Ye.Permissions = Jh;
 Ye.Downloads = Qh;
 class I extends a {
   constructor() {
-    super(...arguments), this.asn = new Pc(this._client), this.dns = new Mh(this._client), this.domains = new Sc(this._client), this.domainHistory = new Wh(this._client), this.ips = new Kh(this._client), this.ipLists = new $c(this._client), this.miscategorizations = new jh(this._client), this.whois = new F$(this._client), this.indicatorFeeds = new Ye(this._client), this.sinkholes = new yc(this._client), this.attackSurfaceReport = new Ee(this._client);
+    super(...arguments), this.asn = new Pc(this._client), this.dns = new Mh(this._client), this.domains = new Sc(this._client), this.domainHistory = new Kh(this._client), this.ips = new Wh(this._client), this.ipLists = new $c(this._client), this.miscategorizations = new jh(this._client), this.whois = new F$(this._client), this.indicatorFeeds = new Ye(this._client), this.sinkholes = new yc(this._client), this.attackSurfaceReport = new Ee(this._client);
   }
 }
 I.ASN = Pc;
 I.DNSV4PagePagination = wc;
 I.Domains = Sc;
-I.DomainHistoryResource = Wh;
-I.IPs = Kh;
+I.DomainHistoryResource = Kh;
+I.IPs = Wh;
 I.IPLists = $c;
 I.IPListsSinglePage = mc;
 I.Miscategorizations = jh;
@@ -7469,12 +7469,12 @@ class Mc extends a {
    */
   get(e, t, s) {
     const { account_id: n } = t;
-    return this._client.getAPIList(`/accounts/${n}/mtls_certificates/${e}/associations`, Wc, s);
+    return this._client.getAPIList(`/accounts/${n}/mtls_certificates/${e}/associations`, Kc, s);
   }
 }
-class Wc extends h {
+class Kc extends h {
 }
-Mc.CertificateAsssociationsSinglePage = Wc;
+Mc.CertificateAsssociationsSinglePage = Kc;
 class Rs extends a {
   constructor() {
     super(...arguments), this.associations = new Mc(this._client);
@@ -7515,7 +7515,7 @@ class Rs extends a {
 class N$ extends h {
 }
 Rs.Associations = Mc;
-Rs.CertificateAsssociationsSinglePage = Wc;
+Rs.CertificateAsssociationsSinglePage = Kc;
 class w_ extends a {
   /**
    * Lists default sampling, router IPs, warp devices, and rules for account.
@@ -7525,7 +7525,7 @@ class w_ extends a {
     return this._client.get(`/accounts/${s}/mnm/config/full`, t)._thenUnwrap((n) => n.result);
   }
 }
-class Kc extends a {
+class Wc extends a {
   constructor() {
     super(...arguments), this.full = new w_(this._client);
   }
@@ -7566,7 +7566,7 @@ class Kc extends a {
     return this._client.get(`/accounts/${s}/mnm/config`, t)._thenUnwrap((n) => n.result);
   }
 }
-Kc.Full = w_;
+Wc.Full = w_;
 class $_ extends a {
   /**
    * Update advertisement for rule.
@@ -7636,10 +7636,10 @@ Ls.MagicNetworkMonitoringRulesSinglePage = jc;
 Ls.Advertisements = $_;
 class ft extends a {
   constructor() {
-    super(...arguments), this.configs = new Kc(this._client), this.rules = new Ls(this._client);
+    super(...arguments), this.configs = new Wc(this._client), this.rules = new Ls(this._client);
   }
 }
-ft.Configs = Kc;
+ft.Configs = Wc;
 ft.Rules = Ls;
 ft.MagicNetworkMonitoringRulesSinglePage = jc;
 let Hc = class extends a {
@@ -8566,7 +8566,7 @@ class L_ extends a {
     return this._client.post("/certificates", { body: e, ...t })._thenUnwrap((s) => s.result);
   }
   list(e = {}, t) {
-    return u(e) ? this.list({}, e) : this._client.getAPIList("/certificates", W$, { query: e, ...t });
+    return u(e) ? this.list({}, e) : this._client.getAPIList("/certificates", K$, { query: e, ...t });
   }
   /**
    * Revoke an existing Origin CA certificate by its serial number. You can use an
@@ -8585,7 +8585,7 @@ class L_ extends a {
     return this._client.get(`/certificates/${e}`, t)._thenUnwrap((s) => s.result);
   }
 }
-class W$ extends h {
+class K$ extends h {
 }
 class v_ extends a {
   /**
@@ -8721,7 +8721,7 @@ class Ut extends a {
    */
   list(e, t) {
     const { zone_id: s } = e;
-    return this._client.getAPIList(`/zones/${s}/origin_tls_client_auth`, K$, t);
+    return this._client.getAPIList(`/zones/${s}/origin_tls_client_auth`, W$, t);
   }
   /**
    * Delete Certificate
@@ -8738,7 +8738,7 @@ class Ut extends a {
     return this._client.get(`/zones/${n}/origin_tls_client_auth/${e}`, s)._thenUnwrap((i) => i.result);
   }
 }
-class K$ extends h {
+class W$ extends h {
 }
 Ut.Hostnames = Pt;
 Ut.HostnameUpdateResponsesSinglePage = ua;
@@ -9163,7 +9163,7 @@ class xa extends a {
 class za extends h {
 }
 xa.MessagePullResponsesSinglePage = za;
-class We extends a {
+class Ke extends a {
   constructor() {
     super(...arguments), this.consumers = new Ua(this._client), this.messages = new xa(this._client);
   }
@@ -9207,10 +9207,10 @@ class We extends a {
 }
 class j$ extends h {
 }
-We.Consumers = Ua;
-We.ConsumersSinglePage = ba;
-We.Messages = xa;
-We.MessagePullResponsesSinglePage = za;
+Ke.Consumers = Ua;
+Ke.ConsumersSinglePage = ba;
+Ke.Messages = xa;
+Ke.MessagePullResponsesSinglePage = za;
 class Z_ extends a {
   /**
    * Creates temporary access credentials on a bucket that can be optionally scoped
@@ -9732,7 +9732,7 @@ class M_ extends a {
     return this._client.get("/radar/search/global", { query: e, ...t })._thenUnwrap((s) => s.result);
   }
 }
-class W_ extends a {
+class K_ extends a {
   summary(e = {}, t) {
     return u(e) ? this.summary({}, e) : this._client.get("/radar/tcp_resets_timeouts/summary", { query: e, ...t })._thenUnwrap((s) => s.result);
   }
@@ -9743,7 +9743,7 @@ class W_ extends a {
     })._thenUnwrap((s) => s.result);
   }
 }
-let K_ = class extends a {
+let W_ = class extends a {
   userAgent(e = {}, t) {
     return u(e) ? this.userAgent({}, e) : this._client.get("/radar/ai/bots/timeseries_groups/user_agent", {
       query: e,
@@ -9796,12 +9796,12 @@ Zs.Summary = H_;
 Zs.TimeseriesGroups = La;
 class xt extends a {
   constructor() {
-    super(...arguments), this.inference = new Zs(this._client), this.bots = new Ra(this._client), this.timeseriesGroups = new K_(this._client);
+    super(...arguments), this.inference = new Zs(this._client), this.bots = new Ra(this._client), this.timeseriesGroups = new W_(this._client);
   }
 }
 xt.Inference = Zs;
 xt.Bots = Ra;
-xt.TimeseriesGroups = K_;
+xt.TimeseriesGroups = W_;
 class Q_ extends a {
   get(e = {}, t) {
     return u(e) ? this.get({}, e) : this._client.get("/radar/annotations/outages", { query: e, ...t })._thenUnwrap((s) => s.result);
@@ -10818,21 +10818,21 @@ class Ga extends a {
   }
 }
 Ga.Top = Fa;
-let Wg = class extends a {
+let Kg = class extends a {
   get(e = {}, t) {
     return u(e) ? this.get({}, e) : this._client.get("/radar/traffic_anomalies/locations", { query: e, ...t })._thenUnwrap((s) => s.result);
   }
 };
 class Ba extends a {
   constructor() {
-    super(...arguments), this.locations = new Wg(this._client);
+    super(...arguments), this.locations = new Kg(this._client);
   }
   get(e = {}, t) {
     return u(e) ? this.get({}, e) : this._client.get("/radar/traffic_anomalies", { query: e, ...t })._thenUnwrap((s) => s.result);
   }
 }
-Ba.Locations = Wg;
-class Kg extends a {
+Ba.Locations = Kg;
+class Wg extends a {
   bots(e = {}, t) {
     return u(e) ? this.bots({}, e) : this._client.get("/radar/verified_bots/top/bots", { query: e, ...t })._thenUnwrap((s) => s.result);
   }
@@ -10842,13 +10842,13 @@ class Kg extends a {
 }
 class Na extends a {
   constructor() {
-    super(...arguments), this.top = new Kg(this._client);
+    super(...arguments), this.top = new Wg(this._client);
   }
 }
-Na.Top = Kg;
+Na.Top = Wg;
 class P extends a {
   constructor() {
-    super(...arguments), this.ai = new xt(this._client), this.annotations = new va(this._client), this.bgp = new ze(this._client), this.datasets = new N_(this._client), this.dns = new Ta(this._client), this.netflows = new Ea(this._client), this.search = new M_(this._client), this.verifiedBots = new Na(this._client), this.as112 = new zt(this._client), this.email = new Ys(this._client), this.attacks = new Vs(this._client), this.entities = new Fs(this._client), this.http = new Se(this._client), this.quality = new Gs(this._client), this.ranking = new Bs(this._client), this.trafficAnomalies = new Ba(this._client), this.tcpResetsTimeouts = new W_(this._client), this.robotsTXT = new Ga(this._client);
+    super(...arguments), this.ai = new xt(this._client), this.annotations = new va(this._client), this.bgp = new ze(this._client), this.datasets = new N_(this._client), this.dns = new Ta(this._client), this.netflows = new Ea(this._client), this.search = new M_(this._client), this.verifiedBots = new Na(this._client), this.as112 = new zt(this._client), this.email = new Ys(this._client), this.attacks = new Vs(this._client), this.entities = new Fs(this._client), this.http = new Se(this._client), this.quality = new Gs(this._client), this.ranking = new Bs(this._client), this.trafficAnomalies = new Ba(this._client), this.tcpResetsTimeouts = new K_(this._client), this.robotsTXT = new Ga(this._client);
   }
 }
 P.AI = xt;
@@ -10867,7 +10867,7 @@ P.HTTP = Se;
 P.Quality = Gs;
 P.Ranking = Bs;
 P.TrafficAnomalies = Ba;
-P.TCPResetsTimeouts = W_;
+P.TCPResetsTimeouts = K_;
 P.RobotsTXT = Ga;
 class jg extends a {
   /**
@@ -10941,7 +10941,7 @@ let Ma = class extends a {
    */
   list(e, t) {
     const { account_id: s } = e;
-    return this._client.getAPIList(`/accounts/${s}/registrar/domains`, Wa, t);
+    return this._client.getAPIList(`/accounts/${s}/registrar/domains`, Ka, t);
   }
   /**
    * Show individual domain.
@@ -10950,16 +10950,16 @@ let Ma = class extends a {
     const { account_id: n } = t;
     return this._client.get(`/accounts/${n}/registrar/domains/${e}`, s)._thenUnwrap((i) => i.result);
   }
-}, Wa = class extends h {
+}, Ka = class extends h {
 };
-Ma.DomainsSinglePage = Wa;
+Ma.DomainsSinglePage = Ka;
 class Ns extends a {
   constructor() {
     super(...arguments), this.domains = new Ma(this._client);
   }
 }
 Ns.Domains = Ma;
-Ns.DomainsSinglePage = Wa;
+Ns.DomainsSinglePage = Ka;
 class Hg extends a {
   /**
    * Request Trace
@@ -10972,12 +10972,12 @@ class Hg extends a {
     })._thenUnwrap((i) => i.result);
   }
 }
-class Ka extends a {
+class Wa extends a {
   constructor() {
     super(...arguments), this.traces = new Hg(this._client);
   }
 }
-Ka.Traces = Hg;
+Wa.Traces = Hg;
 class ja extends a {
   /**
    * Create a new share recipient
@@ -11063,7 +11063,7 @@ class Xa extends a {
 class Qa extends p {
 }
 Xa.ResourceListResponsesV4PagePaginationArray = Qa;
-class Ke extends a {
+class We extends a {
   constructor() {
     super(...arguments), this.recipients = new ja(this._client), this.resources = new Xa(this._client);
   }
@@ -11107,10 +11107,10 @@ class Ke extends a {
 }
 class X$ extends p {
 }
-Ke.Recipients = ja;
-Ke.RecipientListResponsesV4PagePaginationArray = Ha;
-Ke.Resources = Xa;
-Ke.ResourceListResponsesV4PagePaginationArray = Qa;
+We.Recipients = ja;
+We.RecipientListResponsesV4PagePaginationArray = Ha;
+We.Resources = Xa;
+We.ResourceListResponsesV4PagePaginationArray = Qa;
 class Xg extends a {
   /**
    * Gets the current status of an asynchronous operation on a list.
@@ -11392,7 +11392,7 @@ let no = class extends a {
 class io extends h {
 }
 no.VersionListResponsesSinglePage = io;
-class Ws extends a {
+class Ks extends a {
   constructor() {
     super(...arguments), this.versions = new no(this._client);
   }
@@ -11435,11 +11435,11 @@ class Ws extends a {
     return this._client.get(`/${c}/${o}/rulesets/phases/${e}/entrypoint`, s)._thenUnwrap((l) => l.result);
   }
 }
-Ws.Versions = no;
-Ws.VersionListResponsesSinglePage = io;
+Ks.Versions = no;
+Ks.VersionListResponsesSinglePage = io;
 class He extends a {
   constructor() {
-    super(...arguments), this.phases = new Ws(this._client), this.rules = new Qg(this._client), this.versions = new to(this._client);
+    super(...arguments), this.phases = new Ks(this._client), this.rules = new Qg(this._client), this.versions = new to(this._client);
   }
   /**
    * Creates a ruleset.
@@ -11540,7 +11540,7 @@ class He extends a {
 }
 class Q$ extends Ld {
 }
-He.Phases = Ws;
+He.Phases = Ks;
 He.Rules = Qg;
 He.Versions = to;
 He.VersionListResponsesSinglePage = so;
@@ -11594,7 +11594,7 @@ let tp = class extends a {
     return this._client.get(`/zones/${s}/ssl/certificate_packs/quota`, t)._thenUnwrap((n) => n.result);
   }
 };
-class Ks extends a {
+class Ws extends a {
   constructor() {
     super(...arguments), this.quota = new tp(this._client);
   }
@@ -11644,8 +11644,8 @@ class Ks extends a {
 }
 class ro extends h {
 }
-Ks.CertificatePackListResponsesSinglePage = ro;
-Ks.Quota = tp;
+Ws.CertificatePackListResponsesSinglePage = ro;
+Ws.Quota = tp;
 let sp = class extends a {
   /**
    * Patch Universal SSL Settings for a Zone.
@@ -11673,11 +11673,11 @@ class co extends a {
 co.Settings = sp;
 class pe extends a {
   constructor() {
-    super(...arguments), this.analyze = new Jg(this._client), this.certificatePacks = new Ks(this._client), this.recommendations = new qg(this._client), this.universal = new co(this._client), this.verification = new ep(this._client);
+    super(...arguments), this.analyze = new Jg(this._client), this.certificatePacks = new Ws(this._client), this.recommendations = new qg(this._client), this.universal = new co(this._client), this.verification = new ep(this._client);
   }
 }
 pe.Analyze = Jg;
-pe.CertificatePacks = Ks;
+pe.CertificatePacks = Ws;
 pe.CertificatePackListResponsesSinglePage = ro;
 pe.Recommendations = qg;
 pe.Universal = co;
@@ -13639,12 +13639,12 @@ let Dp = class extends a {
     const { account_id: s, base64: n, ...i } = e;
     return this._client.post(`/accounts/${s}/workers/assets/upload`, R({ query: { base64: n }, body: i, ...t }))._thenUnwrap((c) => c.result);
   }
-}, Wo = class extends a {
+}, Ko = class extends a {
   constructor() {
     super(...arguments), this.upload = new Dp(this._client);
   }
 };
-Wo.Upload = Dp;
+Ko.Upload = Dp;
 let Ep = class extends a {
   /**
    * Put script content without touching config or metadata
@@ -13784,7 +13784,7 @@ class Np extends a {
     return this._client.get(`/accounts/${n}/workers/scripts/${e}/tails`, s)._thenUnwrap((i) => i.result);
   }
 }
-let Ko = class extends a {
+let Wo = class extends a {
   /**
    * Upload a Worker Version without deploying to Cloudflare's network. You can find
    * more about the multipart metadata on our docs:
@@ -13811,7 +13811,7 @@ let Ko = class extends a {
 };
 class jo extends F {
 }
-Ko.VersionListResponsesV4PagePagination = jo;
+Wo.VersionListResponsesV4PagePagination = jo;
 let Mp = class extends a {
   /**
    * Start uploading a collection of assets for use in a Worker version. To learn
@@ -13834,7 +13834,7 @@ class Ho extends a {
 Ho.Upload = Mp;
 let T = class extends a {
   constructor() {
-    super(...arguments), this.assets = new Ho(this._client), this.subdomain = new Bp(this._client), this.schedules = new Fp(this._client), this.tail = new Np(this._client), this.content = new Ep(this._client), this.settings = new Gp(this._client), this.deployments = new Yp(this._client), this.versions = new Ko(this._client);
+    super(...arguments), this.assets = new Ho(this._client), this.subdomain = new Bp(this._client), this.schedules = new Fp(this._client), this.tail = new Np(this._client), this.content = new Ep(this._client), this.settings = new Gp(this._client), this.deployments = new Yp(this._client), this.versions = new Wo(this._client);
   }
   /**
    * Upload a worker module. You can find more about the multipart metadata on our
@@ -13889,23 +13889,23 @@ T.Tail = Np;
 T.Content = Ep;
 T.Settings = Gp;
 T.Deployments = Yp;
-T.Versions = Ko;
+T.Versions = Wo;
 T.VersionListResponsesV4PagePagination = jo;
 class M extends a {
   constructor() {
-    super(...arguments), this.routes = new No(this._client), this.assets = new Wo(this._client), this.scripts = new T(this._client), this.accountSettings = new Vp(this._client), this.domains = new Go(this._client), this.subdomains = new Tp(this._client);
+    super(...arguments), this.routes = new No(this._client), this.assets = new Ko(this._client), this.scripts = new T(this._client), this.accountSettings = new Vp(this._client), this.domains = new Go(this._client), this.subdomains = new Tp(this._client);
   }
 }
 M.Routes = No;
 M.RouteListResponsesSinglePage = Mo;
-M.Assets = Wo;
+M.Assets = Ko;
 M.Scripts = T;
 M.ScriptsSinglePage = Xo;
 M.AccountSettings = Vp;
 M.Domains = Go;
 M.DomainsSinglePage = Bo;
 M.Subdomains = Tp;
-class Wp extends a {
+class Kp extends a {
   /**
    * Start uploading a collection of assets for use in a Worker version. To learn
    * more about the direct uploads of assets, see
@@ -13929,7 +13929,7 @@ class Qo extends a {
 class Jo extends h {
 }
 Qo.BindingGetResponsesSinglePage = Jo;
-class Kp extends a {
+class Wp extends a {
   /**
    * Put script content for a script uploaded to a Workers for Platforms namespace.
    */
@@ -14026,7 +14026,7 @@ on.TagUpdateResponsesSinglePage = tu;
 on.TagListResponsesSinglePage = su;
 class D extends a {
   constructor() {
-    super(...arguments), this.assetUpload = new Wp(this._client), this.content = new Kp(this._client), this.settings = new jp(this._client), this.bindings = new Qo(this._client), this.secrets = new qo(this._client), this.tags = new on(this._client);
+    super(...arguments), this.assetUpload = new Kp(this._client), this.content = new Wp(this._client), this.settings = new jp(this._client), this.bindings = new Qo(this._client), this.secrets = new qo(this._client), this.tags = new on(this._client);
   }
   /**
    * Upload a worker module to a Workers for Platforms namespace. You can find more
@@ -14057,8 +14057,8 @@ class D extends a {
     return this._client.get(`/accounts/${i}/workers/dispatch/namespaces/${e}/scripts/${t}`, n)._thenUnwrap((c) => c.result);
   }
 }
-D.AssetUpload = Wp;
-D.Content = Kp;
+D.AssetUpload = Kp;
+D.Content = Wp;
 D.Settings = jp;
 D.Bindings = Qo;
 D.BindingGetResponsesSinglePage = Jo;
@@ -15793,7 +15793,7 @@ let Mu = class extends a {
    */
   list(e, t) {
     const { account_id: s } = e;
-    return this._client.getAPIList(`/accounts/${s}/devices/posture/integration`, Wu, t);
+    return this._client.getAPIList(`/accounts/${s}/devices/posture/integration`, Ku, t);
   }
   /**
    * Delete a configured device posture integration.
@@ -15820,9 +15820,9 @@ let Mu = class extends a {
     return this._client.get(`/accounts/${n}/devices/posture/integration/${e}`, s)._thenUnwrap((i) => i.result);
   }
 };
-class Wu extends h {
+class Ku extends h {
 }
-Mu.IntegrationsSinglePage = Wu;
+Mu.IntegrationsSinglePage = Ku;
 class Vt extends a {
   constructor() {
     super(...arguments), this.integrations = new Mu(this._client);
@@ -15849,7 +15849,7 @@ class Vt extends a {
    */
   list(e, t) {
     const { account_id: s } = e;
-    return this._client.getAPIList(`/accounts/${s}/devices/posture`, Ku, t);
+    return this._client.getAPIList(`/accounts/${s}/devices/posture`, Wu, t);
   }
   /**
    * Deletes a device posture rule.
@@ -15866,11 +15866,11 @@ class Vt extends a {
     return this._client.get(`/accounts/${n}/devices/posture/${e}`, s)._thenUnwrap((i) => i.result);
   }
 }
-class Ku extends h {
+class Wu extends h {
 }
-Vt.DevicePostureRulesSinglePage = Ku;
+Vt.DevicePostureRulesSinglePage = Wu;
 Vt.Integrations = Mu;
-Vt.IntegrationsSinglePage = Wu;
+Vt.IntegrationsSinglePage = Ku;
 let k = class extends a {
   constructor() {
     super(...arguments), this.dexTests = new Gu(this._client), this.networks = new Nu(this._client), this.fleetStatus = new tw(this._client), this.policies = new wn(this._client), this.posture = new Vt(this._client), this.revoke = new nw(this._client), this.settings = new iw(this._client), this.unrevoke = new rw(this._client), this.overrideCodes = new sw(this._client);
@@ -15900,7 +15900,7 @@ k.DeviceNetworksSinglePage = Jt;
 k.FleetStatus = tw;
 k.Policies = wn;
 k.Posture = Vt;
-k.DevicePostureRulesSinglePage = Ku;
+k.DevicePostureRulesSinglePage = Wu;
 k.Revoke = nw;
 k.Settings = iw;
 k.Unrevoke = rw;
@@ -16136,20 +16136,20 @@ class il extends a {
   }
 }
 il.NetworkPath = mw;
-class W extends a {
+class K extends a {
   constructor() {
     super(...arguments), this.commands = new Ae(this._client), this.colos = new Hu(this._client), this.fleetStatus = new $n(this._client), this.httpTests = new sl(this._client), this.tests = new $w(this._client), this.tracerouteTestResults = new il(this._client), this.tracerouteTests = new _w(this._client);
   }
 }
-W.Commands = Ae;
-W.CommandListResponsesV4PagePagination = qu;
-W.Colos = Hu;
-W.ColoListResponsesSinglePage = Xu;
-W.FleetStatus = $n;
-W.HTTPTests = sl;
-W.TestsV4PagePagination = nl;
-W.TracerouteTestResults = il;
-W.TracerouteTests = _w;
+K.Commands = Ae;
+K.CommandListResponsesV4PagePagination = qu;
+K.Colos = Hu;
+K.ColoListResponsesSinglePage = Xu;
+K.FleetStatus = $n;
+K.HTTPTests = sl;
+K.TestsV4PagePagination = nl;
+K.TracerouteTestResults = il;
+K.TracerouteTests = _w;
 let rl = class extends a {
   /**
    * Creates a DLP custom entry.
@@ -17568,7 +17568,7 @@ class Vl extends a {
 class Tl extends p {
 }
 Vl.WARPConnectorListResponsesV4PagePaginationArray = Tl;
-class K extends a {
+class W extends a {
   constructor() {
     super(...arguments), this.warpConnector = new Vl(this._client), this.configurations = new Dw(this._client), this.connections = new Zl(this._client), this.token = new Fw(this._client), this.connectors = new Ew(this._client), this.management = new Yw(this._client);
   }
@@ -17613,18 +17613,18 @@ class K extends a {
 }
 class Dl extends p {
 }
-K.TunnelListResponsesV4PagePaginationArray = Dl;
-K.WARPConnector = Vl;
-K.WARPConnectorListResponsesV4PagePaginationArray = Tl;
-K.Configurations = Dw;
-K.Connections = Zl;
-K.ClientsSinglePage = Cl;
-K.Token = Fw;
-K.Connectors = Ew;
-K.Management = Yw;
+W.TunnelListResponsesV4PagePaginationArray = Dl;
+W.WARPConnector = Vl;
+W.WARPConnectorListResponsesV4PagePaginationArray = Tl;
+W.Configurations = Dw;
+W.Connections = Zl;
+W.ClientsSinglePage = Cl;
+W.Token = Fw;
+W.Connectors = Ew;
+W.Management = Yw;
 class S extends a {
   constructor() {
-    super(...arguments), this.devices = new k(this._client), this.identityProviders = new fn(this._client), this.organizations = new kl(this._client), this.seats = new ou(this._client), this.access = new y(this._client), this.dex = new W(this._client), this.tunnels = new K(this._client), this.connectivitySettings = new Xp(this._client), this.dlp = new E(this._client), this.gateway = new x(this._client), this.networks = new st(this._client), this.riskScoring = new nt(this._client);
+    super(...arguments), this.devices = new k(this._client), this.identityProviders = new fn(this._client), this.organizations = new kl(this._client), this.seats = new ou(this._client), this.access = new y(this._client), this.dex = new K(this._client), this.tunnels = new W(this._client), this.connectivitySettings = new Xp(this._client), this.dlp = new E(this._client), this.gateway = new x(this._client), this.networks = new st(this._client), this.riskScoring = new nt(this._client);
   }
 }
 S.Devices = k;
@@ -17635,8 +17635,8 @@ S.Organizations = kl;
 S.Seats = ou;
 S.SeatsSinglePage = uu;
 S.Access = y;
-S.DEX = W;
-S.Tunnels = K;
+S.DEX = K;
+S.Tunnels = W;
 S.TunnelListResponsesV4PagePaginationArray = Dl;
 S.ConnectivitySettings = Xp;
 S.DLP = E;
@@ -17844,7 +17844,7 @@ Y.Plans = Fl;
 Y.AvailableRatePlansSinglePage = Gl;
 Y.RatePlans = Bl;
 Y.RatePlanGetResponsesSinglePage = Nl;
-var Ww;
+var Kw;
 class _ extends _$ {
   /**
    * API Client for interfacing with the Cloudflare API.
@@ -17876,7 +17876,7 @@ class _ extends _$ {
       httpAgent: o.httpAgent,
       maxRetries: o.maxRetries,
       fetch: o.fetch
-    }), this.accounts = new fe(this), this.originCACertificates = new L_(this), this.ips = new Eh(this), this.memberships = new x_(this), this.user = new se(this), this.zones = new Y(this), this.loadBalancers = new J(this), this.cache = new Ze(this), this.ssl = new pe(this), this.acm = new En(this), this.argo = new os(this), this.certificateAuthorities = new Ei(this), this.clientCertificates = new wh(this), this.customCertificates = new Qi(this), this.customHostnames = new hs(this), this.customNameservers = new Uh(this), this.dnsFirewall = new gs(this), this.dns = new he(this), this.emailSecurity = new Ue(this), this.emailRouting = new _e(this), this.filters = new Th(this), this.firewall = new V(this), this.healthchecks = new ic(this), this.keylessCertificates = new n_(this), this.logpush = new re(this), this.logs = new yt(this), this.originTLSClientAuth = new Ut(this), this.pageRules = new k_(this), this.rateLimits = new jg(this), this.waitingRooms = new oe(this), this.web3 = new an(this), this.workers = new M(this), this.kv = new bs(this), this.durableObjects = new ws(this), this.queues = new We(this), this.apiGateway = new G(this), this.managedTransforms = new b_(this), this.pageShield = new q(this), this.rulesets = new He(this), this.urlNormalization = new bp(this), this.spectrum = new vt(this), this.addressing = new B(this), this.auditLogs = new rh(this), this.billing = new Oi(this), this.brandProtection = new lh(this), this.diagnostics = new ps(this), this.images = new mt(this), this.intel = new I(this), this.magicTransit = new O(this), this.magicNetworkMonitoring = new ft(this), this.networkInterconnects = new Ne(this), this.mtlsCertificates = new Rs(this), this.pages = new Is(this), this.registrar = new Ns(this), this.requestTracers = new Ka(this), this.rules = new Ms(this), this.stream = new z(this), this.alerting = new de(this), this.d1 = new Ve(this), this.r2 = new Os(this), this.workersForPlatforms = new iu(this), this.zeroTrust = new S(this), this.turnstile = new en(this), this.hyperdrive = new Us(this), this.rum = new bt(this), this.vectorize = new nn(this), this.urlScanner = new tn(this), this.radar = new P(this), this.botManagement = new ah(this), this.originPostQuantumEncryption = new v_(this), this.speed = new Je(this), this.dcvDelegation = new bh(this), this.hostnames = new ac(this), this.snippets = new Qe(this), this.calls = new Ce(this), this.cloudforceOne = new gt(this), this.aiGateway = new X(this), this.iam = new De(this), this.cloudConnector = new _t(this), this.botnetFeed = new us(this), this.securityTXT = new cp(this), this.workflows = new qe(this), this.resourceSharing = new Ke(this), this.leakedCredentialChecks = new xs(this), this.contentScanning = new Pe(this), this.abuseReports = new Bd(this), this.ai = new ne(this), this.securityCenter = new js(this), this._options = o, this.apiToken = t, this.apiKey = s, this.apiEmail = n, this.userServiceKey = i;
+    }), this.accounts = new fe(this), this.originCACertificates = new L_(this), this.ips = new Eh(this), this.memberships = new x_(this), this.user = new se(this), this.zones = new Y(this), this.loadBalancers = new J(this), this.cache = new Ze(this), this.ssl = new pe(this), this.acm = new En(this), this.argo = new os(this), this.certificateAuthorities = new Ei(this), this.clientCertificates = new wh(this), this.customCertificates = new Qi(this), this.customHostnames = new hs(this), this.customNameservers = new Uh(this), this.dnsFirewall = new gs(this), this.dns = new he(this), this.emailSecurity = new Ue(this), this.emailRouting = new _e(this), this.filters = new Th(this), this.firewall = new V(this), this.healthchecks = new ic(this), this.keylessCertificates = new n_(this), this.logpush = new re(this), this.logs = new yt(this), this.originTLSClientAuth = new Ut(this), this.pageRules = new k_(this), this.rateLimits = new jg(this), this.waitingRooms = new oe(this), this.web3 = new an(this), this.workers = new M(this), this.kv = new bs(this), this.durableObjects = new ws(this), this.queues = new Ke(this), this.apiGateway = new G(this), this.managedTransforms = new b_(this), this.pageShield = new q(this), this.rulesets = new He(this), this.urlNormalization = new bp(this), this.spectrum = new vt(this), this.addressing = new B(this), this.auditLogs = new rh(this), this.billing = new Oi(this), this.brandProtection = new lh(this), this.diagnostics = new ps(this), this.images = new mt(this), this.intel = new I(this), this.magicTransit = new O(this), this.magicNetworkMonitoring = new ft(this), this.networkInterconnects = new Ne(this), this.mtlsCertificates = new Rs(this), this.pages = new Is(this), this.registrar = new Ns(this), this.requestTracers = new Wa(this), this.rules = new Ms(this), this.stream = new z(this), this.alerting = new de(this), this.d1 = new Ve(this), this.r2 = new Os(this), this.workersForPlatforms = new iu(this), this.zeroTrust = new S(this), this.turnstile = new en(this), this.hyperdrive = new Us(this), this.rum = new bt(this), this.vectorize = new nn(this), this.urlScanner = new tn(this), this.radar = new P(this), this.botManagement = new ah(this), this.originPostQuantumEncryption = new v_(this), this.speed = new Je(this), this.dcvDelegation = new bh(this), this.hostnames = new ac(this), this.snippets = new Qe(this), this.calls = new Ce(this), this.cloudforceOne = new gt(this), this.aiGateway = new X(this), this.iam = new De(this), this.cloudConnector = new _t(this), this.botnetFeed = new us(this), this.securityTXT = new cp(this), this.workflows = new qe(this), this.resourceSharing = new We(this), this.leakedCredentialChecks = new xs(this), this.contentScanning = new Pe(this), this.abuseReports = new Bd(this), this.ai = new ne(this), this.securityCenter = new js(this), this._options = o, this.apiToken = t, this.apiKey = s, this.apiEmail = n, this.userServiceKey = i;
   }
   defaultQuery() {
     return this._options.defaultQuery;
@@ -17913,8 +17913,8 @@ class _ extends _$ {
     return n$(e, { allowDots: !0, arrayFormat: "repeat" });
   }
 }
-Ww = _;
-_.Cloudflare = Ww;
+Kw = _;
+_.Cloudflare = Kw;
 _.DEFAULT_TIMEOUT = 6e4;
 _.CloudflareError = d;
 _.APIError = v;
@@ -17965,7 +17965,7 @@ _.Web3 = an;
 _.Workers = M;
 _.KV = bs;
 _.DurableObjects = ws;
-_.Queues = We;
+_.Queues = Ke;
 _.APIGateway = G;
 _.ManagedTransforms = b_;
 _.PageShield = q;
@@ -17985,7 +17985,7 @@ _.NetworkInterconnects = Ne;
 _.MTLSCertificates = Rs;
 _.Pages = Is;
 _.Registrar = Ns;
-_.RequestTracers = Ka;
+_.RequestTracers = Wa;
 _.Rules = Ms;
 _.Stream = z;
 _.Alerting = de;
@@ -18013,13 +18013,13 @@ _.CloudConnector = _t;
 _.BotnetFeed = us;
 _.SecurityTXT = cp;
 _.Workflows = qe;
-_.ResourceSharing = Ke;
+_.ResourceSharing = We;
 _.LeakedCredentialChecks = xs;
 _.ContentScanning = Pe;
 _.AbuseReports = Bd;
 _.AI = ne;
 _.SecurityCenter = js;
-const Kt = {
+const Wt = {
   /** 默认不启用重试 */
   retries: 0,
   /** 默认重试间隔（毫秒） */
@@ -18027,11 +18027,11 @@ const Kt = {
   /** 默认需要重试的状态码 */
   retryOnStatusCodes: [500, 502, 503, 504]
 };
-async function cm(r, e = Kt) {
+async function cm(r, e = Wt) {
   const {
-    retries: t = Kt.retries,
-    retryDelay: s = Kt.retryDelay,
-    retryOnStatusCodes: n = Kt.retryOnStatusCodes,
+    retries: t = Wt.retries,
+    retryDelay: s = Wt.retryDelay,
+    retryOnStatusCodes: n = Wt.retryOnStatusCodes,
     onError: i,
     ...c
   } = e;
@@ -18095,20 +18095,32 @@ async function nd(r, e) {
     });
   }
 }
+async function um(r, e) {
+  if (!r.KV_NAMESPACE_ID || !r.ACCOUNT_ID)
+    throw new Error("KV_NAMESPACE_ID and ACCOUNT_ID are required");
+  const t = await e.kv.namespaces.values.get(r.KV_NAMESPACE_ID, "sub.yml", {
+    account_id: r.ACCOUNT_ID
+  });
+  return t.ok ? t.text() : "";
+}
 async function id(r) {
   return new _({
     apiToken: r.KV_API_TOKEN,
     apiEmail: r.ACCOUNT_EMAIL
   });
 }
-const cU = {
+const aU = {
   async fetch(r, e) {
     try {
       const { SUB_LIST_URL: t, KV_NAMESPACE_ID: s, ACCOUNT_ID: n } = e, { pathname: i } = new URL(r.url);
       if (!t || !s || !n)
         throw new Error("SUB_LIST_URL and KV_NAMESPACE_ID and ACCOUNT_ID are required");
       const c = await id(e);
-      return i === "/" ? (await nd(e, c), new Response("Synced")) : new Response("Not Found", { status: 404 });
+      return i === "/" ? (await nd(e, c), new Response("Synced")) : i === "/sub.yml" ? new Response(await um(e, c), {
+        headers: {
+          "Content-Type": "text/yaml"
+        }
+      }) : new Response("Not Found", { status: 404 });
     } catch (t) {
       return new Response(t.message, { status: 500 });
     }
@@ -18119,5 +18131,5 @@ const cU = {
   }
 };
 export {
-  cU as default
+  aU as default
 };
