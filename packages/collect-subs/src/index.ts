@@ -49,23 +49,24 @@ async function createCloudflare(env: Env): Promise<Cloudflare> {
 export default {
     async fetch(request, env): Promise<Response> {
         try {
-            const { SUB_LIST_URL, KV_NAMESPACE_ID, ACCOUNT_ID } = env;
+            const { SUB_LIST_URL, KV_NAMESPACE_ID, ACCOUNT_ID, UUID } = env;
+
             const { pathname } = new URL(request.url);
 
-            if (!SUB_LIST_URL || !KV_NAMESPACE_ID || !ACCOUNT_ID) {
-                throw new Error('SUB_LIST_URL and KV_NAMESPACE_ID and ACCOUNT_ID are required');
+            if (!SUB_LIST_URL || !KV_NAMESPACE_ID || !ACCOUNT_ID || !UUID) {
+                throw new Error('SUB_LIST_URL and KV_NAMESPACE_ID and ACCOUNT_ID and UUID are required');
             }
 
             const cloudflare = await createCloudflare(env);
 
-            if (pathname === '/') {
+            if (pathname === `/${UUID}`) {
                 const config = await sync(env, cloudflare);
                 return new Response(config, {
                     headers: {
                         'Content-Type': 'text/yaml'
                     }
                 });
-            } else if (pathname === '/sub.yml') {
+            } else if (pathname === `/${UUID}/sub.yml`) {
                 const config = await getSubConfig(env, cloudflare);
                 return new Response(config?.value, {
                     headers: new Headers({

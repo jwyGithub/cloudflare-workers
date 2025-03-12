@@ -9,4 +9,6 @@ interface Env {
     ACCOUNT_ID?: string;
     KV_API_TOKEN?: string;
     ACCOUNT_EMAIL?: string;
+
+    UUID: string;
 }
