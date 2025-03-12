@@ -18113,20 +18113,20 @@ async function id(r) {
 const aU = {
   async fetch(r, e) {
     try {
-      const { SUB_LIST_URL: t, KV_NAMESPACE_ID: s, ACCOUNT_ID: n } = e, { pathname: i } = new URL(r.url);
-      if (!t || !s || !n)
-        throw new Error("SUB_LIST_URL and KV_NAMESPACE_ID and ACCOUNT_ID are required");
-      const c = await id(e);
-      if (i === "/") {
-        const o = await nd(e, c);
-        return new Response(o, {
+      const { SUB_LIST_URL: t, KV_NAMESPACE_ID: s, ACCOUNT_ID: n, UUID: i } = e, { pathname: c } = new URL(r.url);
+      if (!t || !s || !n || !i)
+        throw new Error("SUB_LIST_URL and KV_NAMESPACE_ID and ACCOUNT_ID and UUID are required");
+      const o = await id(e);
+      if (c === `/${i}`) {
+        const l = await nd(e, o);
+        return new Response(l, {
           headers: {
             "Content-Type": "text/yaml"
           }
         });
-      } else if (i === "/sub.yml") {
-        const o = await um(e, c);
-        return new Response(o == null ? void 0 : o.value, {
+      } else if (c === `/${i}/sub.yml`) {
+        const l = await um(e, o);
+        return new Response(l == null ? void 0 : l.value, {
           headers: new Headers({
             "Content-Type": "text/yaml; charset=utf-8"
           })
